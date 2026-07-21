@@ -84,6 +84,26 @@ var spiralOrder = function(matrix) {
     # 返回顺时针螺旋顺序的元素列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回顺时针螺旋顺序的元素数组
+vector<int> spiralOrder(vector<vector<int>> matrix) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -107,6 +127,24 @@ m, n = map(int, lines[0].split())
 matrix = [list(map(int, lines[i + 1].split())) for i in range(m)]
 
 # 在这里计算螺旋顺序数组 result，用 print(' '.join(map(str, result))) 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为 m n（行数与列数）；随后 m 行，每行 n 个整数（空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    // 在这里计算螺旋顺序数组 result，并将元素空格分隔后输出一行
+
+    return 0;
+}
 `,
     },
   },
@@ -156,6 +194,30 @@ matrix = [list(map(int, lines[i + 1].split())) for i in range(m)]
                 result.append(matrix[i][left])
             left += 1
     return result
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+vector<int> spiralOrder(vector<vector<int>> matrix) {
+    vector<int> result;
+    int top = 0, bottom = (int)matrix.size() - 1;
+    int left = 0, right = (int)matrix[0].size() - 1;
+    while (top <= bottom && left <= right) {
+        for (int j = left; j <= right; j++) result.push_back(matrix[top][j]); // 上边：从左到右
+        top++;
+        for (int i = top; i <= bottom; i++) result.push_back(matrix[i][right]); // 右边：从上到下
+        right--;
+        if (top <= bottom) { // 防止只剩一行时重复输出
+            for (int j = right; j >= left; j--) result.push_back(matrix[bottom][j]); // 下边：从右到左
+            bottom--;
+        }
+        if (left <= right) { // 防止只剩一列时重复输出
+            for (int i = bottom; i >= top; i--) result.push_back(matrix[i][left]); // 左边：从下到上
+            left++;
+        }
+    }
+    return result;
+}
 `,
     },
     acm: {
@@ -214,6 +276,43 @@ while top <= bottom and left <= right:
         left += 1
 
 print(' '.join(map(str, result)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    vector<int> result;
+    int top = 0, bottom = m - 1;
+    int left = 0, right = n - 1;
+    while (top <= bottom && left <= right) {
+        for (int j = left; j <= right; j++) result.push_back(matrix[top][j]); // 上边：从左到右
+        top++;
+        for (int i = top; i <= bottom; i++) result.push_back(matrix[i][right]); // 右边：从上到下
+        right--;
+        if (top <= bottom) { // 防止只剩一行时重复输出
+            for (int j = right; j >= left; j--) result.push_back(matrix[bottom][j]); // 下边：从右到左
+            bottom--;
+        }
+        if (left <= right) { // 防止只剩一列时重复输出
+            for (int i = bottom; i >= top; i--) result.push_back(matrix[i][left]); // 左边：从下到上
+            left++;
+        }
+    }
+
+    for (int i = 0; i < (int)result.size(); i++) {
+        if (i) cout << ' ';
+        cout << result[i];
+    }
+    cout << '\\n';
+    return 0;
+}
 `,
     },
   },

@@ -127,6 +127,26 @@ var letterCombinations = function(digits) {
     # 返回所有字母组合组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有字母组合
+vector<string> letterCombinations(string digits) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -145,6 +165,22 @@ import sys
 digits = sys.stdin.read().split('\\n')[0].strip()
 
 # 在这里写你的代码
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行为数字字符串 digits（仅含 2-9，可能为空行）
+// 输出：每个组合一行，按字典序排列；没有任何组合时不输出任何内容
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string digits;
+    cin >> digits; // 空行时读取失败，digits 保持空串，正好对应无组合
+
+    // 在这里写你的代码，用 cout 逐行输出每个组合
+
+    return 0;
+}
 `,
     },
   },
@@ -189,6 +225,37 @@ digits = sys.stdin.read().split('\\n')[0].strip()
 
     dfs(0)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<string> letterCombinations(string digits) {
+    if (digits.empty()) return {}; // 空串没有组合
+    const string table[10] = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+    vector<string> ans = {""};
+    // 逐位扩展：每个已有前缀接上当前数字对应的每个字母（与回溯生成顺序一致）
+    for (char d : digits) {
+        vector<string> next;
+        for (const string& prefix : ans) {
+            for (char ch : table[d - '0']) {
+                next.push_back(prefix + ch);
+            }
+        }
+        ans = next;
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -240,6 +307,37 @@ if digits:
     ans.sort()  # 按字典序输出（回溯生成的顺序本就是字典序，排序作保险）
     for s in ans:
         print(s)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    string digits;
+    cin >> digits; // 空行时读取失败，digits 保持空串
+
+    if (!digits.empty()) {
+        const string table[10] = {"", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        vector<string> ans = {""};
+        // 逐位扩展：每个已有前缀接上当前数字对应的每个字母
+        for (char d : digits) {
+            vector<string> next;
+            for (const string& prefix : ans) {
+                for (char ch : table[d - '0']) {
+                    next.push_back(prefix + ch);
+                }
+            }
+            ans = next;
+        }
+        sort(ans.begin(), ans.end()); // 按字典序输出（生成的顺序本就是字典序，排序作保险）
+        for (const string& s : ans) {
+            cout << s << "\\n";
+        }
+    }
+    return 0;
+}
 `,
     },
   },

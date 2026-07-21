@@ -87,6 +87,27 @@ var isPalindrome = function(head) {
     # head 为链表头节点（ListNode），返回 True 或 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点，是回文链表返回 true，否则返回 false
+bool isPalindrome(ListNode* head) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +135,30 @@ n = int(lines[0])
 vals = list(map(int, lines[1].split())) if n > 0 else []
 
 # 构造链表，判断回文后用 print 输出 'true' 或 'false'
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行）
+// 输出：true 或 false（小写）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> vals(n);
+    for (int i = 0; i < n; i++) cin >> vals[i];
+
+    // 构造链表，判断回文后用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -168,6 +213,48 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
         left = left.next
         right = right.next
     return True
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+bool isPalindrome(ListNode* head) {
+    // 快慢指针找中点：fast 走两步、slow 走一步，fast 到尾时 slow 在后半段起点
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    // 反转后半段
+    ListNode* prev = nullptr;
+    while (slow != nullptr) {
+        ListNode* next = slow->next;
+        slow->next = prev;
+        prev = slow;
+        slow = next;
+    }
+    // 两端对撞比较：后半段不长于前半段，右指针先走完
+    ListNode* left = head;
+    ListNode* right = prev;
+    while (right != nullptr) {
+        if (left->val != right->val) return false;
+        left = left->next;
+        right = right->next;
+    }
+    return true;
+}
 `,
     },
     acm: {
@@ -255,6 +342,63 @@ while right is not None:
     left = left.next
     right = right.next
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> vals(n);
+    for (int i = 0; i < n; i++) cin >> vals[i];
+
+    // 构造链表
+    ListNode dummy;
+    ListNode* tail = &dummy;
+    for (int v : vals) {
+        tail->next = new ListNode(v);
+        tail = tail->next;
+    }
+    ListNode* head = dummy.next;
+
+    // 快慢指针找中点
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    // 反转后半段
+    ListNode* prev = nullptr;
+    while (slow != nullptr) {
+        ListNode* next = slow->next;
+        slow->next = prev;
+        prev = slow;
+        slow = next;
+    }
+    // 两端对撞比较
+    ListNode* left = head;
+    ListNode* right = prev;
+    bool ok = true;
+    while (right != nullptr) {
+        if (left->val != right->val) {
+            ok = false;
+            break;
+        }
+        left = left->next;
+        right = right->next;
+    }
+
+    cout << (ok ? "true" : "false") << endl;
+    return 0;
+}
 `,
     },
   },

@@ -82,6 +82,26 @@ var dailyTemperatures = function(temperatures) {
     # 返回与 temperatures 等长的列表，第 i 位表示第 i 天后还要等几天才有更高温度
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回与 temperatures 等长的数组，第 i 位表示第 i 天后还要等几天才有更高温度
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -102,6 +122,34 @@ n = int(lines[0])
 temperatures = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，把结果用空格拼接后输出（如 print(' '.join(map(str, ans)))）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> temperatures(n);
+    for (int i = 0; i < n; i++) cin >> temperatures[i];
+
+    // 在这里写你的代码，把结果数组用空格拼接后输出
+
+    return 0;
+}
 `,
     },
   },
@@ -132,6 +180,35 @@ temperatures = list(map(int, lines[1].split()))
             ans[j] = i - j
         stack.append(i)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> dailyTemperatures(vector<int>& temperatures) {
+  int n = temperatures.size();
+  vector<int> ans(n, 0);
+  stack<int> st; // 存下标，对应温度从栈底到栈顶单调递减
+  for (int i = 0; i < n; i++) {
+    while (!st.empty() && temperatures[i] > temperatures[st.top()]) {
+      int j = st.top();
+      st.pop();
+      ans[j] = i - j;
+    }
+    st.push(i);
+  }
+  return ans;
+}
 `,
     },
     acm: {
@@ -164,6 +241,45 @@ for i in range(n):
         ans[j] = i - j
     stack.append(i)
 print(' '.join(map(str, ans)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> temperatures(n);
+  for (int i = 0; i < n; i++) cin >> temperatures[i];
+
+  vector<int> ans(n, 0);
+  stack<int> st; // 存下标，对应温度单调递减
+  for (int i = 0; i < n; i++) {
+    while (!st.empty() && temperatures[i] > temperatures[st.top()]) {
+      int j = st.top();
+      st.pop();
+      ans[j] = i - j;
+    }
+    st.push(i);
+  }
+  for (int i = 0; i < n; i++) {
+    if (i) cout << ' ';
+    cout << ans[i];
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

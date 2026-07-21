@@ -86,6 +86,15 @@ var productExceptSelf = function(nums) {
     # 返回除自身以外数组的乘积（不使用除法）
     pass
 `,
+      cpp: `#include <vector>
+using namespace std;
+
+// 返回除自身以外数组的乘积（不使用除法）
+vector<int> productExceptSelf(vector<int>& nums) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -106,6 +115,22 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出结果数组（空格分隔）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出结果数组（空格分隔）
+    return 0;
+}
 `,
     },
   },
@@ -144,6 +169,27 @@ nums = list(map(int, lines[1].split()))
         ans[i] *= right
         right *= nums[i]
     return ans
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+vector<int> productExceptSelf(vector<int>& nums) {
+    int n = nums.size();
+    vector<int> ans(n);
+    // 第一遍：ans[i] = i 左侧所有元素的乘积
+    int left = 1;
+    for (int i = 0; i < n; i++) {
+        ans[i] = left;
+        left *= nums[i];
+    }
+    // 第二遍：从右往左，给 ans[i] 乘上 i 右侧所有元素的乘积
+    int right = 1;
+    for (int i = n - 1; i >= 0; i--) {
+        ans[i] *= right;
+        right *= nums[i];
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -184,6 +230,37 @@ for i in range(n - 1, -1, -1):
     right *= nums[i]
 
 print(' '.join(map(str, ans)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 前后缀乘积：先存左侧乘积，再从右往左乘上右侧乘积
+    vector<int> ans(n);
+    int left = 1;
+    for (int i = 0; i < n; i++) {
+        ans[i] = left;
+        left *= nums[i];
+    }
+    int right = 1;
+    for (int i = n - 1; i >= 0; i--) {
+        ans[i] *= right;
+        right *= nums[i];
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (i) cout << ' ';
+        cout << ans[i];
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

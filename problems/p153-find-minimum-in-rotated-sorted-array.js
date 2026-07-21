@@ -94,6 +94,26 @@ var findMin = function(nums) {
     # 返回数组中的最小元素
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回数组中的最小元素
+int findMin(vector<int>& nums) {
+  // TODO: 在这里实现
+  return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,23 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出一个整数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（旋转后的升序数组）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  // 在这里写你的代码，用 cout 输出一个整数
+
+  return 0;
+}
 `,
     },
   },
@@ -138,6 +175,20 @@ nums = list(map(int, lines[1].split()))
         else:
             hi = mid  # mid 本身可能就是最小值
     return nums[lo]
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+int findMin(vector<int>& nums) {
+  int lo = 0;
+  int hi = (int)nums.size() - 1;
+  while (lo < hi) {
+    int mid = lo + (hi - lo) / 2;
+    if (nums[mid] > nums[hi]) lo = mid + 1; // 最小值在 mid 右边
+    else hi = mid; // mid 本身可能就是最小值
+  }
+  return nums[lo];
+}
 `,
     },
     acm: {
@@ -168,6 +219,28 @@ while lo < hi:
     else:
         hi = mid
 print(nums[lo])
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  // 二分：nums[mid] 与右端点比较，逐步缩小最小值所在区间
+  int lo = 0;
+  int hi = n - 1;
+  while (lo < hi) {
+    int mid = lo + (hi - lo) / 2;
+    if (nums[mid] > nums[hi]) lo = mid + 1;
+    else hi = mid;
+  }
+  cout << nums[lo] << "\\n";
+  return 0;
+}
 `,
     },
   },

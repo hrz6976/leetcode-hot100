@@ -84,6 +84,26 @@ var maxProduct = function(nums) {
     # 返回乘积最大的非空连续子数组的乘积
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回乘积最大的非空连续子数组的乘积
+int maxProduct(vector<int>& nums) {
+  // TODO: 在这里实现
+  return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -102,6 +122,23 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print(ans) 输出最大乘积
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  // 在这里写你的代码，用 cout 输出最大乘积
+
+  return 0;
+}
 `,
     },
   },
@@ -139,6 +176,27 @@ nums = list(map(int, lines[1].split()))
         min_end = min(x, min_end * x)
         ans = max(ans, max_end)
     return ans
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int maxProduct(vector<int>& nums) {
+  int ans = nums[0];
+  int maxEnd = nums[0]; // 以当前元素结尾的子数组的最大乘积
+  int minEnd = nums[0]; // 以当前元素结尾的子数组的最小乘积
+  for (int i = 1; i < (int)nums.size(); i++) {
+    int x = nums[i];
+    if (x < 0) {
+      // 乘以负数后大小关系反转，先交换再统一更新
+      swap(maxEnd, minEnd);
+    }
+    maxEnd = max(x, maxEnd * x); // 接上旧子数组，或从 x 重新开始
+    minEnd = min(x, minEnd * x);
+    ans = max(ans, maxEnd);
+  }
+  return ans;
+}
 `,
     },
     acm: {
@@ -178,6 +236,34 @@ for x in nums[1:]:
     min_end = min(x, min_end * x)
     ans = max(ans, max_end)
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  int ans = nums[0];
+  int maxEnd = nums[0]; // 以当前元素结尾的子数组的最大乘积
+  int minEnd = nums[0]; // 以当前元素结尾的子数组的最小乘积
+  for (int i = 1; i < n; i++) {
+    int x = nums[i];
+    if (x < 0) {
+      // 乘以负数后大小关系反转，先交换再统一更新
+      swap(maxEnd, minEnd);
+    }
+    maxEnd = max(x, maxEnd * x); // 接上旧子数组，或从 x 重新开始
+    minEnd = min(x, minEnd * x);
+    ans = max(ans, maxEnd);
+  }
+  cout << ans << "\\n";
+  return 0;
+}
 `,
     },
   },

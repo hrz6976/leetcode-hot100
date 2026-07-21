@@ -84,6 +84,26 @@ var jump = function(nums) {
     # 返回到达最后一个下标的最少跳跃次数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回到达最后一个下标的最少跳跃次数
+int jump(vector<int> nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print(次数) 输出最少跳跃次数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个非负整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出最少跳跃次数
+
+    return 0;
+}
 `,
     },
   },
@@ -134,6 +171,24 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
             jumps += 1
             end = farthest
     return jumps
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int jump(vector<int> nums) {
+    int jumps = 0;
+    int end = 0;      // 当前跳跃次数下能到达的边界
+    int farthest = 0; // 下一跳能到达的最远下标
+    for (int i = 0; i < (int)nums.size() - 1; i++) {
+        farthest = max(farthest, i + nums[i]);
+        if (i == end) { // 走到当前边界，必须再跳一次
+            jumps++;
+            end = farthest;
+        }
+    }
+    return jumps;
+}
 `,
     },
     acm: {
@@ -170,6 +225,31 @@ for i in range(len(nums) - 1):
         end = farthest
 
 print(jumps)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int jumps = 0;
+    int end = 0;      // 当前跳跃次数下能到达的边界
+    int farthest = 0; // 下一跳能到达的最远下标
+    for (int i = 0; i < n - 1; i++) {
+        farthest = max(farthest, i + nums[i]);
+        if (i == end) { // 走到当前边界，必须再跳一次
+            jumps++;
+            end = farthest;
+        }
+    }
+    cout << jumps << '\\n';
+    return 0;
+}
 `,
     },
   },

@@ -89,6 +89,26 @@ var minPathSum = function(grid) {
     # grid 为非负整数二维数组，返回从左上角到右下角的最小路径和
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int minPathSum(vector<vector<int>>& grid) {
+    // grid 为非负整数二维数组，返回从左上角到右下角的最小路径和
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,24 @@ m, n = map(int, lines[0].split())
 grid = [list(map(int, lines[i + 1].split())) for i in range(m)]
 
 # 在这里写你的代码，用 print 输出最小路径和
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m n（行数 列数），随后 m 行每行 n 个整数（空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> grid(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> grid[i][j];
+
+    // 在这里写你的代码，用 cout 输出最小路径和
+
+    return 0;
+}
 `,
     },
   },
@@ -141,6 +179,33 @@ grid = [list(map(int, lines[i + 1].split())) for i in range(m)]
             left = grid[i][j - 1] if j > 0 else float('inf')  # 从左方来
             grid[i][j] += min(up, left)  # f(i, j) = grid[i][j] + min(f(i-1, j), f(i, j-1))
     return grid[m - 1][n - 1]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int minPathSum(vector<vector<int>>& grid) {
+    int m = (int)grid.size(), n = (int)grid[0].size();
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == 0 && j == 0) continue; // 起点本身就是初值
+            int up = i > 0 ? grid[i - 1][j] : INT_MAX;   // 从上方来
+            int left = j > 0 ? grid[i][j - 1] : INT_MAX; // 从左方来
+            grid[i][j] += min(up, left); // f(i, j) = grid[i][j] + min(f(i-1, j), f(i, j-1))
+        }
+    }
+    return grid[m - 1][n - 1];
+}
 `,
     },
     acm: {
@@ -176,6 +241,30 @@ for i in range(m):
         grid[i][j] += min(up, left)
 
 print(grid[m - 1][n - 1])
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> grid(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> grid[i][j];
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == 0 && j == 0) continue;
+            int up = i > 0 ? grid[i - 1][j] : INT_MAX;
+            int left = j > 0 ? grid[i][j - 1] : INT_MAX;
+            grid[i][j] += min(up, left);
+        }
+    }
+    cout << grid[m - 1][n - 1] << "\\n";
+    return 0;
+}
 `,
     },
   },

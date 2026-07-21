@@ -94,6 +94,26 @@ var orangesRotting = function(grid) {
     # grid 为整数二维数组（0 空、1 新鲜、2 腐烂），返回最小分钟数，不可能全部腐烂返回 -1
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// grid 为整数二维数组（0 空、1 新鲜、2 腐烂），返回最小分钟数，不可能全部腐烂返回 -1
+int orangesRotting(vector<vector<int>>& grid) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -117,6 +137,35 @@ m, n = map(int, lines[0].split())
 grid = [list(map(int, lines[i + 1].split())) for i in range(m)]
 
 # 在这里写你的代码，用 print 输出最小分钟数（不可能全部腐烂输出 -1）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m n（行数 列数），随后 m 行每行 n 个整数（0 空、1 新鲜、2 腐烂）
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> grid(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> grid[i][j];
+
+    // 在这里写你的代码，用 cout 输出最小分钟数（不可能全部腐烂输出 -1）
+
+    return 0;
+}
 `,
     },
   },
@@ -181,6 +230,52 @@ grid = [list(map(int, lines[i + 1].split())) for i in range(m)]
         minutes += 1  # 每处理完一层，时间过去一分钟
 
     return minutes if fresh == 0 else -1  # 还有新鲜橘子剩下说明烂不到
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <utility>
+using namespace std;
+
+int orangesRotting(vector<vector<int>>& grid) {
+  int m = grid.size(), n = grid[0].size();
+  queue<pair<int, int>> q; // 多源 BFS：所有初始腐烂橘子同时入队
+  int fresh = 0;
+  for (int r = 0; r < m; r++) {
+    for (int c = 0; c < n; c++) {
+      if (grid[r][c] == 2) q.push({r, c});
+      else if (grid[r][c] == 1) fresh++;
+    }
+  }
+  const int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+  int minutes = 0;
+  while (!q.empty() && fresh > 0) {
+    int size = q.size(); // 当前这一层（同一分钟腐烂的橘子）
+    for (int i = 0; i < size; i++) {
+      auto [r, c] = q.front();
+      q.pop();
+      for (const auto& d : dirs) {
+        int nr = r + d[0], nc = c + d[1];
+        if (nr >= 0 && nr < m && nc >= 0 && nc < n && grid[nr][nc] == 1) {
+          grid[nr][nc] = 2; // 感染并充当 visited 标记
+          fresh--;
+          q.push({nr, nc});
+        }
+      }
+    }
+    minutes++; // 每处理完一层，时间过去一分钟
+  }
+  return fresh == 0 ? minutes : -1; // 还有新鲜橘子剩下说明烂不到
+}
 `,
     },
     acm: {
@@ -251,6 +346,59 @@ while queue and fresh > 0:
     minutes += 1
 
 print(minutes if fresh == 0 else -1)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <utility>
+using namespace std;
+
+int main() {
+  int m, n;
+  cin >> m >> n;
+  vector<vector<int>> grid(m, vector<int>(n));
+  for (int i = 0; i < m; i++)
+    for (int j = 0; j < n; j++) cin >> grid[i][j];
+
+  queue<pair<int, int>> q;
+  int fresh = 0;
+  for (int r = 0; r < m; r++) {
+    for (int c = 0; c < n; c++) {
+      if (grid[r][c] == 2) q.push({r, c});
+      else if (grid[r][c] == 1) fresh++;
+    }
+  }
+  const int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+  int minutes = 0;
+  while (!q.empty() && fresh > 0) {
+    int size = q.size();
+    for (int i = 0; i < size; i++) {
+      auto [r, c] = q.front();
+      q.pop();
+      for (const auto& d : dirs) {
+        int nr = r + d[0], nc = c + d[1];
+        if (nr >= 0 && nr < m && nc >= 0 && nc < n && grid[nr][nc] == 1) {
+          grid[nr][nc] = 2;
+          fresh--;
+          q.push({nr, nc});
+        }
+      }
+    }
+    minutes++;
+  }
+  cout << (fresh == 0 ? minutes : -1) << '\\n';
+  return 0;
+}
 `,
     },
   },

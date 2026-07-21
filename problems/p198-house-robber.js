@@ -83,6 +83,26 @@ var rob = function(nums) {
     # 返回不触动警报能偷到的最高金额
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回不触动警报能偷到的最高金额
+int rob(vector<int>& nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -103,6 +123,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print(金额) 输出最高金额
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个非负整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout << 金额 << endl 输出最高金额
+
+    return 0;
+}
 `,
     },
   },
@@ -126,6 +163,31 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
     for x in nums:
         prev2, prev1 = prev1, max(prev1, prev2 + x)  # 不偷取前者，偷取后者
     return prev1
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int rob(vector<int>& nums) {
+    int prev2 = 0; // dp[i-2]：到上上间房屋为止的最高金额
+    int prev1 = 0; // dp[i-1]：到上一间房屋为止的最高金额
+    for (int x : nums) {
+        int cur = max(prev1, prev2 + x); // 不偷取前者，偷取后者
+        prev2 = prev1;
+        prev1 = cur;
+    }
+    return prev1;
+}
 `,
     },
     acm: {
@@ -155,6 +217,28 @@ for x in nums:
     prev2, prev1 = prev1, max(prev1, prev2 + x)
 
 print(prev1)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int prev2 = 0, prev1 = 0;
+    for (int x : nums) {
+        int cur = max(prev1, prev2 + x);
+        prev2 = prev1;
+        prev1 = cur;
+    }
+
+    cout << prev1 << endl;
+    return 0;
+}
 `,
     },
   },

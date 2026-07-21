@@ -101,6 +101,27 @@ var removeNthFromEnd = function(head, n) {
     # head 为链表头节点（ListNode），返回删除后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点，返回删除倒数第 n 个节点后的头节点
+ListNode* removeNthFromEnd(ListNode* head, int n) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -130,6 +151,39 @@ vals = list(map(int, lines[1].split())) if length > 0 else []
 n = int(lines[2])
 
 # 构造链表，删除倒数第 n 个节点后用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 len，第二行 len 个整数，第三行 n
+// 输出：删除后链表各节点的值（空格分隔；空链表输出一个空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* nxt = nullptr) : val(v), next(nxt) {}
+};
+
+int main() {
+    int len, n;
+    cin >> len;
+    vector<int> vals(len);
+    for (int i = 0; i < len; i++) cin >> vals[i];
+    cin >> n;
+
+    // 构造链表
+    ListNode* dummy = new ListNode(0);
+    ListNode* cur = dummy;
+    for (int v : vals) {
+        cur->next = new ListNode(v);
+        cur = cur->next;
+    }
+
+    // 在这里写你的代码：删除倒数第 n 个节点后用 cout 输出结果（空格分隔；空链表输出空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -165,6 +219,34 @@ n = int(lines[2])
         slow = slow.next
     slow.next = slow.next.next
     return dummy.next
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* removeNthFromEnd(ListNode* head, int n) {
+    ListNode dummy(0, head); // 哨兵：统一处理删除头节点的情况
+    ListNode* fast = &dummy;
+    ListNode* slow = &dummy;
+    for (int i = 0; i < n; i++) fast = fast->next; // 拉开 n 步间距
+    while (fast->next != nullptr) { // fast 到尾时，slow 正好在待删节点的前驱
+        fast = fast->next;
+        slow = slow->next;
+    }
+    slow->next = slow->next->next;
+    return dummy.next;
+}
 `,
     },
     acm: {
@@ -235,6 +317,54 @@ while node is not None:
     out.append(str(node.val))
     node = node.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* nxt = nullptr) : val(v), next(nxt) {}
+};
+
+int main() {
+    int len, n;
+    cin >> len;
+    vector<int> vals(len);
+    for (int i = 0; i < len; i++) cin >> vals[i];
+    cin >> n;
+
+    // 构造链表
+    ListNode* dummy = new ListNode(0);
+    ListNode* cur = dummy;
+    for (int v : vals) {
+        cur->next = new ListNode(v);
+        cur = cur->next;
+    }
+
+    // 双指针：fast 先走 n 步，再与 slow 同步走到 fast 为尾节点
+    ListNode* fast = dummy;
+    ListNode* slow = dummy;
+    for (int i = 0; i < n; i++) fast = fast->next;
+    while (fast->next != nullptr) {
+        fast = fast->next;
+        slow = slow->next;
+    }
+    slow->next = slow->next->next;
+
+    // 输出删除后的链表
+    ListNode* node = dummy->next;
+    bool first = true;
+    while (node != nullptr) {
+        if (!first) cout << " ";
+        first = false;
+        cout << node->val;
+        node = node->next;
+    }
+    cout << "\\n";
+    return 0;
+}
 `,
     },
   },

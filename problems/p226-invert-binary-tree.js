@@ -90,6 +90,27 @@ var invertTree = function(root) {
     # root 为二叉树根节点（TreeNode），返回翻转后的根节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+// root 为二叉树根节点，返回翻转后的根节点
+TreeNode* invertTree(TreeNode* root) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -119,6 +140,31 @@ arr = [None if t == 'null' else int(t) for t in tokens]
 
 # 按层序数组 arr 构造二叉树，翻转后按层序输出（null 保留、末尾 null 省略）
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行）
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 按层序标记构造二叉树，翻转后按层序输出（null 保留、末尾 null 省略；空树输出一个空行）
+
+    return 0;
+}
+`,
     },
   },
 
@@ -141,6 +187,30 @@ arr = [None if t == 'null' else int(t) for t in tokens]
     root.left = right   # 交换左右子树
     root.right = left
     return root
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+TreeNode* invertTree(TreeNode* root) {
+    if (root == nullptr) return nullptr;
+    TreeNode* left = invertTree(root->left);   // 先翻转左子树
+    TreeNode* right = invertTree(root->right); // 再翻转右子树
+    root->left = right;  // 交换左右子树
+    root->right = left;
+    return root;
+}
 `,
     },
     acm: {
@@ -247,6 +317,78 @@ if root is not None:
     while out and out[-1] == 'null':
         out.pop()
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 按层序数组构造二叉树
+    TreeNode* root = nullptr;
+    if (!tokens.empty() && tokens[0] != "null") {
+        vector<TreeNode*> nodes(tokens.size(), nullptr);
+        for (size_t i = 0; i < tokens.size(); i++)
+            if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+        size_t j = 1;
+        for (size_t i = 0; i < nodes.size(); i++) {
+            if (nodes[i] == nullptr) continue;
+            if (j < nodes.size()) nodes[i]->left = nodes[j++];
+            if (j < nodes.size()) nodes[i]->right = nodes[j++];
+        }
+        root = nodes[0];
+    }
+
+    // 递归翻转
+    function<TreeNode*(TreeNode*)> invert = [&](TreeNode* node) -> TreeNode* {
+        if (node == nullptr) return nullptr;
+        TreeNode* left = invert(node->left);
+        TreeNode* right = invert(node->right);
+        node->left = right;
+        node->right = left;
+        return node;
+    };
+    invert(root);
+
+    // 层序序列化：中间 null 保留，末尾 null 省略
+    vector<string> out;
+    if (root != nullptr) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            TreeNode* node = q.front();
+            q.pop();
+            if (node == nullptr) {
+                out.push_back("null");
+            } else {
+                out.push_back(to_string(node->val));
+                q.push(node->left);
+                q.push(node->right);
+            }
+        }
+        while (!out.empty() && out.back() == "null") out.pop_back();
+    }
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i) cout << ' ';
+        cout << out[i];
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

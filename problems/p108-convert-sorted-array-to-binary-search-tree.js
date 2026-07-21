@@ -89,6 +89,28 @@ var sortedArrayToBST = function(nums) {
     # 判题环境不提供 TreeNode 类，需要新建节点时在函数内自行定义
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// nums 为升序数组，返回平衡二叉搜索树的根节点
+TreeNode* sortedArrayToBST(vector<int>& nums) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -117,6 +139,32 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 构造平衡二叉搜索树，中序遍历后用 print 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个升序整数（n = 0 时为空行）
+// 输出：你所构造的平衡 BST 的中序遍历（即升序序列），空格分隔；n = 0 时输出空行
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 构造平衡二叉搜索树，中序遍历后用 cout 输出（n = 0 时输出一个空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -155,6 +203,36 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
         return node
 
     return build(0, len(nums) - 1)
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+TreeNode* sortedArrayToBST(vector<int>& nums) {
+    // 把 nums[lo..hi] 建成平衡 BST，返回根节点
+    function<TreeNode*(int, int)> build = [&](int lo, int hi) -> TreeNode* {
+        if (lo > hi) return nullptr;
+        int mid = (lo + hi) / 2; // 中点做根
+        TreeNode* node = new TreeNode(nums[mid]);
+        node->left = build(lo, mid - 1);
+        node->right = build(mid + 1, hi);
+        return node;
+    };
+    return build(0, (int)nums.size() - 1);
+}
 `,
     },
     acm: {
@@ -220,6 +298,54 @@ def inorder(node):
 
 inorder(root)
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 分治建树：中点做根，左右区间分别建左右子树
+    function<TreeNode*(int, int)> build = [&](int lo, int hi) -> TreeNode* {
+        if (lo > hi) return nullptr;
+        int mid = (lo + hi) / 2;
+        TreeNode* node = new TreeNode(nums[mid]);
+        node->left = build(lo, mid - 1);
+        node->right = build(mid + 1, hi);
+        return node;
+    };
+    TreeNode* root = build(0, n - 1);
+
+    // 中序遍历（BST 的中序遍历即升序序列）
+    vector<int> out;
+    function<void(TreeNode*)> inorder = [&](TreeNode* node) {
+        if (node == nullptr) return;
+        inorder(node->left);
+        out.push_back(node->val);
+        inorder(node->right);
+    };
+    inorder(root);
+
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i) cout << ' ';
+        cout << out[i];
+    }
+    cout << '\\n'; // n = 0 时这里输出一个空行
+    return 0;
+}
 `,
     },
   },

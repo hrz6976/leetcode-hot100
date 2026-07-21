@@ -165,6 +165,42 @@ class MinStack:
     def getMin(self):
         pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 设计一个最小栈：push / pop / top / getMin 均为 O(1)
+class MinStack {
+public:
+  MinStack() {
+    // TODO: 在这里实现
+  }
+  void push(int val) {
+    // TODO: 在这里实现
+  }
+  void pop() {
+    // TODO: 在这里实现
+  }
+  int top() {
+    // TODO: 在这里实现
+    return 0;
+  }
+  int getMin() {
+    // TODO: 在这里实现
+    return 0;
+  }
+};
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -226,6 +262,47 @@ for i in range(1, n + 1):
     op = parts[0]
     # 在这里根据 op 分发操作并用 print 输出结果
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n；随后 n 行，每行为 "MinStack" / "push val" / "pop" / "top" / "getMin"
+// 输出：top / getMin 输出返回值，MinStack / push / pop 输出 null
+#include <iostream>
+#include <string>
+using namespace std;
+
+// 设计一个最小栈：push / pop / top / getMin 均为 O(1)
+class MinStack {
+public:
+  MinStack() {
+    // TODO: 在这里实现
+  }
+  void push(int val) {
+    // TODO: 在这里实现
+  }
+  void pop() {
+    // TODO: 在这里实现
+  }
+  int top() {
+    // TODO: 在这里实现
+    return 0;
+  }
+  int getMin() {
+    // TODO: 在这里实现
+    return 0;
+  }
+};
+
+int main() {
+  int n;
+  cin >> n;
+  MinStack* s = nullptr;
+  for (int i = 0; i < n; i++) {
+    string op;
+    cin >> op;
+    // 在这里根据 op 分发操作并用 cout 输出结果
+  }
+  return 0;
+}
+`,
     },
   },
 
@@ -274,6 +351,32 @@ class MinStack:
 
     def getMin(self):
         return self.mins[-1]
+`,
+      cpp: `#include <stack>
+#include <algorithm>
+using namespace std;
+
+// 辅助栈：mins 栈顶记录当前主栈的最小值，与主栈同步 push / pop
+class MinStack {
+  stack<int> s;
+  stack<int> mins;
+public:
+  MinStack() {}
+  void push(int val) {
+    s.push(val);
+    mins.push(mins.empty() ? val : min(mins.top(), val));
+  }
+  void pop() {
+    s.pop();
+    mins.pop();
+  }
+  int top() {
+    return s.top();
+  }
+  int getMin() {
+    return mins.top();
+  }
+};
 `,
     },
     acm: {
@@ -362,6 +465,61 @@ for i in range(1, n + 1):
         print(s.top())
     elif op == 'getMin':
         print(s.getMin())
+`,
+      cpp: `#include <iostream>
+#include <stack>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+// 辅助栈：mins 栈顶记录当前主栈的最小值，与主栈同步 push / pop
+class MinStack {
+  stack<int> s;
+  stack<int> mins;
+public:
+  MinStack() {}
+  void push(int val) {
+    s.push(val);
+    mins.push(mins.empty() ? val : min(mins.top(), val));
+  }
+  void pop() {
+    s.pop();
+    mins.pop();
+  }
+  int top() {
+    return s.top();
+  }
+  int getMin() {
+    return mins.top();
+  }
+};
+
+int main() {
+  int n;
+  cin >> n;
+  MinStack* s = nullptr;
+  for (int i = 0; i < n; i++) {
+    string op;
+    cin >> op;
+    if (op == "MinStack") {
+      s = new MinStack();
+      cout << "null\\n";
+    } else if (op == "push") {
+      int val;
+      cin >> val;
+      s->push(val);
+      cout << "null\\n";
+    } else if (op == "pop") {
+      s->pop();
+      cout << "null\\n";
+    } else if (op == "top") {
+      cout << s->top() << "\\n";
+    } else if (op == "getMin") {
+      cout << s->getMin() << "\\n";
+    }
+  }
+  return 0;
+}
 `,
     },
   },

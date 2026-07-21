@@ -83,6 +83,26 @@ var maxProfit = function(prices) {
     # 返回最大利润（整数）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最大利润（整数）
+int maxProfit(vector<int> prices) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -101,6 +121,22 @@ lines = sys.stdin.read().split('\\n')
 prices = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出最大利润
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> prices(n);
+    for (int i = 0; i < n; i++) cin >> prices[i];
+
+    // TODO: 在这里实现算法，用 cout 输出最大利润
+    return 0;
+}
 `,
     },
   },
@@ -126,6 +162,30 @@ prices = list(map(int, lines[1].split()))
         elif p - min_price > best:
             best = p - min_price
     return best
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int maxProfit(vector<int> prices) {
+    int minPrice = INT_MAX; // 到当前为止的最低价格
+    int best = 0;           // 到当前为止的最大利润
+    for (int p : prices) {
+        if (p < minPrice) minPrice = p;
+        else if (p - minPrice > best) best = p - minPrice;
+    }
+    return best;
+}
 `,
     },
     acm: {
@@ -153,6 +213,27 @@ for p in prices:
     elif p - min_price > best:
         best = p - min_price
 print(best)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> prices(n);
+    for (int i = 0; i < n; i++) cin >> prices[i];
+
+    int minPrice = INT_MAX;
+    int best = 0;
+    for (int p : prices) {
+        if (p < minPrice) minPrice = p;
+        else if (p - minPrice > best) best = p - minPrice;
+    }
+    cout << best << endl;
+    return 0;
+}
 `,
     },
   },

@@ -89,6 +89,26 @@ def max_area(height):
     return best                                  # 返回一路上见过的最大值
 \`\`\`
 
+\`\`\`
+// ===== C++ =====
+int maxArea(vector<int>& height) {
+  int left = 0;                                // 左指针：从最左边的柱子出发
+  int right = (int)height.size() - 1;          // 右指针：从最右边的柱子出发
+  int best = 0;                                // 目前见过的最大水量
+  while (left < right) {                       // 两指针相遇就结束
+    int h = min(height[left], height[right]);  // 水位由较矮的板决定
+    int water = h * (right - left);            // 当前水量 = 水位 × 间距
+    best = max(best, water);                   // 刷新最大水量
+    if (height[left] < height[right]) {        // 比较两边谁矮
+      left++;                                  // 左矮：淘汰左板，left 右移一位
+    } else {
+      right--;                                 // 右矮（或一样高）：淘汰右板，right 左移一位
+    }
+  }
+  return best;                                 // 返回一路上见过的最大值
+}
+\`\`\`
+
 快慢指针模板（以 283. 移动零为例：fast 负责「读」每个元素，slow 负责「写」下一个非零元素该站的位置）：
 
 \`\`\`
@@ -112,6 +132,19 @@ def move_zeroes(nums):
         if nums[fast] != 0:                      # 读到非零元素
             nums[slow], nums[fast] = nums[fast], nums[slow]  # 交换到 slow 处
             slow += 1                            # 写位置前进一步
+\`\`\`
+
+\`\`\`
+// C++：原地修改，结束后 slow 左侧是保持原顺序的全部非零元素
+void moveZeroes(vector<int>& nums) {
+  int slow = 0;                                // 写指针：下一个非零数该放的位置
+  for (int fast = 0; fast < (int)nums.size(); fast++) {  // 读指针：扫遍每个元素
+    if (nums[fast] != 0) {                     // 读到非零元素
+      swap(nums[slow], nums[fast]);            // 交换到 slow 处
+      slow++;                                  // 写位置前进一步
+    }
+  }
+}
 \`\`\`
 
 分离指针模板（合并两个升序数组：各放一个指针，谁小谁进结果、谁前进）：
@@ -147,6 +180,26 @@ def merge(a, b):
             res.append(b[j])               # b 的当前元素更小
             j += 1                         # b 的指针前进一步
     return res + a[i:] + b[j:]             # 有一边先扫完，把另一边的剩余整段接上
+\`\`\`
+
+\`\`\`
+// C++
+vector<int> merge(vector<int>& a, vector<int>& b) {
+  vector<int> res;                             // 存放合并结果
+  int i = 0, j = 0;                            // i 扫 a，j 扫 b
+  while (i < (int)a.size() && j < (int)b.size()) {  // 两边都没扫完就继续比
+    if (a[i] <= b[j]) {                        // a 的当前元素更小（或相等）
+      res.push_back(a[i]);                     // 小的先进结果
+      i++;                                     // a 的指针前进一步
+    } else {
+      res.push_back(b[j]);                     // b 的当前元素更小
+      j++;                                     // b 的指针前进一步
+    }
+  }
+  res.insert(res.end(), a.begin() + i, a.end());  // 有一边先扫完，把另一边的剩余整段接上
+  res.insert(res.end(), b.begin() + j, b.end());
+  return res;
+}
 \`\`\`
 
 ### 亲手跑一跑
@@ -193,7 +246,35 @@ while left < right:                 # 两指针相遇就结束
 print('两指针相遇, 结束。最大水量 = ' + str(best))
 \`\`\`
 
-预期输出（两种语言逐字一致）：
+\`\`\`run-cpp#container-walkthrough
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+int main() {
+  vector<int> height = {1, 8, 6, 2, 5};
+  int left = 0;                        // 左指针从第 0 根柱出发
+  int right = (int)height.size() - 1;  // 右指针从最后一根柱出发
+  int best = 0;                        // 目前见过的最大水量
+  int rd = 1;
+  while (left < right) {               // 两指针相遇就结束
+    int h = min(height[left], height[right]);
+    int water = h * (right - left);    // 水量 = 较矮板 × 间距
+    if (water > best) best = water;
+    string move = height[left] < height[right] ? "左边矮, left 右移" : "右边矮, right 左移";
+    cout << "第" << rd << "轮: left=" << left << " (高" << height[left] << "), right=" << right << " (高" << height[right] << "), 水量=" << water << ", " << move << "\\n";
+    if (height[left] < height[right]) left++;
+    else right--;
+    rd++;
+  }
+  cout << "两指针相遇, 结束。最大水量 = " << best << "\\n";
+  return 0;
+}
+\`\`\`
+
+预期输出（三种语言逐字一致）：
 
 \`\`\`
 第1轮: left=0 (高1), right=4 (高5), 水量=4, 左边矮, left 右移

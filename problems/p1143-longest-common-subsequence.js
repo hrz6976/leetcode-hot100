@@ -88,6 +88,26 @@ var longestCommonSubsequence = function(text1, text2) {
     # 返回两个字符串的最长公共子序列长度
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回两个字符串的最长公共子序列长度
+int longestCommonSubsequence(string text1, string text2) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -110,6 +130,25 @@ text1 = lines[0]
 text2 = lines[1] if len(lines) > 1 else ''
 
 # 在这里写你的代码，用 print 输出最长公共子序列的长度
+`,
+      cpp: `// ACM 模式：用 cin/getline 读输入，用 cout 输出答案
+// 输入格式：第一行为 text1，第二行为 text2
+// 注意：不要对整个输入 trim，应按行读取
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    string text1, text2;
+    getline(cin, text1);
+    getline(cin, text2);
+
+    // TODO: 在这里实现，用 cout 输出最长公共子序列的长度
+
+    return 0;
+}
 `,
     },
   },
@@ -143,6 +182,36 @@ text2 = lines[1] if len(lines) > 1 else ''
             else:
                 dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])  # 舍弃一侧末位取较优
     return dp[m][n]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int longestCommonSubsequence(string text1, string text2) {
+    int m = text1.size(), n = text2.size();
+    // dp[i][j]：text1 前 i 个字符与 text2 前 j 个字符的最长公共子序列长度
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (text1[i - 1] == text2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1; // 末位相同，接在子问题答案后面
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]); // 舍弃一侧末位取较优
+            }
+        }
+    }
+    return dp[m][n];
+}
 `,
     },
     acm: {
@@ -181,6 +250,33 @@ for i in range(1, m + 1):
             dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
 
 print(dp[m][n])
+`,
+      cpp: `// 不要对整个输入 trim，按行读取
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    string text1, text2;
+    getline(cin, text1);
+    getline(cin, text2);
+
+    int m = text1.size(), n = text2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (text1[i - 1] == text2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    cout << dp[m][n] << endl;
+    return 0;
+}
 `,
     },
   },

@@ -86,6 +86,26 @@ var subarraySum = function(nums, k) {
     # 返回和为 k 的连续子数组个数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回和为 k 的连续子数组个数
+int subarraySum(vector<int>& nums, int k) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -106,6 +126,36 @@ nums = list(map(int, lines[1].split()))
 k = int(lines[2])
 
 # 在这里写你的代码，用 print(答案) 输出子数组个数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    // 在这里写你的代码，用 cout << 答案 输出子数组个数
+
+    return 0;
+}
 `,
     },
   },
@@ -133,6 +183,32 @@ k = int(lines[2])
         ans += count.get(pre - k, 0)  # 先查
         count[pre] = count.get(pre, 0) + 1  # 后存
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int subarraySum(vector<int>& nums, int k) {
+  unordered_map<int, int> count;
+  count[0] = 1; // 空前缀和为 0 出现过一次
+  int pre = 0, ans = 0;
+  for (int x : nums) {
+    pre += x;
+    ans += count[pre - k]; // 先查
+    count[pre]++;          // 后存
+  }
+  return ans;
+}
 `,
     },
     acm: {
@@ -164,6 +240,41 @@ for x in nums:
     ans += count.get(pre - k, 0)
     count[pre] = count.get(pre, 0) + 1
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+  int k;
+  cin >> k;
+
+  unordered_map<int, int> count;
+  count[0] = 1;
+  int pre = 0, ans = 0;
+  for (int x : nums) {
+    pre += x;
+    ans += count[pre - k];
+    count[pre]++;
+  }
+  cout << ans << '\\n';
+  return 0;
+}
 `,
     },
   },

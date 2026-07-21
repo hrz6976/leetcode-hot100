@@ -85,6 +85,26 @@ var topKFrequent = function(nums, k) {
     # 返回前 k 个高频元素组成的列表（顺序任意）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回前 k 个高频元素（返回顺序任意）
+vector<int> topKFrequent(vector<int>& nums, int k) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -109,6 +129,37 @@ k = int(lines[2])
 
 # 在这里写你的代码，把前 k 个高频元素用空格拼接后输出
 # 输出约定：按频率降序排列，频率相同时按元素值升序排列
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    // 在这里写你的代码，把前 k 个高频元素用空格拼接后输出
+    // 输出约定：按频率降序排列，频率相同时按元素值升序排列
+
+    return 0;
+}
 `,
     },
   },
@@ -153,6 +204,36 @@ k = int(lines[2])
         f -= 1
     return ans
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> topKFrequent(vector<int>& nums, int k) {
+  unordered_map<int, int> cnt; // 元素 -> 出现次数
+  for (int x : nums) cnt[x]++;
+  // 桶排序：buckets[f] 存放所有出现 f 次的元素
+  vector<vector<int>> buckets(nums.size() + 1);
+  for (const auto& [num, c] : cnt) buckets[c].push_back(num);
+  vector<int> ans;
+  for (int f = (int)buckets.size() - 1; f >= 0 && (int)ans.size() < k; f--) {
+    for (int num : buckets[f]) {
+      ans.push_back(num);
+      if ((int)ans.size() == k) break;
+    }
+  }
+  return ans;
+}
+`,
     },
     acm: {
       javascript: `const lines = input.trim().split('\\n');
@@ -180,6 +261,45 @@ cnt = Counter(nums)
 # 输出约定：按频率降序，频率相同时按元素值升序
 items = sorted(cnt.items(), key=lambda kv: (-kv[1], kv[0]))
 print(' '.join(str(num) for num, _ in items[:k]))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <utility>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+  int k;
+  cin >> k;
+
+  unordered_map<int, int> cnt; // 元素 -> 出现次数
+  for (int x : nums) cnt[x]++;
+  // 输出约定：按频率降序，频率相同时按元素值升序
+  vector<pair<int, int>> items(cnt.begin(), cnt.end());
+  sort(items.begin(), items.end(), [](const pair<int, int>& a, const pair<int, int>& b) {
+    return a.second != b.second ? a.second > b.second : a.first < b.first;
+  });
+  for (int i = 0; i < k; i++) {
+    if (i) cout << ' ';
+    cout << items[i].first;
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

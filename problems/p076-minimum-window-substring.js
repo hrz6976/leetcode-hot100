@@ -85,6 +85,26 @@ var minWindow = function(s, t) {
     # 返回 s 中涵盖 t 所有字符的最小子串，无解返回空串
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+string minWindow(string s, string t) {
+    // 返回 s 中涵盖 t 所有字符的最小子串，无解返回空串
+    // TODO: 在这里实现
+    return "";
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -105,6 +125,23 @@ s = lines[0]
 t = lines[1]
 
 # 在这里写你的代码，用 print 输出最小覆盖子串（无解输出空行）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 s，第二行 t（均不含空格）
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    string s, t;
+    getline(cin, s);
+    getline(cin, t);
+
+    // 在这里写你的代码，用 cout 输出最小覆盖子串（无解输出空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -165,6 +202,49 @@ t = lines[1]
                     missing += 1  # d 从富余变成缺失
             left += 1
     return '' if min_len == len(s) + 1 else s[start:start + min_len]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+string minWindow(string s, string t) {
+    unordered_map<char, int> need; // 字符 -> 窗口还缺几个
+    for (char ch : t) need[ch]++;
+    int missing = (int)t.size(); // 窗口总共还缺多少个字符（含重复计数）
+    int start = 0;
+    int minLen = INT_MAX;
+    int left = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char c = s[right];
+        if (need.count(c)) {
+            if (need[c] > 0) missing--; // 真正补上了一个缺口
+            need[c]--;
+        }
+        while (missing == 0) { // 窗口已覆盖 t，尝试收缩左边界
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                start = left;
+            }
+            char d = s[left];
+            if (need.count(d)) {
+                need[d]++;
+                if (need[d] > 0) missing++; // d 从富余变成缺失
+            }
+            left++;
+        }
+    }
+    return minLen == INT_MAX ? "" : s.substr(start, minLen);
+}
 `,
     },
     acm: {
@@ -229,6 +309,46 @@ for right in range(len(s)):
                 missing += 1
         left += 1
 print('' if min_len == len(s) + 1 else s[start:start + min_len])
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <climits>
+using namespace std;
+
+int main() {
+    string s, t;
+    getline(cin, s);
+    getline(cin, t);
+
+    unordered_map<char, int> need;
+    for (char ch : t) need[ch]++;
+    int missing = (int)t.size();
+    int start = 0;
+    int minLen = INT_MAX;
+    int left = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char c = s[right];
+        if (need.count(c)) {
+            if (need[c] > 0) missing--;
+            need[c]--;
+        }
+        while (missing == 0) {
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                start = left;
+            }
+            char d = s[left];
+            if (need.count(d)) {
+                need[d]++;
+                if (need[d] > 0) missing++;
+            }
+            left++;
+        }
+    }
+    cout << (minLen == INT_MAX ? "" : s.substr(start, minLen)) << "\\n";
+    return 0;
+}
 `,
     },
   },

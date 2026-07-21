@@ -83,6 +83,26 @@ var lengthOfLongestSubstring = function(s) {
     # 返回最长无重复字符子串的长度
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最长无重复字符子串的长度
+int lengthOfLongestSubstring(string s) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -101,6 +121,22 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print 输出答案
+`,
+      cpp: `// ACM 模式：用 cin/cout 读写标准输入输出
+// 输入格式：仅一行，即字符串 s（空串时为空行）
+// 注意：必须用 getline 读取整行；cin >> s 在空串用例下会读取失败
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // 在这里写你的代码，用 cout 输出答案
+
+    return 0;
+}
 `,
     },
   },
@@ -136,6 +172,37 @@ s = sys.stdin.read().split('\\n')[0]
         best = max(best, right - left + 1)
     return best
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int lengthOfLongestSubstring(string s) {
+    unordered_map<char, int> last; // 字符 -> 最近一次出现的下标
+    int left = 0; // 窗口左边界
+    int best = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char ch = s[right];
+        // ch 在窗口内出现过：左边界跳到它上次出现位置的右边
+        auto it = last.find(ch);
+        if (it != last.end() && it->second >= left) {
+            left = it->second + 1;
+        }
+        last[ch] = right;
+        best = max(best, right - left + 1);
+    }
+    return best;
+}
+`,
     },
     acm: {
       javascript: `// 不要对整个 input 用 trim()，否则空串用例会被吞掉
@@ -169,6 +236,33 @@ for right, ch in enumerate(s):
     last[ch] = right
     best = max(best, right - left + 1)
 print(best)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // 必须用 getline 读取整行，空串用例只有空行
+    string s;
+    getline(cin, s);
+
+    unordered_map<char, int> last; // 字符 -> 最近一次出现的下标
+    int left = 0;
+    int best = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char ch = s[right];
+        auto it = last.find(ch);
+        if (it != last.end() && it->second >= left) {
+            left = it->second + 1;
+        }
+        last[ch] = right;
+        best = max(best, right - left + 1);
+    }
+    cout << best << endl;
+    return 0;
+}
 `,
     },
   },

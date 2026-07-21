@@ -90,6 +90,26 @@ var searchRange = function(nums, target) {
     # 返回 [开始位置, 结束位置]，不存在返回 [-1, -1]
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回 {开始位置, 结束位置}，不存在返回 {-1, -1}
+vector<int> searchRange(vector<int>& nums, int target) {
+  // TODO: 在这里实现
+  return {-1, -1};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,30 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
 target = int(lines[2])
 
 # 在这里写你的代码，用 print(a, b) 输出两个下标
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行），第三行 target
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+  string line;
+  getline(cin, line); // 第一行：n
+  getline(cin, line); // 第二行：n 个整数（n = 0 时为空行）
+  istringstream iss(line);
+  vector<int> nums;
+  for (int v; iss >> v;) nums.push_back(v);
+  int target;
+  cin >> target;
+
+  // 在这里写你的代码，用 cout 输出两个下标（空格分隔）
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -161,6 +205,43 @@ target = int(lines[2])
         else:
             hi = mid
     return [left, lo - 1]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> searchRange(vector<int>& nums, int target) {
+  int n = nums.size();
+  // 第一次二分：找第一个 >= target 的位置（左边界）
+  int lo = 0;
+  int hi = n;
+  while (lo < hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  int left = lo;
+  if (left == n || nums[left] != target) return {-1, -1};
+  // 第二次二分：找第一个 > target 的位置，减一即右边界
+  lo = left;
+  hi = n;
+  while (lo < hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] <= target) lo = mid + 1;
+    else hi = mid;
+  }
+  return {left, lo - 1};
+}
 `,
     },
     acm: {
@@ -220,6 +301,48 @@ else:
         else:
             hi = mid
     print(left, lo - 1)
+`,
+      cpp: `#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+  string line;
+  getline(cin, line); // 第一行：n
+  getline(cin, line); // 第二行：n 个整数（n = 0 时为空行）
+  istringstream iss(line);
+  vector<int> nums;
+  for (int v; iss >> v;) nums.push_back(v);
+  int target;
+  cin >> target;
+  int n = nums.size();
+
+  // 第一次二分：找第一个 >= target 的位置（左边界）
+  int lo = 0;
+  int hi = n;
+  while (lo < hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  int left = lo;
+  if (left == n || nums[left] != target) {
+    cout << -1 << ' ' << -1 << '\\n';
+  } else {
+    // 第二次二分：找第一个 > target 的位置，减一即右边界
+    lo = left;
+    hi = n;
+    while (lo < hi) {
+      int mid = (lo + hi) / 2;
+      if (nums[mid] <= target) lo = mid + 1;
+      else hi = mid;
+    }
+    cout << left << ' ' << lo - 1 << '\\n';
+  }
+  return 0;
+}
 `,
     },
   },

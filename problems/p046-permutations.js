@@ -89,6 +89,26 @@ var permute = function(nums) {
     # 返回所有全排列组成的二维列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有全排列组成的二维数组
+vector<vector<int>> permute(vector<int> nums) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -111,6 +131,24 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，逐行 print 每个排列（输出前记得按字典序排序）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个互不相同的整数
+// 输出格式：每个排列一行（空格分隔），各行按字典序升序排列
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，逐行 cout 每个排列（输出前记得按字典序排序）
+
+    return 0;
+}
 `,
     },
   },
@@ -159,6 +197,32 @@ nums = list(map(int, lines[1].split()))
 
     backtrack()
     return res
+`,
+      cpp: `#include <vector>
+#include <functional>
+using namespace std;
+
+vector<vector<int>> permute(vector<int> nums) {
+    vector<vector<int>> res;
+    vector<int> path;
+    vector<bool> used(nums.size(), false);
+    function<void()> backtrack = [&]() {
+        if (path.size() == nums.size()) {
+            res.push_back(path); // 拷贝一份当前排列
+            return;
+        }
+        for (int i = 0; i < (int)nums.size(); i++) {
+            if (used[i]) continue;
+            used[i] = true;         // 选择 nums[i]
+            path.push_back(nums[i]);
+            backtrack();
+            path.pop_back();        // 撤销选择
+            used[i] = false;
+        }
+    };
+    backtrack();
+    return res;
+}
 `,
     },
     acm: {
@@ -224,6 +288,49 @@ backtrack()
 res.sort()  # 列表比较天然是逐元素字典序
 for p in res:
     print(' '.join(map(str, p)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <functional>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    vector<vector<int>> res;
+    vector<int> path;
+    vector<bool> used(n, false);
+    function<void()> backtrack = [&]() {
+        if (path.size() == nums.size()) {
+            res.push_back(path);
+            return;
+        }
+        for (int i = 0; i < n; i++) {
+            if (used[i]) continue;
+            used[i] = true;
+            path.push_back(nums[i]);
+            backtrack();
+            path.pop_back();
+            used[i] = false;
+        }
+    };
+    backtrack();
+
+    // vector 的比较天然是逐元素字典序
+    sort(res.begin(), res.end());
+    for (const vector<int>& p : res) {
+        for (int i = 0; i < n; i++) {
+            if (i) cout << ' ';
+            cout << p[i];
+        }
+        cout << '\\n';
+    }
+    return 0;
+}
 `,
     },
   },

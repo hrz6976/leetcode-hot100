@@ -1,5 +1,5 @@
 // 极简 Markdown 渲染，支持的语法：
-// - ``` 代码块（首行可带语言标记：js/python/run/run-js/run-py；可运行块用 #id 提供稳定 ID）
+// - ``` 代码块（首行可带语言标记：js/python/cpp/run/run-js/run-py/run-cpp；可运行块用 #id 提供稳定 ID）
 // - `行内代码`、**加粗**、### 标题、- 列表、空行分段
 // - | 表格 |（第二行 --- 分隔）
 // - > 提示框（首词为 注意/提示/重点/例子 时着色，否则默认样式）
@@ -25,6 +25,13 @@ function detectLang(code) {
   if (!first) return '';
   if (/^\/\/\s*(javascript|js)\b/i.test(first)) return 'javascript';
   if (/^#\s*python\b/i.test(first)) return 'python';
+  if (/^\/\/\s*(c\+\+|cpp)(?![a-z])/i.test(first)) return 'cpp';
+  // 注释里仅提 C++（未提 JavaScript）也视为 C++，如 "// ===== C++ ====="
+  if (/^\/\/.*(c\+\+|\bcpp\b)/i.test(first) && !/javascript|\bjs\b/i.test(first)) return 'cpp';
+  // C++ 特征（须在 JS 之前判断：// 注释与行尾 { 与 JS 撞车）
+  if (first.startsWith('#include')) return 'cpp';
+  if (/\bstd::/.test(first)) return 'cpp';
+  if (/^(int|void|auto|template|using)\b.*[({;]/.test(first) && /\b(main|namespace)\b|>>?/.test(first)) return 'cpp';
   // JS 特征：// 注释、function/const/let/var/new、class X {、行尾 {
   if (first.startsWith('//')) return 'javascript';
   if (/\b(function|const|let|var|new)\b/.test(first)) return 'javascript';
@@ -89,13 +96,15 @@ export function md(src) {
       const code = rawCode.replace(/\n$/, '');
       let lang = '';
       let run = '';
-      if (info === 'run' || info === 'run-js' || info === 'run-py') {
-        lang = info === 'run-js' ? 'javascript' : info === 'run-py' ? 'python' : detectLang(code);
+      if (info === 'run' || info === 'run-js' || info === 'run-py' || info === 'run-cpp') {
+        lang = info === 'run-js' ? 'javascript' : info === 'run-py' ? 'python' : info === 'run-cpp' ? 'cpp' : detectLang(code);
         run = lang || 'javascript';
       } else if (info === 'js' || info === 'javascript') {
         lang = 'javascript';
       } else if (info === 'py' || info === 'python') {
         lang = 'python';
+      } else if (info === 'cpp' || info === 'c++') {
+        lang = 'cpp';
       } else {
         lang = detectLang(code);
       }

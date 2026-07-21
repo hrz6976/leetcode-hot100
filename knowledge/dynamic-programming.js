@@ -105,6 +105,22 @@ def climbStairs(n):
     return dp[n]                       # 答案存在最后一格
 \`\`\`
 
+C++ 版本：
+
+\`\`\`cpp
+// C++：爬楼梯（LeetCode 70）
+int climbStairs(int n) {
+    if (n <= 2) return n;              // 1 阶或 2 阶时答案就是 n，直接返回
+    vector<int> dp(n + 1, 0);          // 开 n+1 格，让下标 i 直接对应第 i 阶
+    dp[1] = 1;                         // 初始值①：到第 1 阶只有 1 种走法
+    dp[2] = 2;                         // 初始值②：到第 2 阶有 2 种走法
+    for (int i = 3; i <= n; i++) {     // 从小到大填表：后面只依赖前面
+        dp[i] = dp[i - 1] + dp[i - 2]; // 转移方程：最后一步迈 1 级 or 迈 2 级
+    }
+    return dp[n];                      // 答案存在最后一格
+}
+\`\`\`
+
 两个细节值得记住：
 
 - 数组开 \`n + 1\` 而不是 \`n\`，是为了让下标 i 正好对应第 i 阶，少一层脑内换算，\`dp[0]\` 空着不用
@@ -152,7 +168,34 @@ ans = climbStairs(5)
 print('爬到第 5 阶共有 ' + str(ans) + ' 种走法')
 \`\`\`
 
-两个版本输出一致：
+C++：
+
+\`\`\`run-cpp#climbing-stairs-table
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int climbStairs(int n) {
+    vector<int> dp(n + 1, 0);
+    dp[1] = 1;
+    dp[2] = 2;
+    cout << "dp[1] = 1（初始值：只能迈 1 级，1 种走法）" << endl;
+    cout << "dp[2] = 2（初始值：1+1 或直接迈 2 级，2 种走法）" << endl;
+    for (int i = 3; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+        cout << "dp[" << i << "] = dp[" << (i - 1) << "] + dp[" << (i - 2) << "] = " << dp[i - 1] << " + " << dp[i - 2] << " = " << dp[i] << endl;
+    }
+    return dp[n];
+}
+
+int main() {
+    int ans = climbStairs(5);
+    cout << "爬到第 5 阶共有 " << ans << " 种走法" << endl;
+    return 0;
+}
+\`\`\`
+
+三个版本输出一致：
 
 \`\`\`
 dp[1] = 1（初始值：只能迈 1 级，1 种走法）

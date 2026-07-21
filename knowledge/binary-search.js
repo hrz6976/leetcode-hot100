@@ -95,6 +95,28 @@ def search(nums, target):
     return -1                   # 区间被掏空了：目标不存在
 \`\`\`
 
+C++ 版本（逻辑一模一样）：
+
+\`\`\`cpp
+// C++
+int search(vector<int>& nums, int target) {
+    int left = 0;                     // 左边界：从数组开头开始
+    int right = (int)nums.size() - 1; // 右边界：从数组末尾开始
+    while (left <= right) {           // 闭区间：只剩 1 个元素时也要看
+        int mid = (left + right) / 2; // int 除法自动向下取整
+        if (nums[mid] == target) {    // 正中间恰好是目标
+            return mid;               // 直接把下标交出去
+        }
+        if (nums[mid] < target) {     // 中间的太小 -> 目标在右半边
+            left = mid + 1;           // mid 已经排除，+1 跳过它
+        } else {                      // 中间的太大 -> 目标在左半边
+            right = mid - 1;          // 同理，-1 跳过 mid
+        }
+    }
+    return -1;                        // 区间被掏空了：目标不存在
+}
+\`\`\`
+
 写法二：「找边界」，比如找**第一个大于等于 target** 的位置（34 题求左右边界就靠它，这类函数常叫 lowerBound）。循环条件变成 left < right，结束时 left 和 right 重合在那个位置，它就是答案。关键差别：判定成立时令 right = mid——**mid 本身可能就是答案，不能排除它**：
 
 \`\`\`
@@ -121,6 +143,19 @@ def lower_bound(nums, target):
         else:
             left = mid + 1       # mid 一定不是答案，排除
     return left                  # 循环结束 left == right，就是答案
+\`\`\`
+
+\`\`\`cpp
+// C++
+int lowerBound(vector<int>& nums, int target) {
+    int left = 0, right = (int)nums.size();  // right 可以取到 n：表示「全都比 target 小」
+    while (left < right) {             // 区间只剩 1 个元素时停下来
+        int mid = (left + right) / 2;
+        if (nums[mid] >= target) right = mid;  // mid 可能是答案，留在区间里
+        else left = mid + 1;                   // mid 一定不是答案，排除
+    }
+    return left;                       // 循环结束 left == right，就是答案
+}
 \`\`\`
 
 > 注意：写法二里**绝对不能写 left = mid**。区间只剩 2 个元素时，向下取整的 mid 恰好等于 left，left 原地不动，死循环。口诀：right 可以等于 mid（它可能是答案），left 永远是 mid + 1。两套模板别混着改，选中一套背熟。
@@ -176,6 +211,35 @@ while left <= right:
     else:
         print(f'  {nums[mid]} > {target}，右半边全扔掉，right 改为 {mid - 1}')
         right = mid - 1
+\`\`\`
+
+C++：
+
+\`\`\`run-cpp#binary-search-walkthrough
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> nums = {1, 3, 5, 7, 9, 11};
+    int target = 7;
+    int left = 0, right = (int)nums.size() - 1;
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        cout << "区间 [" << left << "," << right << "]  mid=" << mid << "  nums[mid]=" << nums[mid] << endl;
+        if (nums[mid] == target) {
+            cout << "命中！目标 7 在下标 " << mid << endl;
+            break;
+        } else if (nums[mid] < target) {
+            cout << "  " << nums[mid] << " < " << target << "，左半边全扔掉，left 改为 " << mid + 1 << endl;
+            left = mid + 1;
+        } else {
+            cout << "  " << nums[mid] << " > " << target << "，右半边全扔掉，right 改为 " << mid - 1 << endl;
+            right = mid - 1;
+        }
+    }
+    return 0;
+}
 \`\`\`
 
 实际运行输出：

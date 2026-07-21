@@ -91,6 +91,26 @@ var merge = function(intervals) {
     # 返回合并后的区间列表（按左端点升序）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<vector<int>> merge(vector<vector<int>>& intervals) {
+    // 返回合并后的区间列表（按左端点升序）
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +134,23 @@ n = int(lines[0])
 intervals = [list(map(int, lines[i].split())) for i in range(1, n + 1)]
 
 # 在这里写你的代码，每个合并后的区间用 print(l, r) 输出一行（按左端点升序）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，随后 n 行每行两个整数（区间左右端点，空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> intervals(n, vector<int>(2));
+    for (int i = 0; i < n; i++) cin >> intervals[i][0] >> intervals[i][1];
+
+    // 在这里写你的代码，每个合并后的区间用 cout << l << " " << r << "\\n" 输出一行（按左端点升序）
+
+    return 0;
+}
 `,
     },
   },
@@ -149,6 +186,37 @@ intervals = [list(map(int, lines[i].split())) for i in range(1, n + 1)]
             # 不重叠，直接追加
             ans.append([l, r])
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<vector<int>> merge(vector<vector<int>>& intervals) {
+    // 按左端点排序，保证重叠的区间彼此相邻
+    sort(intervals.begin(), intervals.end(),
+         [](const vector<int>& a, const vector<int>& b) { return a[0] < b[0]; });
+    vector<vector<int>> ans;
+    for (auto& cur : intervals) {
+        if (!ans.empty() && cur[0] <= ans.back()[1]) {
+            // 与最后一个区间重叠（或相接），合并：右端点取较大者
+            ans.back()[1] = max(ans.back()[1], cur[1]);
+        } else {
+            // 不重叠，直接追加
+            ans.push_back(cur);
+        }
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -192,6 +260,33 @@ for l, r in intervals:
 
 for l, r in ans:
     print(l, r)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> intervals(n, vector<int>(2));
+    for (int i = 0; i < n; i++) cin >> intervals[i][0] >> intervals[i][1];
+
+    // 按左端点排序后扫描合并
+    sort(intervals.begin(), intervals.end(),
+         [](const vector<int>& a, const vector<int>& b) { return a[0] < b[0]; });
+    vector<vector<int>> ans;
+    for (auto& cur : intervals) {
+        if (!ans.empty() && cur[0] <= ans.back()[1]) {
+            ans.back()[1] = max(ans.back()[1], cur[1]);
+        } else {
+            ans.push_back(cur);
+        }
+    }
+
+    for (auto& p : ans) cout << p[0] << " " << p[1] << "\\n";
+    return 0;
+}
 `,
     },
   },

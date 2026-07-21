@@ -95,6 +95,18 @@ var lowestCommonAncestor = function(root, p, q) {
     # p、q 为树中一定存在的两个节点，返回它们的最近公共祖先节点
     pass
 `,
+      cpp: `#include <vector>
+#include <queue>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// p、q 为树中一定存在的两个节点，返回它们的最近公共祖先节点
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -128,6 +140,33 @@ q_val = int(lines[3])
 # 将层序标记构造成二叉树（TreeNode），按值找到 p、q 两个节点，
 # 求最近公共祖先后用 print 输出它的值
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序），第三行 p 的值，第四行 q 的值
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    int pVal, qVal;
+    cin >> pVal >> qVal;
+
+    // 将层序标记构造成二叉树（TreeNode），按值找到 p、q 两个节点，
+    // 求最近公共祖先后用 cout 输出它的值
+    return 0;
+}
+`,
     },
   },
 
@@ -151,6 +190,21 @@ q_val = int(lines[3])
     if left is not None and right is not None:
         return root  # p、q 分居两侧，当前节点即 LCA
     return left if left is not None else right  # 否则把非空的一侧结果向上传递
+`,
+      cpp: `#include <vector>
+#include <queue>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+    // 后序遍历：空节点、或遇到 p / q 本身时直接返回当前节点
+    if (root == nullptr || root == p || root == q) return root;
+    TreeNode* left = lowestCommonAncestor(root->left, p, q);   // 左子树中找到的节点
+    TreeNode* right = lowestCommonAncestor(root->right, p, q); // 右子树中找到的节点
+    if (left != nullptr && right != nullptr) return root;      // p、q 分居两侧，当前节点即 LCA
+    return left != nullptr ? left : right;                     // 否则把非空的一侧结果向上传递
+}
 `,
     },
     acm: {
@@ -247,6 +301,65 @@ def lca(root, p, q):
 root = build_tree(arr)
 ans = lca(root, find(root, p_val), find(root, q_val))
 print(ans.val if ans is not None else None)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+// 层序标记构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (!nodes[i]) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+// 按值查找节点（题目保证值唯一且存在）
+TreeNode* findNode(TreeNode* root, int val) {
+    if (root == nullptr) return nullptr;
+    if (root->val == val) return root;
+    TreeNode* left = findNode(root->left, val);
+    return left != nullptr ? left : findNode(root->right, val);
+}
+
+// 后序遍历求最近公共祖先
+TreeNode* lca(TreeNode* root, TreeNode* p, TreeNode* q) {
+    if (root == nullptr || root == p || root == q) return root;
+    TreeNode* left = lca(root->left, p, q);
+    TreeNode* right = lca(root->right, p, q);
+    if (left != nullptr && right != nullptr) return root;
+    return left != nullptr ? left : right;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    int pVal, qVal;
+    cin >> pVal >> qVal;
+
+    TreeNode* root = buildTree(tokens);
+    TreeNode* ans = lca(root, findNode(root, pVal), findNode(root, qVal));
+    if (ans != nullptr) cout << ans->val << endl;
+    else cout << "null" << endl;
+    return 0;
+}
 `,
     },
   },

@@ -87,6 +87,26 @@ var findKthLargest = function(nums, k) {
     # 返回数组中第 k 大的元素
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回数组中第 k 大的元素
+int findKthLargest(vector<int> nums, int k) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -109,6 +129,25 @@ nums = list(map(int, lines[1].split()))
 k = int(lines[2])
 
 # 在这里写你的代码，用 print 输出第 k 大的元素
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    // 在这里写你的代码，用 cout 输出第 k 大的元素
+
+    return 0;
+}
 `,
     },
   },
@@ -167,6 +206,44 @@ k = int(lines[2])
             lo = p + 1
         else:
             hi = p - 1
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int findKthLargest(vector<int> nums, int k) {
+    // 第 k 大 = 升序排序后下标为 n - k 的元素
+    int target = (int)nums.size() - k;
+    int lo = 0, hi = (int)nums.size() - 1;
+    while (true) {
+        // Lomuto 分区：中间元素作 pivot 换到末尾
+        int mid = (lo + hi) / 2;
+        swap(nums[mid], nums[hi]);
+        int pivot = nums[hi];
+        int i = lo; // i 左侧都是小于 pivot 的元素
+        for (int j = lo; j < hi; j++) {
+            if (nums[j] < pivot) {
+                swap(nums[i], nums[j]);
+                i++;
+            }
+        }
+        swap(nums[i], nums[hi]);
+        int p = i; // pivot 的最终位置
+        if (p == target) return nums[p];
+        if (p < target) lo = p + 1;
+        else hi = p - 1;
+    }
+}
 `,
     },
     acm: {
@@ -233,6 +310,45 @@ while True:
         lo = p + 1
     else:
         hi = p - 1
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    // 快速选择：第 k 大 = 升序排序后下标为 n - k 的元素
+    int target = n - k;
+    int lo = 0, hi = n - 1;
+    while (true) {
+        int mid = (lo + hi) / 2;
+        swap(nums[mid], nums[hi]);
+        int pivot = nums[hi];
+        int i = lo;
+        for (int j = lo; j < hi; j++) {
+            if (nums[j] < pivot) {
+                swap(nums[i], nums[j]);
+                i++;
+            }
+        }
+        swap(nums[i], nums[hi]);
+        int p = i;
+        if (p == target) {
+            cout << nums[p] << endl;
+            break;
+        }
+        if (p < target) lo = p + 1;
+        else hi = p - 1;
+    }
+    return 0;
+}
 `,
     },
   },

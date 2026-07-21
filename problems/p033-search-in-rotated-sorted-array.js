@@ -93,6 +93,26 @@ var search = function(nums, target) {
     # 返回 target 的下标，不存在返回 -1
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回 target 的下标，不存在返回 -1
+int search(vector<int>& nums, int target) {
+  // TODO: 在这里实现
+  return -1;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -113,6 +133,26 @@ nums = list(map(int, lines[1].split()))
 target = int(lines[2])
 
 # 在这里写你的代码，用 print 输出一个整数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（旋转后的升序数组），第三行 target
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+  int target;
+  cin >> target;
+
+  // 在这里写你的代码，用 cout 输出一个整数
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -157,6 +197,39 @@ target = int(lines[2])
             else:
                 hi = mid - 1
     return -1
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int search(vector<int>& nums, int target) {
+  int lo = 0;
+  int hi = (int)nums.size() - 1;
+  while (lo <= hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] == target) return mid;
+    if (nums[lo] <= nums[mid]) {
+      // 左半 [lo, mid] 有序，判断 target 是否落在其中
+      if (nums[lo] <= target && target < nums[mid]) hi = mid - 1;
+      else lo = mid + 1;
+    } else {
+      // 右半 [mid, hi] 有序，判断 target 是否落在其中
+      if (nums[mid] < target && target <= nums[hi]) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return -1;
+}
 `,
     },
     acm: {
@@ -209,6 +282,40 @@ while lo <= hi:
         else:
             hi = mid - 1
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+  int target;
+  cin >> target;
+
+  // 一次二分：每步先判断哪一半有序，再看 target 是否落在有序半边
+  int lo = 0;
+  int hi = n - 1;
+  int ans = -1;
+  while (lo <= hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] == target) {
+      ans = mid;
+      break;
+    }
+    if (nums[lo] <= nums[mid]) {
+      if (nums[lo] <= target && target < nums[mid]) hi = mid - 1;
+      else lo = mid + 1;
+    } else {
+      if (nums[mid] < target && target <= nums[hi]) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  cout << ans << '\\n';
+  return 0;
+}
 `,
     },
   },

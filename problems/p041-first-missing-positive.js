@@ -84,6 +84,26 @@ var firstMissingPositive = function(nums) {
     # 返回数组中没有出现的最小正整数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回数组中没有出现的最小正整数
+int firstMissingPositive(vector<int> nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出一个整数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出一个整数
+
+    return 0;
+}
 `,
     },
   },
@@ -140,6 +177,26 @@ nums = list(map(int, lines[1].split()))
         if nums[i] != i + 1:
             return i + 1
     return n + 1
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int firstMissingPositive(vector<int> nums) {
+    int n = nums.size();
+    // 原地哈希：把值 x 交换到下标 x - 1 上（只处理 1..n 范围内的值）
+    for (int i = 0; i < n; i++) {
+        while (nums[i] >= 1 && nums[i] <= n && nums[nums[i] - 1] != nums[i]) {
+            int j = nums[i] - 1;
+            swap(nums[i], nums[j]);
+        }
+    }
+    // 第一个「位置与值不匹配」的下标 i，答案就是 i + 1
+    for (int i = 0; i < n; i++) {
+        if (nums[i] != i + 1) return i + 1;
+    }
+    return n + 1;
+}
 `,
     },
     acm: {
@@ -184,6 +241,36 @@ for i in range(n):
         ans = i + 1
         break
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 原地哈希：把值 x 交换到下标 x - 1 上
+    for (int i = 0; i < n; i++) {
+        while (nums[i] >= 1 && nums[i] <= n && nums[nums[i] - 1] != nums[i]) {
+            int j = nums[i] - 1;
+            swap(nums[i], nums[j]);
+        }
+    }
+
+    int ans = n + 1;
+    for (int i = 0; i < n; i++) {
+        if (nums[i] != i + 1) {
+            ans = i + 1;
+            break;
+        }
+    }
+    cout << ans << '\\n';
+    return 0;
+}
 `,
     },
   },

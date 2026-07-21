@@ -82,6 +82,26 @@ var climbStairs = function(n) {
     # 返回爬到 n 阶楼顶的不同方法数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int climbStairs(int n) {
+    // 返回爬到 n 阶楼顶的不同方法数
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -98,6 +118,20 @@ import sys
 n = int(sys.stdin.read().strip())
 
 # 在这里写你的代码，用 print 输出方法数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：一行，整数 n
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    // 在这里写你的代码，用 cout 输出方法数
+
+    return 0;
+}
 `,
     },
   },
@@ -121,6 +155,31 @@ n = int(sys.stdin.read().strip())
         a, b = b, a + b  # f(i) = f(i-1) + f(i-2)
     return b
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int climbStairs(int n) {
+    int a = 1; // f(i-2)，初始为 f(0)
+    int b = 1; // f(i-1)，初始为 f(1)
+    for (int i = 2; i <= n; i++) {
+        int c = a + b; // f(i) = f(i-1) + f(i-2)
+        a = b;
+        b = c;
+    }
+    return b;
+}
+`,
     },
     acm: {
       javascript: `const n = Number(input.trim());
@@ -142,6 +201,23 @@ for _ in range(2, n + 1):
     a, b = b, a + b
 
 print(b)
+`,
+      cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    int a = 1, b = 1;
+    for (int i = 2; i <= n; i++) {
+        int c = a + b;
+        a = b;
+        b = c;
+    }
+    cout << b << "\\n";
+    return 0;
+}
 `,
     },
   },

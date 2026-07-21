@@ -101,13 +101,38 @@ function findKthLargest(nums, k) {
 }
 \`\`\`
 
+C++ 版本（标准库 priority_queue 默认是大顶堆，这里指定成小顶堆）：
+
+\`\`\`
+// C++：215 题，找第 k 大
+#include <queue>
+#include <vector>
+#include <functional>
+using namespace std;
+
+int findKthLargest(vector<int>& nums, int k) {
+  // 小顶堆：heap.top() 永远是堆顶（堆里的最小值）
+  priority_queue<int, vector<int>, greater<int>> heap;
+  for (int x : nums) {              // 挨个读数
+    if ((int)heap.size() < k) {     // 堆没满（容量 k）
+      heap.push(x);                 // 直接进堆，自动整理好
+    } else if (x > heap.top()) {    // 新数比堆顶大 → 堆顶没资格留在前 k 名
+      heap.pop();                   // 弹出堆顶
+      heap.push(x);                 // 放进新数
+    }
+    // else：新数不够格，什么都不用做
+  }
+  return heap.top();                // 堆顶 = 前 k 名里最小的 = 第 k 大
+}
+\`\`\`
+
 JS 的排序版是 O(n log n)，刷题通常够用；只有当数据持续流入、或明确要求 O(n log k) 时，才需要照 Python 版的思路手写一个小顶堆类——「容量 k、顶最小、大了就换」这三步完全不变。
 
 ### 亲手跑一跑
 
-在 [3, 2, 1, 5, 6, 4] 上找第 2 大，把堆里数字的每一次进出都打印出来。JS 版用一个时刻保持有序的小数组来模拟小顶堆（真正的堆里「整理」是 O(log n)，这里模拟只为看清过程）；Python 版用真堆 heapq。两个版本的输出完全一致。
+在 [3, 2, 1, 5, 6, 4] 上找第 2 大，把堆里数字的每一次进出都打印出来。JS 版用一个时刻保持有序的小数组来模拟小顶堆（真正的堆里「整理」是 O(log n)，这里模拟只为看清过程）；Python 版用真堆 heapq，C++ 版用标准库 priority_queue。三个版本的输出完全一致。
 
-如果你只想看真正的堆 API，直接读 Python 版；JS 版的价值是看清「容量固定为 k」这个不变量是怎么手动维持的。
+如果你只想看真正的堆 API，直接读 Python 版或 C++ 版；JS 版的价值是看清「容量固定为 k」这个不变量是怎么手动维持的。
 
 JavaScript：
 
@@ -150,6 +175,50 @@ for x in nums:
     else:                            # 新数不够格：丢掉
         print('读到 ' + str(x) + '：不比堆顶 ' + str(heap[0]) + ' 大，丢掉')
 print('第 ' + str(k) + ' 大的数是：' + str(heap[0]))
+\`\`\`
+
+\`\`\`run-cpp#top-k-heap
+#include <functional>
+#include <iostream>
+#include <queue>
+#include <string>
+#include <vector>
+using namespace std;
+
+// 把堆内容拷贝一份、从小到大弹出，仅用于打印（小顶堆依次弹出即升序）
+string show(priority_queue<int, vector<int>, greater<int>> heap) {
+  string s = "[";
+  bool first = true;
+  while (!heap.empty()) {
+    if (!first) s += ", ";
+    s += to_string(heap.top());
+    heap.pop();
+    first = false;
+  }
+  return s + "]";
+}
+
+int main() {
+  vector<int> nums = {3, 2, 1, 5, 6, 4};  // 输入数组
+  int k = 2;                              // 找第 2 大
+  // 小顶堆：heap.top() 永远是堆顶（最小值）
+  priority_queue<int, vector<int>, greater<int>> heap;
+  for (int x : nums) {
+    if ((int)heap.size() < k) {           // 堆没满：直接进堆
+      heap.push(x);
+      cout << "读到 " << x << "：堆没满，直接进堆 → 堆 = " << show(heap) << "，堆顶 = " << heap.top() << "\\n";
+    } else if (x > heap.top()) {          // 新数比堆顶大：换进
+      int out = heap.top();
+      heap.pop();                         // 弹出堆顶
+      heap.push(x);                       // 放进新数
+      cout << "读到 " << x << "：比堆顶 " << out << " 大，弹 " << out << " 进 " << x << " → 堆 = " << show(heap) << "，堆顶 = " << heap.top() << "\\n";
+    } else {                              // 新数不够格：丢掉
+      cout << "读到 " << x << "：不比堆顶 " << heap.top() << " 大，丢掉" << "\\n";
+    }
+  }
+  cout << "第 " << k << " 大的数是：" << heap.top() << "\\n";
+  return 0;
+}
 \`\`\`
 
 预期输出：

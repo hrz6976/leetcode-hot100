@@ -93,6 +93,26 @@ var twoSum = function(nums, target) {
     # 返回两个下标组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回两个下标组成的 vector
+vector<int> twoSum(vector<int>& nums, int target) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -113,6 +133,25 @@ nums = list(map(int, lines[1].split()))
 target = int(lines[2])
 
 # 在这里写你的代码，用 print(a, b) 输出两个下标
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 target
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int target;
+    cin >> target;
+
+    // 在这里写你的代码，用 cout << a << " " << b << endl 输出两个下标
+
+    return 0;
+}
 `,
     },
   },
@@ -139,6 +178,33 @@ target = int(lines[2])
             return [seen[need], i]
         seen[x] = i
     return []
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> twoSum(vector<int>& nums, int target) {
+    unordered_map<int, int> seen; // 数值 -> 下标
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int need = target - nums[i];
+        auto it = seen.find(need);
+        if (it != seen.end()) {
+            return {it->second, i};
+        }
+        seen[nums[i]] = i;
+    }
+    return {};
+}
 `,
     },
     acm: {
@@ -169,6 +235,32 @@ for i, x in enumerate(nums):
         print(seen[need], i)
         break
     seen[x] = i
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int target;
+    cin >> target;
+
+    unordered_map<int, int> seen; // 数值 -> 下标
+    for (int i = 0; i < n; i++) {
+        int need = target - nums[i];
+        auto it = seen.find(need);
+        if (it != seen.end()) {
+            cout << it->second << " " << i << endl;
+            return 0;
+        }
+        seen[nums[i]] = i;
+    }
+    return 0;
+}
 `,
     },
   },

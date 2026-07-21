@@ -81,6 +81,26 @@ var trap = function(height) {
     # height 为非负整数数组，返回能接的雨水总量
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// height 为非负整数数组，返回能接的雨水总量
+int trap(vector<int> height) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -101,6 +121,23 @@ n = int(lines[0])
 height = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出接到的雨水总量
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n（柱子数量），第二行 n 个非负整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> height(n);
+    for (int i = 0; i < n; i++) cin >> height[i];
+
+    // 在这里写你的代码，用 cout 输出接到的雨水总量
+
+    return 0;
+}
 `,
     },
   },
@@ -139,6 +176,28 @@ height = list(map(int, lines[1].split()))
             water += right_max - height[right]  # 对称地处理右端
             right -= 1
     return water
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int trap(vector<int> height) {
+    int left = 0, right = (int)height.size() - 1;
+    int leftMax = 0, rightMax = 0;
+    int water = 0;
+    while (left < right) {
+        leftMax = max(leftMax, height[left]);
+        rightMax = max(rightMax, height[right]);
+        if (leftMax < rightMax) {
+            water += leftMax - height[left]; // 左侧较矮，接水量由 leftMax 决定
+            left++;
+        } else {
+            water += rightMax - height[right]; // 对称地处理右端
+            right--;
+        }
+    }
+    return water;
+}
 `,
     },
     acm: {
@@ -180,6 +239,35 @@ while left < right:
         right -= 1
 
 print(water)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> height(n);
+    for (int i = 0; i < n; i++) cin >> height[i];
+
+    int left = 0, right = n - 1;
+    int leftMax = 0, rightMax = 0;
+    long long water = 0; // 总量用安全数值类型
+    while (left < right) {
+        leftMax = max(leftMax, height[left]);
+        rightMax = max(rightMax, height[right]);
+        if (leftMax < rightMax) {
+            water += leftMax - height[left];
+            left++;
+        } else {
+            water += rightMax - height[right];
+            right--;
+        }
+    }
+    cout << water << '\\n';
+    return 0;
+}
 `,
     },
   },

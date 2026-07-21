@@ -92,6 +92,26 @@ var canFinish = function(numCourses, prerequisites) {
     # prerequisites 元素为 [课程, 先修课]，能完成所有课程返回 True，否则返回 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// prerequisites 元素为 [课程, 先修课]，能完成所有课程返回 true，否则返回 false
+bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -110,6 +130,23 @@ lines = sys.stdin.read().split('\\n')
 num_courses, m = map(int, lines[0].split())
 
 # 解析出先修关系数组，判断能否完成所有课程，用 print 输出 true 或 false（小写）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 numCourses m（课程数 先修关系数），随后 m 行每行两个整数 "课程 先修课"
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int numCourses, m;
+    cin >> numCourses >> m;
+    vector<vector<int>> prerequisites(m, vector<int>(2));
+    for (int i = 0; i < m; i++) cin >> prerequisites[i][0] >> prerequisites[i][1];
+
+    // 判断能否完成所有课程，用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -162,6 +199,46 @@ num_courses, m = map(int, lines[0].split())
                 queue.append(v)  # 先修课全部完成后即可学习
 
     return done == numCourses  # 有环时环上课程永远无法出队
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+    // 拓扑排序（Kahn 算法）：入度为 0 的课程可以先学，学完删掉它引出的边
+    vector<int> indeg(numCourses, 0);
+    vector<vector<int>> adj(numCourses); // 先修课 -> 后续课程列表
+    for (auto& p : prerequisites) {
+        int cur = p[0], pre = p[1];
+        adj[pre].push_back(cur);
+        indeg[cur]++;
+    }
+    queue<int> q;
+    for (int i = 0; i < numCourses; i++) {
+        if (indeg[i] == 0) q.push(i); // 没有先修要求的课程先入队
+    }
+    int done = 0; // 已完成（出队）的课程数
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        done++;
+        for (int v : adj[u]) {
+            indeg[v]--;
+            if (indeg[v] == 0) q.push(v); // 先修课全部完成后即可学习
+        }
+    }
+    return done == numCourses; // 有环时环上课程永远无法出队
+}
 `,
     },
     acm: {
@@ -217,6 +294,43 @@ while queue:
             queue.append(v)
 
 print('true' if done == num_courses else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+int main() {
+    int numCourses, m;
+    cin >> numCourses >> m;
+
+    vector<int> indeg(numCourses, 0);
+    vector<vector<int>> adj(numCourses);
+    for (int i = 0; i < m; i++) {
+        int cur, pre;
+        cin >> cur >> pre;
+        adj[pre].push_back(cur);
+        indeg[cur]++;
+    }
+
+    queue<int> q;
+    for (int i = 0; i < numCourses; i++) {
+        if (indeg[i] == 0) q.push(i);
+    }
+    int done = 0;
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        done++;
+        for (int v : adj[u]) {
+            indeg[v]--;
+            if (indeg[v] == 0) q.push(v);
+        }
+    }
+
+    cout << (done == numCourses ? "true" : "false") << endl;
+    return 0;
+}
 `,
     },
   },

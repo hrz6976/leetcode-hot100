@@ -4,16 +4,19 @@
 //   node tools/validate.mjs problems/p002-add-two-numbers.js ...   只校验指定文件
 //
 // 校验内容：
-// 1. 数据格式完整性（必填字段、用例非空、两种模式 × 两种语言的模板与答案）
-// 2. 四种参考代码（core/acm × javascript/python）全部跑通自己的测试用例
-//    - JS 在 node 内直接执行；Python 调用本机 python3
+// 1. 数据格式完整性（必填字段、用例非空、两种模式 × 三种语言的模板与答案）
+// 2. 六套参考代码（core/acm × javascript/python/cpp）全部跑通自己的测试用例
+//    - JS 在 node 内直接执行；Python 调用本机 python3；C++ 调用本机 g++（缺失时跳过并告警）
 
 import { readdir } from 'node:fs/promises';
-import { basename, dirname, resolve } from 'node:path';
+import { basename, dirname, resolve, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { compareResult, compareAcmOutput } from '../js/compare.js';
 import { runJavascriptCore } from './validation-runtime.mjs';
+import { cppCoreSource, parseCppJudgeOutput } from '../js/judge-cpp.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PROBLEM_BASELINE = 100;
@@ -489,6 +492,45 @@ function runPythonAcm(code, input) {
   return { ok: true, stdout: r.stdout };
 }
 
+// ---------- C++ 本地编译运行（g++，缺失时跳过并告警） ----------
+
+const hasGxx = (() => {
+  const r = spawnSync('g++', ['--version'], { encoding: 'utf8' });
+  return !r.error && r.status === 0;
+})();
+
+let cppTmpDir = null;
+
+// 完整编译（生成可执行文件），返回 { binary } 或 { compileError }
+function cppCompile(source, tag) {
+  if (!cppTmpDir) cppTmpDir = mkdtempSync(join(tmpdir(), 'letcode-cpp-'));
+  const base = join(cppTmpDir, tag.replace(/[^a-zA-Z0-9_-]/g, '_'));
+  writeFileSync(`${base}.cpp`, source);
+  const r = spawnSync('g++', ['-std=c++17', '-O2', `${base}.cpp`, '-o', base], { encoding: 'utf8', timeout: 120000 });
+  if (r.error) return { compileError: r.error.message };
+  if (r.status !== 0) return { compileError: (r.stderr || '编译失败').slice(0, 800) };
+  return { binary: base };
+}
+
+// 仅语法检查（模板用，快）
+function cppSyntaxCheck(source) {
+  const r = spawnSync('g++', ['-std=c++17', '-fsyntax-only', '-x', 'c++', '-'], {
+    input: source,
+    encoding: 'utf8',
+    timeout: TIMEOUT_MS,
+  });
+  if (r.error) return r.error.message;
+  if (r.status !== 0) return (r.stderr || '语法错误').slice(0, 800);
+  return null;
+}
+
+function runCppBinary(binary, input) {
+  const r = spawnSync(binary, [], { input, encoding: 'utf8', timeout: TIMEOUT_MS });
+  if (r.error) return { ok: false, error: r.error.message, stdout: '' };
+  if (r.status !== 0) return { ok: false, error: (r.stderr || `非零退出 ${r.status}`).slice(0, 500), stdout: r.stdout || '' };
+  return { ok: true, stdout: r.stdout };
+}
+
 // ---------- 单项校验 ----------
 
 const failures = [];
@@ -533,7 +575,7 @@ function checkSchema(p, file) {
     if (typeof test.input !== 'string' || typeof test.output !== 'string') fail(p, `ACM 用例 ${index + 1} 的 input/output 必须是字符串`);
   });
   for (const mode of ['core', 'acm']) {
-    for (const lang of ['javascript', 'python']) {
+    for (const lang of ['javascript', 'python', 'cpp']) {
       if (typeof p.templates?.[mode]?.[lang] !== 'string' || !p.templates[mode][lang].trim()) fail(p, `缺少模板 templates.${mode}.${lang}`);
       if (typeof p.solutions?.[mode]?.[lang] !== 'string' || !p.solutions[mode][lang].trim()) fail(p, `缺少答案 solutions.${mode}.${lang}`);
     }
@@ -647,6 +689,48 @@ function checkPyAcm(p) {
   });
 }
 
+function checkCppCore(p) {
+  if (!hasGxx || typeof p.solutions?.core?.cpp !== 'string') return;
+  const { binary, compileError } = cppCompile(cppCoreSource(p, p.solutions.core.cpp), `p${p.id}-core`);
+  if (compileError) {
+    fail(p, `core/cpp 编译失败: ${compileError}`);
+    return;
+  }
+  const r = runCppBinary(binary, '');
+  if (!r.ok) {
+    fail(p, `core/cpp 运行失败: ${r.error}`);
+    return;
+  }
+  const { results } = parseCppJudgeOutput(r.stdout);
+  if (results.length !== p.tests.length) {
+    fail(p, `core/cpp 判题结果数量不符: 期望 ${p.tests.length}，实得 ${results.length}`);
+    return;
+  }
+  results.forEach((result, index) => {
+    if (!result.ok) fail(p, `core/cpp 用例 ${index + 1} 运行异常: ${result.error}`);
+    else if (!compareResult(p.tests[index].expected, result.got, p.compare, p.numericTolerance || 0)) {
+      fail(p, `core/cpp 用例 ${index + 1} 错误: 期望 ${JSON.stringify(p.tests[index].expected)}，实得 ${JSON.stringify(result.got)}`);
+    }
+  });
+}
+
+function checkCppAcm(p) {
+  if (!hasGxx || typeof p.solutions?.acm?.cpp !== 'string') return;
+  const { binary, compileError } = cppCompile(p.solutions.acm.cpp, `p${p.id}-acm`);
+  if (compileError) {
+    fail(p, `acm/cpp 编译失败: ${compileError}`);
+    return;
+  }
+  p.acmTests.forEach((t, i) => {
+    const r = runCppBinary(binary, t.input);
+    if (!r.ok) {
+      fail(p, `acm/cpp 用例 ${i + 1} 运行异常: ${r.error}`);
+    } else if (!compareAcmOutput(t.output, r.stdout, p.numericTolerance ?? 0)) {
+      fail(p, `acm/cpp 用例 ${i + 1} 错误: 期望 ${JSON.stringify(t.output)}，实得 ${JSON.stringify(r.stdout)}`);
+    }
+  });
+}
+
 function checkTemplateSyntax(p) {
   for (const mode of ['core', 'acm']) {
     try {
@@ -659,6 +743,12 @@ function checkTemplateSyntax(p) {
       timeout: TIMEOUT_MS,
     });
     if (r.status !== 0) fail(p, `模板 templates.${mode}.python 语法错误: ${(r.stderr || '').slice(0, 300)}`);
+    if (hasGxx && typeof p.templates?.[mode]?.cpp === 'string') {
+      // core 模板需拼上判题 preamble 才有 ListNode/TreeNode 等定义；ACM 模板是完整程序
+      const source = mode === 'core' ? cppCoreSource(p, p.templates.core.cpp) : p.templates.acm.cpp;
+      const syntaxError = cppSyntaxCheck(source);
+      if (syntaxError) fail(p, `模板 templates.${mode}.cpp 语法错误: ${syntaxError}`);
+    }
   }
 }
 
@@ -721,12 +811,13 @@ function checkProblemManifest(entries, manifest, allTags) {
 }
 
 function checkRunnableExamples(article, file, exampleOwners) {
-  const pattern = /```(run-js|run-py)#([a-z0-9]+(?:-[a-z0-9]+)*)\s*\n([\s\S]*?)```/g;
+  const pattern = /```(run-js|run-py|run-cpp)#([a-z0-9]+(?:-[a-z0-9]+)*)\s*\n([\s\S]*?)```/g;
+  const langByFence = { 'run-js': 'javascript', 'run-py': 'python', 'run-cpp': 'cpp' };
   const languagesById = new Map();
   let count = 0;
   for (const match of article.content.matchAll(pattern)) {
     count += 1;
-    const language = match[1] === 'run-js' ? 'javascript' : 'python';
+    const language = langByFence[match[1]];
     const exampleId = match[2];
     if (exampleOwners.has(exampleId) && exampleOwners.get(exampleId) !== article.slug) globalFail(`运行示例 ID 跨文章重复: ${exampleId}`);
     exampleOwners.set(exampleId, article.slug);
@@ -740,14 +831,24 @@ function checkRunnableExamples(article, file, exampleOwners) {
       } catch (error) {
         globalFail(`${basename(file)} 运行示例 ${exampleId} 失败: ${error.message}`);
       }
-    } else {
+    } else if (language === 'python') {
       const result = spawnSync('python3', ['-c', match[3]], { encoding: 'utf8', timeout: TIMEOUT_MS });
       if (result.error || result.status !== 0) globalFail(`${basename(file)} 运行示例 ${exampleId} 失败: ${result.error?.message || result.stderr.slice(0, 300)}`);
+    } else if (hasGxx) {
+      const { binary, compileError } = cppCompile(match[3], `k-${exampleId}`);
+      if (compileError) {
+        globalFail(`${basename(file)} 运行示例 ${exampleId} 编译失败: ${compileError}`);
+      } else {
+        const r = runCppBinary(binary, '');
+        if (!r.ok) globalFail(`${basename(file)} 运行示例 ${exampleId} 失败: ${r.error}`);
+      }
     }
   }
   if (!count) globalFail(`${basename(file)} 缺少带 example ID 的可运行示例`);
   for (const [exampleId, languages] of languagesById) {
-    if (!languages.has('javascript') || !languages.has('python')) globalFail(`${basename(file)} 的 ${exampleId} 必须同时提供 JS 与 Python 示例`);
+    if (!languages.has('javascript') || !languages.has('python') || !languages.has('cpp')) {
+      globalFail(`${basename(file)} 的 ${exampleId} 必须同时提供 JS、Python 与 C++ 示例`);
+    }
   }
   return count;
 }
@@ -803,6 +904,7 @@ async function main() {
     console.log('没有可校验的题目');
     return;
   }
+  if (!hasGxx) notes.push('警告：未找到 g++，C++ 参考代码与模板跳过编译执行校验（仅做数据格式校验）');
   for (const { problem, file } of entries) {
     checkSchema(problem, file);
     checkTemplateSyntax(problem);
@@ -810,7 +912,9 @@ async function main() {
     checkJsAcm(problem);
     checkPyCore(problem);
     checkPyAcm(problem);
-    notes.push(`${problem.id} ${problem.slug}: 四套参考答案校验完成`);
+    checkCppCore(problem);
+    checkCppAcm(problem);
+    notes.push(`${problem.id} ${problem.slug}: 六套参考答案校验完成`);
   }
 
   console.log(notes.join('\n'));

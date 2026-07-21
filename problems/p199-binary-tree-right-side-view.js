@@ -85,6 +85,28 @@ var rightSideView = function(root) {
     # root 为二叉树根节点（TreeNode），返回从右侧看到的节点值列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+// 返回从右侧看到的节点值列表
+vector<int> rightSideView(TreeNode* root) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +134,31 @@ n = int(lines[0])
 tokens = lines[1].split() if n > 0 else []
 
 # 按层序构造二叉树，求出右视图后用 print 输出（空树输出一个空行）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时该行为空行）
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 按层序构造二叉树，求出右视图后用 cout 输出（空格分隔；空树输出一个空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -145,6 +192,35 @@ tokens = lines[1].split() if n > 0 else []
 
     dfs(root, 0)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+vector<int> rightSideView(TreeNode* root) {
+    vector<int> res;
+    // 按「根 → 右 → 左」遍历：每层第一个被访问到的节点就是最右侧节点
+    function<void(TreeNode*, int)> dfs = [&](TreeNode* node, int depth) {
+        if (node == nullptr) return;
+        if (depth == (int)res.size()) res.push_back(node->val);
+        dfs(node->right, depth + 1);
+        dfs(node->left, depth + 1);
+    };
+    dfs(root, 0);
+    return res;
+}
 `,
     },
     acm: {
@@ -222,6 +298,59 @@ def dfs(node, depth):
 
 dfs(root, 0)
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+// 按层序构造二叉树（null 表示空节点）
+TreeNode* buildTree(vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (nodes[i] == nullptr) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    TreeNode* root = buildTree(tokens);
+
+    // 「根 → 右 → 左」DFS：每层第一个被访问到的节点即为右视图的一员
+    vector<int> out;
+    function<void(TreeNode*, int)> dfs = [&](TreeNode* node, int depth) {
+        if (node == nullptr) return;
+        if (depth == (int)out.size()) out.push_back(node->val);
+        dfs(node->right, depth + 1);
+        dfs(node->left, depth + 1);
+    };
+    dfs(root, 0);
+
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i) cout << ' ';
+        cout << out[i];
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

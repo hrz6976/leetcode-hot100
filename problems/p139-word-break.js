@@ -90,6 +90,26 @@ var wordBreak = function(s, wordDict) {
     # 判断 s 能否由 wordDict 中的单词（可重复使用）拼成，返回 True / False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool wordBreak(string s, vector<string> wordDict) {
+    // 判断 s 能否由 wordDict 中的单词（可重复使用）拼成，返回 true / false
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -111,6 +131,26 @@ m = int(lines[1])
 word_dict = lines[2].split()
 
 # 在这里写你的代码，用 print 输出 true 或 false（小写）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 s，第二行 m，第三行 m 个单词（空格分隔）
+#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_set>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+    int m;
+    cin >> m;
+    vector<string> wordDict(m);
+    for (int i = 0; i < m; i++) cin >> wordDict[i];
+
+    // 在这里写你的代码，用 cout 输出 true 或 false（小写），行尾换行
+    return 0;
+}
 `,
     },
   },
@@ -146,6 +186,37 @@ word_dict = lines[2].split()
                 dp[i] = True
                 break
     return dp[n]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool wordBreak(string s, vector<string> wordDict) {
+    unordered_set<string> words(wordDict.begin(), wordDict.end());
+    int n = (int)s.size();
+    // dp[i] = s 的前 i 个字符能否由字典单词拼成
+    vector<bool> dp(n + 1, false);
+    dp[0] = true; // 空前缀视为可拆分
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (dp[j] && words.count(s.substr(j, i - j))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[n];
+}
 `,
     },
     acm: {
@@ -187,6 +258,37 @@ for i in range(1, n + 1):
             break
 
 print('true' if dp[n] else 'false')
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_set>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+    int m;
+    cin >> m;
+    vector<string> wordDict(m);
+    for (int i = 0; i < m; i++) cin >> wordDict[i];
+
+    unordered_set<string> words(wordDict.begin(), wordDict.end());
+    int n = (int)s.size();
+    // dp[i] = s 的前 i 个字符能否由字典单词拼成
+    vector<bool> dp(n + 1, false);
+    dp[0] = true;
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (dp[j] && words.count(s.substr(j, i - j))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    cout << (dp[n] ? "true" : "false") << "\\n";
+    return 0;
+}
 `,
     },
   },

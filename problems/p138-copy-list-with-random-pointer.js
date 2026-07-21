@@ -104,6 +104,28 @@ var copyRandomList = function(head) {
     # 返回深拷贝后的头节点；判题环境不提供节点类，需要新建节点时请自行定义
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct RandomNode（val/next/random）与构造函数 RandomNode(v)，请勿重复定义
+// head 为带 random 指针链表的头节点
+// 返回深拷贝后的头节点（必须由全新节点组成，且不得修改原链表）
+RandomNode* copyRandomList(RandomNode* head) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -129,6 +151,31 @@ lines = sys.stdin.read().split('\\n')
 n = int(lines[0])
 
 # 构造带 random 指针的链表，完成深拷贝后逐行输出 "值 random下标"
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n；随后 n 行，每行为 "值 random下标"（random 为空时写 -1）
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+struct Node {
+    int val;
+    Node* next;
+    Node* random;
+    Node(int v = 0) : val(v), next(nullptr), random(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> vals(n), rIdx(n);
+    for (int i = 0; i < n; i++) cin >> vals[i] >> rIdx[i];
+
+    // 构造带 random 指针的链表，完成深拷贝后逐行输出 "值 random下标"（random 为空输出 -1）
+    // TODO: 在这里实现
+    return 0;
+}
 `,
     },
   },
@@ -179,6 +226,41 @@ n = int(lines[0])
         copy.random = mapping[cur.random] if cur.random is not None else None
         cur = cur.next
     return mapping[head]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct RandomNode（val/next/random）与构造函数 RandomNode(v)，请勿重复定义
+RandomNode* copyRandomList(RandomNode* head) {
+    if (head == nullptr) return nullptr;
+    unordered_map<RandomNode*, RandomNode*> mapping;  // 原节点 -> 拷贝节点
+    // 第一遍：为每个原节点创建拷贝节点
+    RandomNode* cur = head;
+    while (cur != nullptr) {
+        mapping[cur] = new RandomNode(cur->val);
+        cur = cur->next;
+    }
+    // 第二遍：通过映射把拷贝节点的 next / random 接上
+    cur = head;
+    while (cur != nullptr) {
+        RandomNode* copy = mapping[cur];
+        copy->next = cur->next != nullptr ? mapping[cur->next] : nullptr;
+        copy->random = cur->random != nullptr ? mapping[cur->random] : nullptr;
+        cur = cur->next;
+    }
+    return mapping[head];
+}
 `,
     },
     acm: {
@@ -273,6 +355,68 @@ index = {id(node): i for i, node in enumerate(copies)}  # 拷贝节点 -> 下标
 for node in copies:
     r = -1 if node.random is None else index[id(node.random)]
     print(node.val, r)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+struct Node {
+    int val;
+    Node* next;
+    Node* random;
+    Node(int v = 0) : val(v), next(nullptr), random(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+
+    // 构造带 random 指针的链表
+    vector<Node*> nodes(n);
+    vector<int> rIdx(n);
+    for (int i = 0; i < n; i++) {
+        int val, r;
+        cin >> val >> r;
+        nodes[i] = new Node(val);
+        rIdx[i] = r;
+    }
+    for (int i = 0; i < n; i++) {
+        nodes[i]->next = i + 1 < n ? nodes[i + 1] : nullptr;
+        nodes[i]->random = rIdx[i] == -1 ? nullptr : nodes[rIdx[i]];
+    }
+    Node* head = n > 0 ? nodes[0] : nullptr;
+
+    // 哈希表深拷贝：第一遍建拷贝节点，第二遍接线
+    unordered_map<Node*, Node*> mapping;  // 原节点 -> 拷贝节点
+    Node* cur = head;
+    while (cur != nullptr) {
+        mapping[cur] = new Node(cur->val);
+        cur = cur->next;
+    }
+    cur = head;
+    while (cur != nullptr) {
+        Node* copy = mapping[cur];
+        copy->next = cur->next != nullptr ? mapping[cur->next] : nullptr;
+        copy->random = cur->random != nullptr ? mapping[cur->random] : nullptr;
+        cur = cur->next;
+    }
+
+    // 序列化拷贝链表并输出
+    vector<Node*> copies;
+    cur = head != nullptr ? mapping[head] : nullptr;
+    while (cur != nullptr) {
+        copies.push_back(cur);
+        cur = cur->next;
+    }
+    unordered_map<Node*, int> index;  // 拷贝节点 -> 下标
+    for (int i = 0; i < (int)copies.size(); i++) index[copies[i]] = i;
+    for (Node* node : copies) {
+        int r = node->random == nullptr ? -1 : index[node->random];
+        cout << node->val << " " << r << "\\n";
+    }
+    return 0;
+}
 `,
     },
   },

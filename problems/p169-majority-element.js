@@ -86,6 +86,26 @@ var majorityElement = function(nums) {
     # 返回多数元素（出现次数大于 n/2 的元素）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回多数元素（出现次数大于 n/2 的元素）
+int majorityElement(vector<int>& nums) {
+  // TODO: 在这里实现
+  return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,23 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print(答案) 输出多数元素
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  // 在这里写你的代码，用 cout 输出多数元素
+
+  return 0;
+}
 `,
     },
   },
@@ -127,6 +164,19 @@ nums = list(map(int, lines[1].split()))
             candidate = x  # 前一位候选人已被抵消完，换人
         count += 1 if x == candidate else -1
     return candidate
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+int majorityElement(vector<int>& nums) {
+  int candidate = 0;
+  int count = 0;
+  for (int x : nums) {
+    if (count == 0) candidate = x; // 前一位候选人已被抵消完，换人
+    count += (x == candidate) ? 1 : -1;
+  }
+  return candidate;
+}
 `,
     },
     acm: {
@@ -152,6 +202,27 @@ for x in nums:
         candidate = x
     count += 1 if x == candidate else -1
 print(candidate)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  // Boyer-Moore 投票法
+  int candidate = 0;
+  int count = 0;
+  for (int x : nums) {
+    if (count == 0) candidate = x;
+    count += (x == candidate) ? 1 : -1;
+  }
+  cout << candidate << "\\n";
+  return 0;
+}
 `,
     },
   },

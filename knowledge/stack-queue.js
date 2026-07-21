@@ -84,7 +84,7 @@ export default {
 
 ### 模板代码
 
-上面这张表翻译过来就是每日温度的模板，读注释时对照着表格的每一行。建议先把其中一门语言的版本读三遍、合上默写一遍，再换另一门印证——两种语言只是外壳，栈的动作一模一样：
+上面这张表翻译过来就是每日温度的模板，读注释时对照着表格的每一行。建议先把其中一门语言的版本读三遍、合上默写一遍，再换另一门印证——语言只是外壳，栈的动作一模一样：
 
 \`\`\`
 // JavaScript：每日温度（LeetCode 739）
@@ -115,6 +115,24 @@ def dailyTemperatures(t):
             ans[j] = i - j           #   等的天数 = 今天下标 - 那天下标
         stack.append(i)              # 今天还没等到答案，进栈等
     return ans                       # 留在栈里的下标，答案保持 0
+\`\`\`
+
+\`\`\`
+// C++：每日温度（LeetCode 739）
+vector<int> dailyTemperatures(vector<int>& t) {
+  vector<int> ans(t.size(), 0);            // 答案数组，默认 0（等不到更热的天）
+  vector<int> stack;                       // 单调栈：存还在等答案的下标，温度从底到顶递减
+  for (int i = 0; i < (int)t.size(); i++) {  // 一天一天往后看
+    while (!stack.empty() && t[i] > t[stack.back()]) {
+      // 今天比栈顶那天热 → 栈顶那天终于等到答案了
+      int j = stack.back();                //   栈顶那天就是等到答案的人
+      stack.pop_back();                    //   把它从栈里请出去
+      ans[j] = i - j;                      //   等的天数 = 今天下标 - 那天下标
+    }
+    stack.push_back(i);                    // 今天还没等到答案，进栈等
+  }
+  return ans;                              // 留在栈里的下标，答案保持 0
+}
 \`\`\`
 
 > 注意：「找下一个更大 / 更小元素」的变种只有四种组合——找**左边还是右边**（决定从哪头开始遍历）× 找**更大还是更小**（决定弹出条件是 \`>\` 还是 \`<\`）。模板不用背四份，遇到变种时把遍历方向和比较符对调即可。
@@ -153,7 +171,41 @@ for i, x in enumerate(t):
 print('答案：' + str(ans))
 \`\`\`
 
-预期输出（两个版本完全一致）：
+\`\`\`run-cpp#monotonic-stack-walkthrough
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+string fmt(const vector<int>& v) {  // 把数组格式化成 "[1, 2]" 的样子打印
+  string s = "[";
+  for (int i = 0; i < (int)v.size(); i++) {
+    if (i > 0) s += ", ";
+    s += to_string(v[i]);
+  }
+  return s + "]";
+}
+
+int main() {
+  vector<int> t = {30, 40, 35, 50};
+  vector<int> ans(t.size(), 0);
+  vector<int> stack;                // 存下标，温度从底到顶递减
+  for (int i = 0; i < (int)t.size(); i++) {
+    while (!stack.empty() && t[i] > t[stack.back()]) {
+      int j = stack.back();         // 第 j 天等到答案了
+      stack.pop_back();
+      ans[j] = i - j;
+      cout << "第" << i << "天(" << t[i] << "度) 比第" << j << "天(" << t[j] << "度)热 -> 第" << j << "天要等 " << ans[j] << " 天" << "\\n";
+    }
+    stack.push_back(i);
+    cout << "第" << i << "天处理完，栈内下标：" << fmt(stack) << "\\n";
+  }
+  cout << "答案：" << fmt(ans) << "\\n";
+  return 0;
+}
+\`\`\`
+
+预期输出（三个版本完全一致）：
 
 \`\`\`
 第0天处理完，栈内下标：[0]

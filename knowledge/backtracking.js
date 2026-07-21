@@ -107,6 +107,26 @@ def backtrack(i):               # i = 本轮要为 nums[i] 做决定
 backtrack(0)                    # 从「决定第 0 个数字」开始
 \`\`\`
 
+C++ 版本：
+
+\`\`\`cpp
+// C++：生成所有子集
+vector<int> nums = {1, 2, 3};
+vector<vector<int>> result; // 大袋子：收集所有答案
+vector<int> path;           // 篮子：当前已经选了哪些数
+function<void(int)> backtrack = [&](int i) {  // i = 本轮要为 nums[i] 做决定
+    if (i == (int)nums.size()) {  // 所有数字都决定过了 → 到达叶子
+        result.push_back(path);   // 存一份篮子的拷贝（vector 放进去的就是拷贝）
+        return;                   // 本分支走完，退回上一层
+    }
+    backtrack(i + 1);             // 岔路一：不选 nums[i]，直接去下一层
+    path.push_back(nums[i]);      // 岔路二：选它 → 1. 做选择
+    backtrack(i + 1);             //           → 2. 带着新篮子往下递归
+    path.pop_back();              //           → 3. 撤销选择，篮子恢复原样
+};
+backtrack(0);                     // 从「决定第 0 个数字」开始
+\`\`\`
+
 所有回溯题共用同一个骨架：**终止条件 → 逐个候选做选择 → 递归 → 撤销**。换题目只是换两件事——每层能选什么、什么时候算到头：
 
 - **排列**（46 全排列）：每层可以在所有数里挑，但挑过的不能再挑，需要一个 used 数组做标记，标记也要跟随撤销
@@ -115,7 +135,7 @@ backtrack(0)                    # 从「决定第 0 个数字」开始
 
 ### 亲手跑一跑
 
-下面两段是同一份代码的 JS 和 Python 版：生成 \`[1, 2, 3]\` 的所有子集，并把每一层的决定打印出来。建议边看输出边对照上一节的表格。
+下面三段是同一份代码的 JS、Python 和 C++ 版：生成 \`[1, 2, 3]\` 的所有子集，并把每一层的决定打印出来。建议边看输出边对照上一节的表格。
 
 JavaScript：
 
@@ -164,7 +184,49 @@ backtrack(0)
 print('一共生成 ' + str(len(result)) + ' 个子集')
 \`\`\`
 
-两个版本的输出完全一致，都是下面这样：
+C++：
+
+\`\`\`run-cpp#subsets-walkthrough
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+vector<int> nums = {1, 2, 3};              // 要生成子集的数组
+vector<vector<int>> result;                // 大袋子
+vector<int> path;                          // 篮子
+
+string show(const vector<int>& arr) {
+    string s = "[";
+    for (int i = 0; i < (int)arr.size(); i++) {
+        if (i > 0) s += ", ";
+        s += to_string(arr[i]);
+    }
+    return s + "]";
+}
+
+void backtrack(int i) {                    // 正在为 nums[i] 做决定
+    if (i == (int)nums.size()) {           // 决定做完了
+        cout << "  得到一个子集：" << show(path) << endl;
+        result.push_back(path);
+        return;
+    }
+    cout << "第 " << i << " 层：不选 " << nums[i] << "，篮子 = " << show(path) << endl;
+    backtrack(i + 1);
+    path.push_back(nums[i]);
+    cout << "第 " << i << " 层：改选 " << nums[i] << "，篮子 = " << show(path) << endl;
+    backtrack(i + 1);
+    path.pop_back();                       // 撤销选择，篮子恢复成进入本层前的样子
+}
+
+int main() {
+    backtrack(0);
+    cout << "一共生成 " << result.size() << " 个子集" << endl;
+    return 0;
+}
+\`\`\`
+
+三个版本的输出完全一致，都是下面这样：
 
 \`\`\`
 第 0 层：不选 1，篮子 = []

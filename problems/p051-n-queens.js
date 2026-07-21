@@ -210,6 +210,26 @@ var solveNQueens = function(n) {
     # 返回所有棋盘方案，每个方案是 n 个字符串（由 Q 和 . 组成）的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有棋盘方案，每个方案是 n 个字符串（由 Q 和 . 组成）的数组
+vector<vector<string>> solveNQueens(int n) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -228,6 +248,23 @@ n = int(sys.stdin.read().split('\\n')[0])
 
 # 在这里写你的代码
 # 输出：每个方案输出连续的 n 行棋盘，方案之间空一行；无解时不输出任何内容
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为整数 n
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    // 在这里写你的代码
+    // 输出：每个方案输出连续的 n 行棋盘，方案之间空一行；无解时不输出任何内容
+
+    return 0;
+}
 `,
     },
   },
@@ -285,6 +322,39 @@ n = int(sys.stdin.read().split('\\n')[0])
 
     dfs(0)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <functional>
+using namespace std;
+
+vector<vector<string>> solveNQueens(int n) {
+    vector<vector<string>> res;
+    vector<int> cols(n, -1); // cols[r] 为第 r 行皇后所在列
+    vector<bool> usedCol(n, false);
+    vector<bool> usedD1(2 * n - 1, false); // 主对角线：r - c 为定值
+    vector<bool> usedD2(2 * n - 1, false); // 副对角线：r + c 为定值
+    function<void(int)> dfs = [&](int r) {
+        if (r == n) {
+            // 所有行都放好了，按 cols 生成棋盘
+            vector<string> board;
+            for (int c : cols) board.push_back(string(c, '.') + 'Q' + string(n - c - 1, '.'));
+            res.push_back(board);
+            return;
+        }
+        for (int c = 0; c < n; c++) {
+            int d1 = r - c + n - 1; // 加 n - 1 使下标非负
+            int d2 = r + c;
+            if (usedCol[c] || usedD1[d1] || usedD2[d2]) continue;
+            cols[r] = c;
+            usedCol[c] = usedD1[d1] = usedD2[d2] = true;
+            dfs(r + 1);
+            usedCol[c] = usedD1[d1] = usedD2[d2] = false; // 撤销标记
+        }
+    };
+    dfs(0);
+    return res;
+}
 `,
     },
     acm: {
@@ -351,6 +421,48 @@ for i, board in enumerate(res):
         print()
     for row in board:
         print(row)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    vector<vector<string>> res;
+    vector<int> cols(n, -1); // cols[r] 为第 r 行皇后所在列
+    vector<bool> usedCol(n, false);
+    vector<bool> usedD1(2 * n - 1, false); // 主对角线：r - c 为定值
+    vector<bool> usedD2(2 * n - 1, false); // 副对角线：r + c 为定值
+    function<void(int)> dfs = [&](int r) {
+        if (r == n) {
+            vector<string> board;
+            for (int c : cols) board.push_back(string(c, '.') + 'Q' + string(n - c - 1, '.'));
+            res.push_back(board);
+            return;
+        }
+        for (int c = 0; c < n; c++) {
+            int d1 = r - c + n - 1; // 加 n - 1 使下标非负
+            int d2 = r + c;
+            if (usedCol[c] || usedD1[d1] || usedD2[d2]) continue;
+            cols[r] = c;
+            usedCol[c] = usedD1[d1] = usedD2[d2] = true;
+            dfs(r + 1);
+            usedCol[c] = usedD1[d1] = usedD2[d2] = false; // 撤销标记
+        }
+    };
+    dfs(0);
+
+    // 每个方案连续输出 n 行，方案之间空一行；无解时自然没有输出
+    for (int i = 0; i < (int)res.size(); i++) {
+        if (i > 0) cout << '\\n';
+        for (const string& row : res[i]) cout << row << '\\n';
+    }
+    return 0;
+}
 `,
     },
   },

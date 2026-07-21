@@ -86,6 +86,26 @@ var generate = function(numRows) {
     # 返回杨辉三角前 numRows 行（二维列表）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回杨辉三角前 numRows 行（二维数组）
+vector<vector<int>> generate(int numRows) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -102,6 +122,20 @@ import sys
 numRows = int(sys.stdin.read().split('\\n')[0])
 
 # 在这里写你的代码，逐行用 print(' '.join(map(str, 行列表))) 输出每一层
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为整数 numRows
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int numRows;
+    cin >> numRows;
+
+    // TODO: 在这里生成杨辉三角，逐行用 cout 输出每一层（数字以空格分隔）
+    return 0;
+}
 `,
     },
   },
@@ -128,6 +162,32 @@ numRows = int(sys.stdin.read().split('\\n')[0])
             row[j] = res[i - 1][j - 1] + res[i - 1][j]  # 肩上两数之和
         res.append(row)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<vector<int>> generate(int numRows) {
+    vector<vector<int>> res;
+    for (int i = 0; i < numRows; i++) {
+        vector<int> row(i + 1, 1); // 先整行填 1，自动处理首尾
+        for (int j = 1; j < i; j++) {
+            row[j] = res[i - 1][j - 1] + res[i - 1][j]; // 肩上两数之和
+        }
+        res.push_back(row);
+    }
+    return res;
+}
 `,
     },
     acm: {
@@ -159,6 +219,33 @@ for i in range(numRows):
 
 for row in res:
     print(' '.join(map(str, row)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int numRows;
+    cin >> numRows;
+
+    vector<vector<int>> res;
+    for (int i = 0; i < numRows; i++) {
+        vector<int> row(i + 1, 1);
+        for (int j = 1; j < i; j++) {
+            row[j] = res[i - 1][j - 1] + res[i - 1][j];
+        }
+        res.push_back(row);
+    }
+
+    for (const auto& row : res) {
+        for (int j = 0; j < (int)row.size(); j++) {
+            if (j > 0) cout << ' ';
+            cout << row[j];
+        }
+        cout << '\\n';
+    }
+    return 0;
+}
 `,
     },
   },

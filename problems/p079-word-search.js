@@ -140,6 +140,26 @@ var exist = function(board, word) {
     # board 为字符二维列表，word 为字符串；返回 True 或 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// board 为字符串二维数组（每格是单字符字符串），word 为字符串；返回 word 是否存在于网格中
+bool exist(vector<vector<string>>& board, string word) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -164,6 +184,26 @@ board = [list(lines[1 + i].strip()) for i in range(m)]
 word = lines[1 + m].strip()
 
 # 在这里写你的代码，用 print 输出 true 或 false（小写）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m n；随后 m 行，每行一个长度为 n 的字符串；最后一行为 word
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<string> board(m);
+    for (int i = 0; i < m; i++) cin >> board[i];
+    string word;
+    cin >> word;
+
+    // 在这里写你的代码，用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -217,6 +257,42 @@ word = lines[1 + m].strip()
             if dfs(i, j, 0):
                 return True
     return False
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+bool exist(vector<vector<string>>& board, string word) {
+    int m = board.size(), n = board[0].size();
+
+    // 在格子 (i, j) 处尝试匹配 word[k]
+    function<bool(int, int, int)> dfs = [&](int i, int j, int k) -> bool {
+        if (k == (int)word.size()) return true; // 整个单词匹配完成
+        if (i < 0 || i >= m || j < 0 || j >= n || board[i][j][0] != word[k]) return false;
+        string tmp = board[i][j];
+        board[i][j] = "#"; // 原地标记，防止同一路径重复访问
+        bool found = dfs(i + 1, j, k + 1) || dfs(i - 1, j, k + 1)
+                  || dfs(i, j + 1, k + 1) || dfs(i, j - 1, k + 1);
+        board[i][j] = tmp; // 恢复现场
+        return found;
+    };
+
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++)
+            if (dfs(i, j, 0)) return true;
+    return false;
+}
 `,
     },
     acm: {
@@ -282,6 +358,39 @@ for i in range(m):
         break
 
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <functional>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<string> board(m);
+    for (int i = 0; i < m; i++) cin >> board[i];
+    string word;
+    cin >> word;
+
+    function<bool(int, int, int)> dfs = [&](int i, int j, int k) -> bool {
+        if (k == (int)word.size()) return true;
+        if (i < 0 || i >= m || j < 0 || j >= n || board[i][j] != word[k]) return false;
+        char tmp = board[i][j];
+        board[i][j] = '#'; // 原地标记，防止同一路径重复访问
+        bool found = dfs(i + 1, j, k + 1) || dfs(i - 1, j, k + 1)
+                  || dfs(i, j + 1, k + 1) || dfs(i, j - 1, k + 1);
+        board[i][j] = tmp; // 恢复现场
+        return found;
+    };
+
+    bool ok = false;
+    for (int i = 0; i < m && !ok; i++)
+        for (int j = 0; j < n && !ok; j++)
+            if (dfs(i, j, 0)) ok = true;
+    cout << (ok ? "true" : "false") << '\\n';
+    return 0;
+}
 `,
     },
   },

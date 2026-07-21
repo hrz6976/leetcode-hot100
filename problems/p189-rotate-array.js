@@ -89,6 +89,25 @@ var rotate = function(nums, k) {
     # 原地修改 nums（k 可能大于数组长度），不需要返回值
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 原地修改 nums（k 可能大于数组长度），不需要返回值
+void rotate(vector<int>& nums, int k) {
+  // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -111,6 +130,24 @@ nums = list(map(int, lines[1].split()))
 k = int(lines[2])
 
 # 在这里写你的代码（原地轮转 nums），用 print 输出轮转后的数组（空格分隔）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n, k;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+  cin >> k;
+
+  // 在这里写你的代码（原地轮转 nums），用 cout 输出轮转后的数组（空格分隔）
+
+  return 0;
+}
 `,
     },
   },
@@ -149,6 +186,26 @@ k = int(lines[2])
     reverse(0, n - 1)
     reverse(0, k - 1)
     reverse(k, n - 1)
+`,
+      cpp: `#include <vector>
+#include <utility>
+using namespace std;
+
+void rotate(vector<int>& nums, int k) {
+  int n = (int)nums.size();
+  k %= n; // k 可能大于 n，轮转 n 步等于没转
+  // 三次反转：整体反转 -> 前 k 个反转 -> 后 n - k 个反转
+  auto reverseRange = [&](int l, int r) {
+    while (l < r) {
+      swap(nums[l], nums[r]);
+      l++;
+      r--;
+    }
+  };
+  reverseRange(0, n - 1);
+  reverseRange(0, k - 1);
+  reverseRange(k, n - 1);
+}
 `,
     },
     acm: {
@@ -195,6 +252,39 @@ reverse(0, k - 1)
 reverse(k, n - 1)
 
 print(' '.join(map(str, nums)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <utility>
+using namespace std;
+
+int main() {
+  int n, k;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+  cin >> k;
+
+  // 三次反转法（原地）
+  k %= n;
+  auto reverseRange = [&](int l, int r) {
+    while (l < r) {
+      swap(nums[l], nums[r]);
+      l++;
+      r--;
+    }
+  };
+  reverseRange(0, n - 1);
+  reverseRange(0, k - 1);
+  reverseRange(k, n - 1);
+
+  for (int i = 0; i < n; i++) {
+    if (i) cout << ' ';
+    cout << nums[i];
+  }
+  cout << "\\n";
+  return 0;
+}
 `,
     },
   },

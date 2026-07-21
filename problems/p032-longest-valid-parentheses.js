@@ -81,6 +81,26 @@ var longestValidParentheses = function(s) {
     # 返回最长有效括号子串的长度
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最长有效括号子串的长度
+int longestValidParentheses(string s) {
+  // TODO: 在这里实现
+  return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -97,6 +117,22 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print(ans) 输出最长长度
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为括号字符串（可能为空行，表示空串）
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+  string s;
+  getline(cin, s);
+
+  // 在这里写你的代码，用 cout 输出最长长度
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -135,6 +171,38 @@ s = sys.stdin.read().split('\\n')[0]
                 ans = max(ans, i - stack[-1])
     return ans
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int longestValidParentheses(string s) {
+  int ans = 0;
+  vector<int> st = {-1}; // 栈底放 -1，充当「上一个无法匹配的位置」
+  for (int i = 0; i < (int)s.size(); i++) {
+    if (s[i] == '(') {
+      st.push_back(i);
+    } else {
+      st.pop_back();
+      if (st.empty()) {
+        st.push_back(i); // 该右括号无人匹配，成为新的分界
+      } else {
+        ans = max(ans, i - st.back());
+      }
+    }
+  }
+  return ans;
+}
+`,
     },
     acm: {
       javascript: `const s = input.split('\\n')[0];
@@ -171,6 +239,34 @@ for i, ch in enumerate(s):
         else:
             ans = max(ans, i - stack[-1])
 print(ans)
+`,
+      cpp: `#include <algorithm>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+  string s;
+  getline(cin, s); // 空行即空串
+
+  int ans = 0;
+  vector<int> st = {-1}; // 栈底放 -1，充当「上一个无法匹配的位置」
+  for (int i = 0; i < (int)s.size(); i++) {
+    if (s[i] == '(') {
+      st.push_back(i);
+    } else {
+      st.pop_back();
+      if (st.empty()) {
+        st.push_back(i); // 该右括号无人匹配，成为新的分界
+      } else {
+        ans = max(ans, i - st.back());
+      }
+    }
+  }
+  cout << ans << '\\n';
+  return 0;
+}
 `,
     },
   },

@@ -95,6 +95,27 @@ var getIntersectionNode = function(headA, headB) {
     # 返回相交的起始节点；不相交返回 None
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// 返回相交的起始节点；不相交返回 nullptr
+ListNode* getIntersectionNode(ListNode* headA, ListNode* headB) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -133,6 +154,37 @@ b_only = list(map(int, lines[5].split())) if b > 0 else []
 
 # 先构造共享段链表，再把两条独有段的末尾接到共享段头节点上，得到 head_a 与 head_b
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行共享段长度 c；第二行共享段 c 个整数（c = 0 时为空行）；
+//          第三行 a；第四行 A 独有段 a 个整数；第五行 b；第六行 B 独有段 b 个整数
+// 输出：相交节点的值，无交点输出 null
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int c, a, b;
+  cin >> c;
+  vector<int> shared(c);
+  for (int i = 0; i < c; i++) cin >> shared[i];
+  cin >> a;
+  vector<int> aOnly(a);
+  for (int i = 0; i < a; i++) cin >> aOnly[i];
+  cin >> b;
+  vector<int> bOnly(b);
+  for (int i = 0; i < b; i++) cin >> bOnly[i];
+
+  // 先构造共享段链表，再把两条独有段的末尾接到共享段头节点上，得到 headA 与 headB
+
+  return 0;
+}
+`,
     },
   },
 
@@ -158,6 +210,19 @@ b_only = list(map(int, lines[5].split())) if b > 0 else []
         pa = headB if pa is None else pa.next
         pb = headA if pb is None else pb.next
     return pa
+`,
+      cpp: `// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* getIntersectionNode(ListNode* headA, ListNode* headB) {
+  ListNode* pA = headA;
+  ListNode* pB = headB;
+  // 各自走完自己的链表后换到对方链表头：
+  // pA 走 a + c + b 步、pB 走 b + c + a 步，必在交点（或 nullptr）相遇
+  while (pA != pB) {
+    pA = pA == nullptr ? headB : pA->next;
+    pB = pB == nullptr ? headA : pB->next;
+  }
+  return pA;
+}
 `,
     },
     acm: {
@@ -249,6 +314,63 @@ while pa is not pb:
     pb = head_a if pb is None else pb.next
 
 print('null' if pa is None else pa.val)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+static ListNode* build(const vector<int>& vals) {
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  for (int v : vals) {
+    cur->next = new ListNode(v);
+    cur = cur->next;
+  }
+  return dummy.next;
+}
+
+int main() {
+  int c, a, b;
+  cin >> c;
+  vector<int> shared(c);
+  for (int i = 0; i < c; i++) cin >> shared[i];
+  cin >> a;
+  vector<int> aOnly(a);
+  for (int i = 0; i < a; i++) cin >> aOnly[i];
+  cin >> b;
+  vector<int> bOnly(b);
+  for (int i = 0; i < b; i++) cin >> bOnly[i];
+
+  // 共享段只构造一次，两条独有段的末尾都指向它：交点在两条链表中是同一个对象
+  ListNode* sharedHead = build(shared);
+  auto attach = [&](const vector<int>& only) -> ListNode* {
+    if (only.empty()) return sharedHead;
+    ListNode* h = build(only);
+    ListNode* t = h;
+    while (t->next != nullptr) t = t->next;
+    t->next = sharedHead;
+    return h;
+  };
+  ListNode* headA = attach(aOnly);
+  ListNode* headB = attach(bOnly);
+
+  // 双指针：走完自己的链表后换到对方链表头，必在交点（或 nullptr）相遇
+  ListNode* pA = headA;
+  ListNode* pB = headB;
+  while (pA != pB) {
+    pA = pA == nullptr ? headB : pA->next;
+    pB = pB == nullptr ? headA : pB->next;
+  }
+  if (pA == nullptr) cout << "null\\n";
+  else cout << pA->val << "\\n";
+  return 0;
+}
 `,
     },
   },

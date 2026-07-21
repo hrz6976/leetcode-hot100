@@ -127,6 +127,24 @@ while size > 1:                      # n -> n/2 -> n/4 ... 只循环 log n 轮
     size = size // 2                 # 二分查找就长这个形状
 \`\`\`
 
+\`\`\`cpp
+// ===== C++ =====
+// 模式一：一层循环跑满 n —— O(n)
+for (int i = 0; i < n; i++) {        // i 从 0 数到 n-1，循环体执行 n 次
+    // 每次只做固定几件小事，比如比较一次
+}
+// 模式二：两层循环都跑满 n —— O(n^2)
+for (int i = 0; i < n; i++) {        // 外层跑 n 次
+    for (int j = 0; j < n; j++) {    // 每进一次外层，内层再跑 n 次
+        // 循环体总共执行 n * n 次
+    }
+}
+// 模式三：规模每轮减半 —— O(log n)
+for (int size = n; size > 1; size /= 2) {  // n -> n/2 -> n/4 ... 只循环 log n 轮
+    // 二分查找就长这个形状
+}
+\`\`\`
+
 库函数不是免费的，估算时要把它们算进去：
 
 - sort 排序一次是 O(n log n)，还把它写进循环，整体就是 O(n^2 log n)
@@ -174,7 +192,31 @@ for i in range(n):                   # O(n^2)：每个数都和所有数配一�
 print('O(n^2): 循环了 ' + str(c) + ' 次')
 \`\`\`
 
-预期输出（两种语言逐字一致）：
+\`\`\`run-cpp#complexity-growth
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n = 16;
+    int a = 0;
+    for (int i = 1; i <= n; i++) a++;  // O(n)：每个数都碰一次
+    cout << "O(n): 循环了 " << a << " 次" << endl;
+    int b = 0;
+    for (int size = n; size > 1; size /= 2) {  // O(log n)：每轮规模减半
+        b++;
+        cout << "O(log n): 第 " << b << " 轮, 规模 " << size << " -> " << (size / 2) << endl;
+    }
+    cout << "O(log n): 一共只循环了 " << b << " 次" << endl;
+    int c = 0;
+    for (int i = 0; i < n; i++) {      // O(n^2)：每个数都和所有数配一次对
+        for (int j = 0; j < n; j++) c++;
+    }
+    cout << "O(n^2): 循环了 " << c << " 次" << endl;
+    return 0;
+}
+\`\`\`
+
+预期输出（三种语言逐字一致）：
 
 \`\`\`
 O(n): 循环了 16 次

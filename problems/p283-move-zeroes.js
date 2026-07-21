@@ -86,6 +86,14 @@ var moveZeroes = function(nums) {
     # 原地修改 nums，不需要返回值
     pass
 `,
+      cpp: `#include <vector>
+using namespace std;
+
+// 原地修改 nums，不需要返回值
+void moveZeroes(vector<int>& nums) {
+    // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -106,6 +114,22 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print 输出移动零之后的数组（空格分隔）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出移动零之后的数组（空格分隔）
+    return 0;
+}
 `,
     },
   },
@@ -130,6 +154,21 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
         if nums[fast] != 0:
             nums[slow], nums[fast] = nums[fast], nums[slow]
             slow += 1
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+void moveZeroes(vector<int>& nums) {
+    int slow = 0;  // 下一个非零元素应放的位置
+    for (int fast = 0; fast < (int)nums.size(); fast++) {
+        if (nums[fast] != 0) {
+            int tmp = nums[slow];
+            nums[slow] = nums[fast];
+            nums[fast] = tmp;
+            slow++;
+        }
+    }
+}
 `,
     },
     acm: {
@@ -160,6 +199,34 @@ for fast in range(len(nums)):
         nums[slow], nums[fast] = nums[fast], nums[slow]
         slow += 1
 print(' '.join(map(str, nums)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int slow = 0;  // 下一个非零元素应放的位置
+    for (int fast = 0; fast < n; fast++) {
+        if (nums[fast] != 0) {
+            int tmp = nums[slow];
+            nums[slow] = nums[fast];
+            nums[fast] = tmp;
+            slow++;
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (i) cout << ' ';
+        cout << nums[i];
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

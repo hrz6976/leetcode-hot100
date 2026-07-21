@@ -91,6 +91,25 @@ var rotate = function(matrix) {
     # 原地将 matrix 顺时针旋转 90 度，不需要返回值
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 原地将 matrix 顺时针旋转 90 度，不需要返回值
+void rotate(vector<vector<int>>& matrix) {
+    // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +133,24 @@ n = int(lines[0])
 matrix = [list(map(int, lines[i + 1].split())) for i in range(n)]
 
 # 在这里原地旋转 matrix，并逐行输出（print(' '.join(map(str, row)))）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为 n（矩阵阶数）；随后 n 行，每行 n 个整数（空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> matrix(n, vector<int>(n));
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    // 在这里原地旋转 matrix，并逐行输出（每行 n 个整数，空格分隔）
+
+    return 0;
+}
 `,
     },
   },
@@ -147,6 +184,20 @@ matrix = [list(map(int, lines[i + 1].split())) for i in range(n)]
     for i in range(n):
         for j in range(i + 1, n):
             matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+void rotate(vector<vector<int>>& matrix) {
+    int n = matrix.size();
+    // 第一步：水平翻转（上下翻转），第 i 行与第 n-1-i 行交换
+    for (int i = 0; i < n / 2; i++) swap(matrix[i], matrix[n - 1 - i]);
+    // 第二步：沿主对角线翻转（转置），交换 matrix[i][j] 与 matrix[j][i]
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            swap(matrix[i][j], matrix[j][i]);
+}
 `,
     },
     acm: {
@@ -192,6 +243,35 @@ for i in range(n):
 
 for row in matrix:
     print(' '.join(map(str, row)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> matrix(n, vector<int>(n));
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    // 水平翻转（上下翻转）
+    for (int i = 0; i < n / 2; i++) swap(matrix[i], matrix[n - 1 - i]);
+    // 主对角线翻转（转置）
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            swap(matrix[i][j], matrix[j][i]);
+
+    for (const vector<int>& row : matrix) {
+        for (int j = 0; j < n; j++) {
+            if (j) cout << ' ';
+            cout << row[j];
+        }
+        cout << '\\n';
+    }
+    return 0;
+}
 `,
     },
   },

@@ -1,11 +1,13 @@
 // 判题引擎：
 // - JavaScript：每次运行在独立 Web Worker 中执行（超时直接 terminate）
 // - Python：常驻 Pyodide Web Worker（浏览器内跑 CPython），超时则销毁重建
+// - C++：远程编译执行（Judge0 公共实例，失败回退 Wandbox），需联网
 // - 核心代码模式：调用用户函数，结构化比对返回值
 // - ACM 模式：喂 stdin、捕获 stdout，按文本比对
 
 import { compareResult, compareAcmOutput, fmtValue } from './compare.js';
 import { JUDGE_LIMITS, quotaError, validateJudgeRequest, validateResultValue } from './judge-contract.js';
+import { cppCoreSource, cppAcmSource, parseCppJudgeOutput } from './judge-cpp.js';
 
 const PYODIDE_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.28.2/full/';
 // 本地自托管的 Pyodide 运行时（vendor/pyodide/），离线可用；文件缺失或损坏时回退 CDN。
@@ -767,6 +769,157 @@ function runPythonJob(payload, onStatus) {
   });
 }
 
+// ---------- C++ 运行（远程编译服务，需联网） ----------
+
+const JUDGE0_URL = 'https://ce.judge0.com/submissions?base64_encoded=true&wait=true';
+const JUDGE0_CPP_LANG_ID = 105; // C++ (GCC 14.1.0)
+const WANDBOX_URL = 'https://wandbox.org/api/compile.json';
+const CPP_NET_TIMEOUT = 60000;
+const CPP_OFFLINE_MSG = 'C++ 判题需要联网访问远程编译服务，请检查网络后重试（JavaScript / Python 不受影响）';
+
+function b64FromText(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+function textFromB64(b64) {
+  if (!b64) return '';
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+// 规范化结果：{ ok, stdout, stderr } / { compileError } / { timeout } / { runtimeError, stdout, stderr }
+async function cppJudge0(source, stdin) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CPP_NET_TIMEOUT);
+  try {
+    const resp = await fetch(JUDGE0_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_code: b64FromText(source),
+        language_id: JUDGE0_CPP_LANG_ID,
+        stdin: b64FromText(stdin || ''),
+        cpu_time_limit: 5,
+        wall_time_limit: 15,
+      }),
+      signal: controller.signal,
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.message && !data.status) return { compileError: '远程判题服务返回错误：' + data.message };
+    const stdout = textFromB64(data.stdout);
+    const stderr = textFromB64(data.stderr);
+    const compileOutput = textFromB64(data.compile_output);
+    const statusId = data.status && data.status.id;
+    if (statusId === 6) return { compileError: compileOutput || '编译失败' };
+    if (statusId === 5) return { timeout: true, stdout };
+    if (statusId === 3 || statusId === 4) return { ok: true, stdout, stderr };
+    if (statusId === 1 || statusId === 2) return { compileError: '远程判题服务繁忙，请稍后重试' };
+    const desc = (data.status && data.status.description) || '未知错误';
+    return { runtimeError: '运行时错误（' + desc + '）' + (stderr ? '：' + stderr.slice(-500) : ''), stdout, stderr };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function cppWandbox(source, stdin) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CPP_NET_TIMEOUT);
+  try {
+    const resp = await fetch(WANDBOX_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: source, compiler: 'gcc-13.2.0', options: 'gnu++17', stdin: stdin || '' }),
+      signal: controller.signal,
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.compiler_error) return { compileError: data.compiler_error };
+    const stdout = data.program_message || '';
+    if (data.signal) return { timeout: /time/i.test(data.signal), runtimeError: /time/i.test(data.signal) ? null : '运行时错误（' + data.signal + '）', stdout };
+    if (data.status !== '0') return { runtimeError: '运行时错误（退出码 ' + data.status + '）', stdout };
+    return { ok: true, stdout, stderr: '' };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Judge0 优先，网络失败回退 Wandbox；两者都不可达返回离线提示
+async function cppRemote(source, stdin) {
+  try {
+    return await cppJudge0(source, stdin);
+  } catch {
+    try {
+      return await cppWandbox(source, stdin);
+    } catch {
+      return { compileError: CPP_OFFLINE_MSG };
+    }
+  }
+}
+
+// 从 g++ 报错文本中提取用户代码行号（harness 用 #line 1 "solution" 标注过用户代码段）
+function cppErrorInfo(compileError) {
+  const text = String(compileError);
+  const m = text.match(/solution:(\d+)/);
+  const line = m ? Number(m[1]) : null;
+  // 只保留与用户代码相关的诊断行，去掉编译器噪音
+  const lines = text.split('\n').filter((l) => l.trim());
+  const kept = lines.filter((l) => /solution:\d+|error/.test(l)).slice(0, 8);
+  return { message: kept.length ? kept.join('\n') : lines.slice(-8).join('\n'), line };
+}
+
+// core/design：一次编译运行全部用例，解析 sentinel 行还原 per-test 结果
+async function runCppCore(problem, code, onStatus) {
+  onStatus?.('compiling');
+  const r = await cppRemote(cppCoreSource(problem, code), '');
+  if (r.compileError) {
+    const info = cppErrorInfo(r.compileError);
+    return { compileError: info.message, errorLine: info.line };
+  }
+  if (r.timeout) return { timeout: true };
+  const { results } = parseCppJudgeOutput(r.stdout);
+  const total = (problem.tests || []).length;
+  if (r.runtimeError) {
+    // 进程崩溃：已产出的用例结果保留，其余标记为运行时错误
+    while (results.length < total) results.push({ ok: false, error: r.runtimeError, stdout: '' });
+  }
+  if (results.length !== total) {
+    while (results.length < total) results.push({ ok: false, error: '程序未产出判题结果（可能提前退出）', stdout: '' });
+  }
+  return { results };
+}
+
+// ACM：每个用例一次远程编译运行（stdin 只能整份喂入）
+async function runCppAcm(problem, code, onStatus) {
+  const results = [];
+  const tests = problem.acmTests || [];
+  for (const t of tests) {
+    onStatus?.('compiling');
+    const r = await cppRemote(cppAcmSource(code), t.input || '');
+    if (r.compileError) {
+      const info = cppErrorInfo(r.compileError);
+      return { compileError: info.message, errorLine: info.line };
+    }
+    if (r.timeout) {
+      results.push({ ok: false, stdout: r.stdout || '', error: '执行超时（疑似死循环）' });
+      continue;
+    }
+    if (r.runtimeError) {
+      results.push({ ok: false, stdout: r.stdout || '', error: r.runtimeError });
+      continue;
+    }
+    results.push({ ok: true, stdout: r.stdout || '' });
+  }
+  return { results };
+}
+
 // ---------- 统一判题入口 ----------
 
 function buildVerdict(raw, problem, mode, tests) {
@@ -855,6 +1008,8 @@ export async function judge({ code, problem, mode, lang, onStatus }) {
     if (mode === 'core' && raw && typeof raw.line === 'number') {
       raw.errorLine = Math.max(1, raw.line - JS_CORE_PREAMBLE.split('\n').length);
     }
+  } else if (lang === 'cpp') {
+    raw = mode === 'core' ? await runCppCore(problem, code, onStatus) : await runCppAcm(problem, code, onStatus);
   } else {
     raw = await runPythonJob(
       {
@@ -890,6 +1045,13 @@ export async function runSnippet(code, lang, onStatus) {
       },
       onStatus
     );
+  } else if (lang === 'cpp') {
+    onStatus?.('compiling');
+    const r = await cppRemote(cppAcmSource(code), '');
+    if (r.compileError) return { ok: false, stdout: '', error: cppErrorInfo(r.compileError).message };
+    if (r.timeout) return { ok: false, stdout: '', error: '执行超时（疑似死循环）' };
+    if (r.runtimeError) return { ok: false, stdout: r.stdout || '', error: r.runtimeError };
+    return { ok: true, stdout: r.stdout || '', error: null };
   } else {
     raw = await runJsWorker(jsAcmSource({ acmTests: tests }, code), JS_TIMEOUT);
   }
@@ -920,6 +1082,9 @@ export async function runCustom({ code, problem, mode, lang, input, onStatus }) 
     let raw;
     if (lang === 'javascript') {
       raw = await runJsWorker(jsCoreSource(cp, code), JS_TIMEOUT);
+    } else if (lang === 'cpp') {
+      if (problem.design) return { error: '设计题暂不支持自定义用例', stdout: '' };
+      raw = await runCppCore(cp, code, onStatus);
     } else {
       raw = await runPythonJob(
         {
@@ -949,6 +1114,8 @@ export async function runCustom({ code, problem, mode, lang, input, onStatus }) 
   let raw;
   if (lang === 'javascript') {
     raw = await runJsWorker(jsAcmSource(cp, code), JS_TIMEOUT);
+  } else if (lang === 'cpp') {
+    raw = await runCppAcm(cp, code, onStatus);
   } else {
     raw = await runPythonJob(
       {
@@ -981,4 +1148,7 @@ export const __testing = {
   PY_CORE_HARNESS,
   PY_DESIGN_HARNESS,
   PY_ACM_HARNESS,
+  cppCoreSource,
+  cppAcmSource,
+  parseCppJudgeOutput,
 };

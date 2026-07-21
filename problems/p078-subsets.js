@@ -99,6 +99,26 @@ var subsets = function(nums) {
     # 返回所有子集组成的二维列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有子集组成的二维数组
+vector<vector<int>> subsets(vector<int>& nums) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -121,6 +141,25 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码：收集所有子集，按要求格式输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个互不相同的整数（n = 0 时该行为空行）
+// 输出：每个子集一行，行内元素升序空格分隔（空集输出空行），各行按字典序排序
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码：收集所有子集，按要求格式输出
+
+    return 0;
+}
 `,
     },
   },
@@ -161,6 +200,40 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
 
     dfs(0)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+vector<vector<int>> subsets(vector<int>& nums) {
+    vector<int> arr = nums;
+    sort(arr.begin(), arr.end()); // 排序保证每个子集内部升序
+    vector<vector<int>> ans;
+    vector<int> path;
+    function<void(int)> dfs = [&](int i) {
+        if (i == (int)arr.size()) {
+            ans.push_back(path); // 存的是拷贝，path 后续还会被修改
+            return;
+        }
+        dfs(i + 1); // 不选 arr[i]
+        path.push_back(arr[i]);
+        dfs(i + 1); // 选 arr[i]
+        path.pop_back(); // 撤销选择
+    };
+    dfs(0);
+    return ans;
+}
 `,
     },
     acm: {
@@ -212,6 +285,44 @@ dfs(0)
 out.sort()  # 各行按字符串字典序排序
 for line in out:
     print(line)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <functional>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    sort(nums.begin(), nums.end()); // 排序保证每个子集内部升序
+
+    vector<string> out;
+    vector<int> path;
+    function<void(int)> dfs = [&](int i) {
+        if (i == (int)nums.size()) {
+            string line;
+            for (int k = 0; k < (int)path.size(); k++) {
+                if (k) line += ' ';
+                line += to_string(path[k]);
+            }
+            out.push_back(line); // 空集对应空串
+            return;
+        }
+        dfs(i + 1);
+        path.push_back(nums[i]);
+        dfs(i + 1);
+        path.pop_back();
+    };
+    dfs(0);
+
+    sort(out.begin(), out.end()); // 各行按字符串字典序排序
+    for (const string& line : out) cout << line << '\\n';
+    return 0;
+}
 `,
     },
   },

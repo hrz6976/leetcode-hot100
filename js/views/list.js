@@ -58,9 +58,10 @@ const TOPIC_ORDER = [
   '位运算', '字典树', '分治', '归并排序', '快速选择', '桶排序', '组合数学', '数据流',
 ];
 const TOPIC_RANK = new Map(TOPIC_ORDER.map((t, i) => [t, i]));
+export { TOPIC_ORDER, TOPIC_RANK };
 
 // 一题有多个标签时，取优先级最高（最具特征）的标签作为它的唯一分类。
-function primaryCategory(p) {
+export function primaryCategory(p) {
   let best = p.tags[0] || '其他';
   let bestRank = CATEGORY_RANK.get(best) ?? CATEGORY_PRIORITY.length;
   for (const t of p.tags) {

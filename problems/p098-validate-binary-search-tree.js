@@ -93,6 +93,28 @@ var isValidBST = function(root) {
     # root 为二叉树根节点（TreeNode），返回是否为有效二叉搜索树（布尔值）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// root 为二叉树根节点，返回是否为有效二叉搜索树
+bool isValidBST(TreeNode* root) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -124,6 +146,32 @@ arr = [None if t == 'null' else int(t) for t in tokens]
 
 # 将层序标记构造成二叉树（TreeNode），验证后输出 true / false
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行）
+// 输出：true 或 false（小写）
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 将层序标记构造成二叉树，验证后用 cout 输出 true / false
+
+    return 0;
+}
+`,
     },
   },
 
@@ -152,6 +200,34 @@ arr = [None if t == 'null' else int(t) for t in tokens]
         return check(node.left, lo, node.val) and check(node.right, node.val, hi)
 
     return check(root, None, None)
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+bool isValidBST(TreeNode* root) {
+    // node 的值必须落在开区间 (lo, hi) 内；用 long long 极值表示无约束（节点值为 int，不会触碰边界）
+    function<bool(TreeNode*, long long, long long)> check = [&](TreeNode* node, long long lo, long long hi) -> bool {
+        if (node == nullptr) return true;
+        if (node->val <= lo) return false; // 必须严格大于下界
+        if (node->val >= hi) return false; // 必须严格小于上界
+        return check(node->left, lo, node->val) && check(node->right, node->val, hi);
+    };
+    return check(root, LLONG_MIN, LLONG_MAX);
+}
 `,
     },
     acm: {
@@ -224,6 +300,52 @@ def check(node, lo, hi):
     return check(node.left, lo, node.val) and check(node.right, node.val, hi)
 
 print('true' if check(build_tree(arr), None, None) else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <functional>
+#include <climits>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 层序数组构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (!nodes[i]) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+// 上下界递归：node 的值必须落在开区间 (lo, hi) 内
+bool check(TreeNode* node, long long lo, long long hi) {
+    if (node == nullptr) return true;
+    if (node->val <= lo) return false;
+    if (node->val >= hi) return false;
+    return check(node->left, lo, node->val) && check(node->right, node->val, hi);
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    cout << (check(buildTree(tokens), LLONG_MIN, LLONG_MAX) ? "true" : "false") << '\\n';
+    return 0;
+}
 `,
     },
   },

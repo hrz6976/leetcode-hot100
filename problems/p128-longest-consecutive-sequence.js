@@ -82,6 +82,26 @@ var longestConsecutive = function(nums) {
     # 返回最长连续序列的长度
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最长连续序列的长度
+int longestConsecutive(vector<int> nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -102,6 +122,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print 输出最长连续序列的长度
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时该行为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // TODO: 在这里实现，用 cout 输出最长连续序列的长度
+
+    return 0;
+}
 `,
     },
   },
@@ -131,6 +168,32 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
             cur += 1
         best = max(best, cur - x + 1)
     return best
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int longestConsecutive(vector<int> nums) {
+    unordered_set<int> s(nums.begin(), nums.end()); // 去重 + O(1) 存在性查询
+    int best = 0;
+    for (int x : s) {
+        if (s.count(x - 1)) continue; // x 不是某段序列的起点，跳过
+        int cur = x;
+        while (s.count(cur + 1)) cur++; // 从起点一路扩展
+        best = max(best, cur - x + 1);
+    }
+    return best;
+}
 `,
     },
     acm: {
@@ -164,6 +227,30 @@ for x in s:
         cur += 1
     best = max(best, cur - x + 1)
 print(best)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <unordered_set>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    unordered_set<int> s(nums.begin(), nums.end());
+    int best = 0;
+    for (int x : s) {
+        if (s.count(x - 1)) continue;
+        int cur = x;
+        while (s.count(cur + 1)) cur++;
+        best = max(best, cur - x + 1);
+    }
+    cout << best << endl;
+    return 0;
+}
 `,
     },
   },

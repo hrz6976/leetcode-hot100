@@ -101,6 +101,23 @@ def inorder_traversal(root):
     return ans                # 收齐的名单就是答案
 \`\`\`
 
+C++ 版本（逻辑一模一样）：
+
+\`\`\`cpp
+// C++
+vector<int> ans;                  // 收集写下的节点值
+void dfs(TreeNode* node) {        // dfs：处理「以 node 为根的子树」
+    if (node == nullptr) return;  // 空位置：没人，直接交差
+    dfs(node->left);              // 1) 先把任务派给左下属
+    ans.push_back(node->val);     // 2) 左子树交差，写下自己（中序）
+    dfs(node->right);             // 3) 再把任务派给右下属
+}
+vector<int> inorderTraversal(TreeNode* root) {
+    dfs(root);                    // 从最顶上的根开始派活
+    return ans;                   // 收齐的名单就是答案
+}
+\`\`\`
+
 前序、后序不用背新代码——**只需把 ans 那一行挪位置**：放两声 dfs 之前是前序，放之后是后序。三种遍历是同一份代码的三种摆放。
 
 模板二：求树的最大深度（104）。这是「收齐结果再汇总」的纯享版——函数**返回**每棵子树的深度，父节点拿两个返回值算出自己这棵：
@@ -123,6 +140,16 @@ def max_depth(root):
     left = max_depth(root.left)   # 问左下属：你那边最深几层
     right = max_depth(root.right) # 问右下属：你那边最深几层
     return max(left, right) + 1   # 收齐两边，取大者 + 自己这层
+\`\`\`
+
+\`\`\`cpp
+// C++
+int maxDepth(TreeNode* root) {
+    if (root == nullptr) return 0;     // 空位置：高度 0，报上去
+    int left = maxDepth(root->left);   // 问左下属：你那边最深几层
+    int right = maxDepth(root->right); // 问右下属：你那边最深几层
+    return max(left, right) + 1;       // 收齐两边，取大者 + 自己这层
+}
 \`\`\`
 
 这两种写法对应递归的两大范式：把信息**装在返回值里带回来**（自底向上，如 maxDepth），或者**顺着参数往下传**（自顶向下，比如把当前深度传给孩子）。有时候「函数要返回的信息」和「题目要的答案」不是一回事（如 543 直径），就用一个外面的大变量顺手收集答案，函数照常返回它该返回的。
@@ -170,6 +197,50 @@ def dfs(node):
     dfs(node['right'])
 dfs(root)
 print('中序遍历最终结果: ' + ' -> '.join(map(str, ans)))
+\`\`\`
+
+C++：
+
+\`\`\`run-cpp#inorder-walkthrough
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+vector<int> ans;                           // 收集写下的节点值
+
+string show(const vector<int>& arr) {      // 拼成 "2 -> 1 -> 3" 的样子
+    string s = "";
+    for (int i = 0; i < (int)arr.size(); i++) {
+        if (i > 0) s += " -> ";
+        s += to_string(arr[i]);
+    }
+    return s;
+}
+
+void dfs(TreeNode* node) {
+    if (node == nullptr) return;
+    dfs(node->left);
+    ans.push_back(node->val);
+    cout << "节点 " << node->val << " 写下自己  结果: " << show(ans) << endl;
+    dfs(node->right);
+}
+
+int main() {
+    TreeNode* root = new TreeNode(1);
+    root->left = new TreeNode(2);
+    root->right = new TreeNode(3);
+    dfs(root);
+    cout << "中序遍历最终结果: " << show(ans) << endl;
+    return 0;
+}
 \`\`\`
 
 实际运行输出：

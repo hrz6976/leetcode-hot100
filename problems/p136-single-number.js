@@ -83,6 +83,26 @@ var singleNumber = function(nums) {
     # 返回只出现一次的那个整数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回只出现一次的那个整数
+int singleNumber(vector<int> nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -102,6 +122,24 @@ nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出答案
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) {
+        cin >> nums[i];
+    }
+
+    // TODO: 在这里实现，用 cout << ans << "\\n"; 输出答案
+    return 0;
+}
+`,
     },
   },
 
@@ -120,6 +158,28 @@ nums = list(map(int, lines[1].split()))
     for x in nums:
         ans ^= x  # 出现两次的数两两抵消
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int singleNumber(vector<int> nums) {
+    int ans = 0;
+    for (int x : nums) {
+        ans ^= x; // 出现两次的数两两抵消
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -141,6 +201,26 @@ ans = 0
 for x in nums:
     ans ^= x
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) {
+        cin >> nums[i];
+    }
+
+    int ans = 0;
+    for (int x : nums) {
+        ans ^= x;
+    }
+    cout << ans << endl;
+    return 0;
+}
 `,
     },
   },

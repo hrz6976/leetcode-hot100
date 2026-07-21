@@ -58,6 +58,15 @@ class ListNode:
         self.next = next    # 指向下一个节点的引用，默认是 None
 \`\`\`
 
+\`\`\`
+// C++
+struct ListNode {
+  int val;                    // 值
+  ListNode* next;             // 指向下一个节点的指针，默认是空
+  ListNode(int v, ListNode* n = nullptr) : val(v), next(n) {}
+};
+\`\`\`
+
 链表题基本不考复杂算法，考的就是**顺着纸条走、改纸条**这两件事的手稳不稳。下面拿「反转链表」练手——它是 Hot 100 里所有链表题的母题。
 
 ### 一个最小例子
@@ -122,6 +131,21 @@ def reverseList(head):
     return prev                 # cur 走出车尾时，prev 正好在新链头
 \`\`\`
 
+\`\`\`
+// C++：反转链表（LeetCode 206）
+ListNode* reverseList(ListNode* head) {
+  ListNode* prev = nullptr;   // 已反转部分的车头，一开始什么都没有
+  ListNode* cur = head;       // 还没处理的第一截车厢
+  while (cur != nullptr) {    // 还有没处理的，就继续
+    ListNode* next = cur->next;  // ① 先存纸条：cur 的下一站
+    cur->next = prev;            // ② 撕纸条：cur 掉头指向已反转部分
+    prev = cur;                  // ③ 已反转部分向前扩一格
+    cur = next;                  // ④ 去处理下一站
+  }
+  return prev;                // cur 走出车尾时，prev 正好在新链头
+}
+\`\`\`
+
 四行循环体，背到做梦都能写。建议现在就合上页面默写一遍——后面 24、25 题全是它的拼装。
 
 ### 亲手跑一跑
@@ -172,7 +196,46 @@ while prev:
 print('反转结果: ' + '->'.join(out))
 \`\`\`
 
-预期输出（两个版本完全一致）：
+\`\`\`run-cpp#reverse-list-walkthrough
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Node {
+  int val;
+  Node* next;
+  Node(int v, Node* n = nullptr) : val(v), next(n) {}
+};
+
+string show(Node* p) {
+  return p ? to_string(p->val) : "null";  // 打印帮助函数：空显示 null
+}
+
+int main() {
+  Node* head = new Node(1, new Node(2, new Node(3, new Node(4))));  // 造一条 1->2->3->4 的链
+  Node* prev = nullptr;
+  Node* cur = head;
+  int rnd = 0;
+  while (cur) {
+    rnd++;
+    cout << "第" << rnd << "轮开始: prev=" << show(prev) << ", cur=" << show(cur) << "\\n";
+    Node* nxt = cur->next;   // ① 存纸条
+    cur->next = prev;        // ② 掉头
+    prev = cur;              // ③ prev 前移
+    cur = nxt;               // ④ cur 前移
+    cout << "  第" << rnd << "轮结束: prev=" << show(prev) << ", cur=" << show(cur) << "\\n";
+  }
+  string out;
+  for (Node* p = prev; p; p = p->next) {  // 从 prev 出发走一遍，验证结果
+    if (!out.empty()) out += "->";
+    out += to_string(p->val);
+  }
+  cout << "反转结果: " << out << "\\n";
+  return 0;
+}
+\`\`\`
+
+预期输出（三个版本完全一致）：
 
 \`\`\`
 第1轮开始: prev=null, cur=1

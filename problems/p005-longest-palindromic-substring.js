@@ -87,6 +87,26 @@ var longestPalindrome = function(s) {
     # 返回 s 的最长回文子串（答案不唯一时返回任意一个即可）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回 s 的最长回文子串（答案不唯一时返回任意一个即可）
+string longestPalindrome(string s) {
+    // TODO: 在这里实现
+    return "";
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -105,6 +125,22 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print 输出最长回文子串（本题 ACM 测试数据保证答案唯一）
+`,
+      cpp: `// ACM 模式：用 cin/cout 读写标准输入输出
+// 输入格式：仅一行，即字符串 s（空串时为空行）
+// 注意：必须用 getline 读取整行；cin >> s 在空串用例下会读取失败
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // 在这里写你的代码，用 cout 输出最长回文子串（本题 ACM 测试数据保证答案唯一）
+
+    return 0;
+}
 `,
     },
   },
@@ -148,6 +184,40 @@ s = sys.stdin.read().split('\\n')[0]
             start = i - (length - 1) // 2  # 统一的回文起点公式
     return s[start:start + max_len]
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+string longestPalindrome(string s) {
+    int start = 0, maxLen = 0;
+    // 从中心 (l, r) 向两侧扩展，返回得到的回文长度
+    auto expand = [&](int l, int r) {
+        while (l >= 0 && r < (int)s.size() && s[l] == s[r]) {
+            l--;
+            r++;
+        }
+        return r - l - 1; // 循环结束时 l、r 停在失配位置，回文在开区间 (l, r)
+    };
+    for (int i = 0; i < (int)s.size(); i++) {
+        int len = max(expand(i, i), expand(i, i + 1)); // 奇数 / 偶数两种中心
+        if (len > maxLen) {
+            maxLen = len;
+            start = i - (len - 1) / 2; // 统一的回文起点公式
+        }
+    }
+    return s.substr(start, maxLen);
+}
+`,
     },
     acm: {
       javascript: `// 不要对整个 input 用 trim()，否则空串用例会被吞掉
@@ -190,6 +260,36 @@ for i in range(len(s)):
         start = i - (length - 1) // 2
 
 print(s[start:start + max_len])
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // 必须用 getline 读取整行，空串用例只有空行
+    string s;
+    getline(cin, s);
+
+    int start = 0, maxLen = 0;
+    // 从中心 (l, r) 向两侧扩展，返回得到的回文长度
+    auto expand = [&](int l, int r) {
+        while (l >= 0 && r < (int)s.size() && s[l] == s[r]) {
+            l--;
+            r++;
+        }
+        return r - l - 1;
+    };
+    for (int i = 0; i < (int)s.size(); i++) {
+        int len = max(expand(i, i), expand(i, i + 1));
+        if (len > maxLen) {
+            maxLen = len;
+            start = i - (len - 1) / 2;
+        }
+    }
+    cout << s.substr(start, maxLen) << "\\n";
+    return 0;
+}
 `,
     },
   },

@@ -93,6 +93,26 @@ var searchMatrix = function(matrix, target) {
     # target 在矩阵中返回 True，否则返回 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    // target 在矩阵中返回 true，否则返回 false
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -118,6 +138,26 @@ matrix = [list(map(int, lines[1 + i].split())) for i in range(m)]
 target = int(lines[1 + m])
 
 # 在这里写你的代码，用 print 输出 true 或 false（小写）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m n，随后 m 行每行 n 个整数，最后一行 target
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+    int target;
+    cin >> target;
+
+    // 在这里写你的代码，用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -152,6 +192,35 @@ target = int(lines[1 + m])
         else:
             hi = mid - 1
     return False
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    int m = (int)matrix.size();
+    int n = (int)matrix[0].size();
+    int lo = 0;
+    int hi = m * n - 1; // 把矩阵当成一维升序数组
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        int v = matrix[mid / n][mid % n]; // 一维下标换算成二维坐标
+        if (v == target) return true;
+        if (v < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return false;
+}
 `,
     },
     acm: {
@@ -200,6 +269,37 @@ while lo <= hi:
     else:
         hi = mid - 1
 print('true' if found else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+    int target;
+    cin >> target;
+
+    // 把矩阵当成一维升序数组做二分
+    int lo = 0;
+    int hi = m * n - 1;
+    bool found = false;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        int v = matrix[mid / n][mid % n];
+        if (v == target) {
+            found = true;
+            break;
+        }
+        if (v < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    cout << (found ? "true" : "false") << "\\n";
+    return 0;
+}
 `,
     },
   },

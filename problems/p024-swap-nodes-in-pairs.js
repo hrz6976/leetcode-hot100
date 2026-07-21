@@ -103,6 +103,27 @@ var swapPairs = function(head) {
     # head 为链表头节点（ListNode），返回两两交换后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点，返回两两交换后的头节点
+ListNode* swapPairs(ListNode* head) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -129,6 +150,30 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
 
 # 构造链表，完成两两交换后用 print 输出结果
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (auto& v : vals) cin >> v;
+
+  // 构造链表，完成两两交换后用 cout 输出结果（空链表输出一个空行）
+  // TODO: 在这里实现
+
+  return 0;
+}
+`,
     },
   },
 
@@ -151,6 +196,30 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
     head.next = swapPairs(second.next)  # 剩余部分递归交换后接回 head 后面
     second.next = head  # second 提到前面，成为这一对新头
     return second
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* swapPairs(ListNode* head) {
+  // 递归边界：空链表或只剩一个节点时无需交换
+  if (head == nullptr || head->next == nullptr) return head;
+  ListNode* second = head->next;        // 一对中的第二个节点
+  head->next = swapPairs(second->next); // 剩余部分递归交换后接回 head 后面
+  second->next = head;                  // second 提到前面，成为这一对新头
+  return second;
+}
 `,
     },
     acm: {
@@ -222,6 +291,52 @@ while head is not None:
     out.append(str(head.val))
     head = head.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+// 递归两两交换
+static ListNode* swapPairs(ListNode* h) {
+  if (h == nullptr || h->next == nullptr) return h;
+  ListNode* second = h->next;
+  h->next = swapPairs(second->next);
+  second->next = h;
+  return second;
+}
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (auto& v : vals) cin >> v;
+
+  // 构造链表
+  ListNode dummy;
+  ListNode* tail = &dummy;
+  for (int v : vals) {
+    tail->next = new ListNode(v);
+    tail = tail->next;
+  }
+
+  ListNode* head = swapPairs(dummy.next);
+
+  // 输出交换后的链表（空链表输出一个空行）
+  bool first = true;
+  for (ListNode* cur = head; cur; cur = cur->next) {
+    if (!first) cout << ' ';
+    first = false;
+    cout << cur->val;
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

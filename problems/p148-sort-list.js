@@ -86,6 +86,27 @@ var sortList = function(head) {
     # head 为链表头节点（ListNode），返回升序排序后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点（ListNode），返回升序排序后的头节点
+ListNode* sortList(ListNode* head) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -111,6 +132,29 @@ n = int(lines[0])
 vals = list(map(int, lines[1].split())) if n > 0 else []
 
 # 构造链表，完成排序后用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+
+  // 构造链表，完成排序后用 cout 输出结果（空格分隔，n = 0 时输出空行）
+
+  return 0;
+}
 `,
     },
   },
@@ -186,6 +230,42 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
         return dummy.next
 
     return merge_sort(head)
+`,
+      cpp: `// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// 归并排序
+static ListNode* mergeSort(ListNode* h) {
+  if (h == nullptr || h->next == nullptr) return h; // 空或单节点天然有序
+  // 快慢指针找中点：slow 停在前半段末尾
+  ListNode* slow = h;
+  ListNode* fast = h->next;
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  ListNode* mid = slow->next;
+  slow->next = nullptr; // 断开前后两半
+  ListNode* left = mergeSort(h);
+  ListNode* right = mergeSort(mid);
+  // 合并两个有序链表
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  while (left != nullptr && right != nullptr) {
+    if (left->val <= right->val) {
+      cur->next = left;
+      left = left->next;
+    } else {
+      cur->next = right;
+      right = right->next;
+    }
+    cur = cur->next;
+  }
+  cur->next = left != nullptr ? left : right;
+  return dummy.next;
+}
+
+ListNode* sortList(ListNode* head) {
+  return mergeSort(head);
+}
 `,
     },
     acm: {
@@ -294,6 +374,74 @@ while head is not None:
     out.append(str(head.val))
     head = head.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+// 归并排序
+static ListNode* sortListRec(ListNode* h) {
+  if (h == nullptr || h->next == nullptr) return h; // 空或单节点天然有序
+  // 快慢指针找中点：slow 停在前半段末尾
+  ListNode* slow = h;
+  ListNode* fast = h->next;
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  ListNode* mid = slow->next;
+  slow->next = nullptr; // 断开前后两半
+  ListNode* left = sortListRec(h);
+  ListNode* right = sortListRec(mid);
+  // 合并两个有序链表
+  ListNode dm;
+  ListNode* cur = &dm;
+  while (left != nullptr && right != nullptr) {
+    if (left->val <= right->val) {
+      cur->next = left;
+      left = left->next;
+    } else {
+      cur->next = right;
+      right = right->next;
+    }
+    cur = cur->next;
+  }
+  cur->next = left != nullptr ? left : right;
+  return dm.next;
+}
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+
+  // 构造链表
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  for (int v : vals) {
+    cur->next = new ListNode(v);
+    cur = cur->next;
+  }
+
+  ListNode* head = sortListRec(dummy.next);
+
+  // 输出排序后的链表（空格分隔，n = 0 时输出空行）
+  bool first = true;
+  for (ListNode* p = head; p != nullptr; p = p->next) {
+    if (!first) cout << ' ';
+    cout << p->val;
+    first = false;
+  }
+  cout << "\\n";
+  return 0;
+}
 `,
     },
   },

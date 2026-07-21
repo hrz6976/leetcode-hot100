@@ -88,6 +88,26 @@ var searchInsert = function(nums, target) {
     # 返回目标值下标，或它应按顺序插入的位置（整数）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回目标值下标，或它应按顺序插入的位置（整数）
+int searchInsert(vector<int>& nums, int target) {
+  // TODO: 在这里实现
+  return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -108,6 +128,26 @@ nums = list(map(int, lines[1].split()))
 target = int(lines[2])
 
 # 在这里写你的代码，用 print 输出一个整数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个升序整数，第三行 target
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+  int target;
+  cin >> target;
+
+  // 在这里写你的代码，用 cout 输出一个整数
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -134,6 +174,31 @@ target = int(lines[2])
         else:
             hi = mid
     return lo
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int searchInsert(vector<int>& nums, int target) {
+  int lo = 0;
+  int hi = nums.size(); // 左闭右开区间 [lo, hi)
+  while (lo < hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
 `,
     },
     acm: {
@@ -166,6 +231,30 @@ while lo < hi:
     else:
         hi = mid
 print(lo)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+  int target;
+  cin >> target;
+
+  // 二分找第一个 >= target 的位置
+  int lo = 0;
+  int hi = n;
+  while (lo < hi) {
+    int mid = (lo + hi) / 2;
+    if (nums[mid] < target) lo = mid + 1;
+    else hi = mid;
+  }
+  cout << lo << '\\n';
+  return 0;
+}
 `,
     },
   },

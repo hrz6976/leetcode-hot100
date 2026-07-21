@@ -91,6 +91,27 @@ var pathSum = function(root, targetSum) {
     # root 为二叉树根节点（TreeNode），返回和为 targetSum 的向下路径条数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+// root 为二叉树根节点，返回和为 targetSum 的向下路径条数
+int pathSum(TreeNode* root, int targetSum) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -119,6 +140,51 @@ tokens = lines[1].split() if n > 0 else []
 target_sum = int(lines[2])
 
 # 将层序标记构造成二叉树（TreeNode），统计路径数目后用 print 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行），第三行 targetSum
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <sstream>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    string line;
+    getline(cin, line); // 吃掉第一行末尾的换行
+    getline(cin, line); // 第二行：n 个标记（n = 0 时为空行）
+    vector<string> tokens;
+    if (n > 0) {
+        istringstream iss(line);
+        string t;
+        while (iss >> t) tokens.push_back(t);
+    }
+    int targetSum;
+    cin >> targetSum;
+
+    // 将层序标记构造成二叉树（TreeNode），统计路径数目后用 cout 输出
+
+    return 0;
+}
 `,
     },
   },
@@ -163,6 +229,41 @@ target_sum = int(lines[2])
 
     dfs(root, 0)
     return count
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+int pathSum(TreeNode* root, int targetSum) {
+  // 前缀和 + 哈希表：curr 为根到当前节点的路径和，
+  // 若 curr - targetSum 曾在祖先路径上出现过，中间那段就是一条合法路径
+  unordered_map<long long, int> prefix; // 前缀和 -> 出现次数
+  prefix[0] = 1; // 空前缀：从根开始的路径
+  int count = 0;
+  function<void(TreeNode*, long long)> dfs = [&](TreeNode* node, long long curr) {
+    if (!node) return;
+    curr += node->val;
+    count += prefix[curr - targetSum];
+    prefix[curr]++;
+    dfs(node->left, curr);
+    dfs(node->right, curr);
+    prefix[curr]--; // 回溯：离开当前子树前撤销本层的前缀和
+  };
+  dfs(root, 0);
+  return count;
+}
 `,
     },
     acm: {
@@ -250,6 +351,78 @@ def dfs(node, curr):
 
 dfs(build_tree(arr), 0)
 print(count)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+#include <sstream>
+using namespace std;
+
+struct TreeNode {
+  int val;
+  TreeNode* left;
+  TreeNode* right;
+  TreeNode(int v = 0) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 层序标记构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+  if (tokens.empty() || tokens[0] == "null") return nullptr;
+  vector<TreeNode*> nodes(tokens.size(), nullptr);
+  for (size_t i = 0; i < tokens.size(); i++)
+    if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+  size_t j = 1;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    if (!nodes[i]) continue;
+    if (j < nodes.size()) nodes[i]->left = nodes[j++];
+    if (j < nodes.size()) nodes[i]->right = nodes[j++];
+  }
+  return nodes[0];
+}
+
+int main() {
+  int n;
+  cin >> n;
+  string line;
+  getline(cin, line); // 吃掉第一行末尾的换行
+  getline(cin, line); // 第二行：n 个标记（n = 0 时为空行）
+  vector<string> tokens;
+  if (n > 0) {
+    istringstream iss(line);
+    string t;
+    while (iss >> t) tokens.push_back(t);
+  }
+  int targetSum;
+  cin >> targetSum;
+
+  // 前缀和 + 哈希表
+  unordered_map<long long, int> prefix;
+  prefix[0] = 1;
+  int count = 0;
+  function<void(TreeNode*, long long)> dfs = [&](TreeNode* node, long long curr) {
+    if (!node) return;
+    curr += node->val;
+    count += prefix[curr - targetSum];
+    prefix[curr]++;
+    dfs(node->left, curr);
+    dfs(node->right, curr);
+    prefix[curr]--;
+  };
+  dfs(buildTree(tokens), 0);
+  cout << count << '\\n';
+  return 0;
+}
 `,
     },
   },

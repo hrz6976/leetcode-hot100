@@ -95,6 +95,27 @@ var addTwoNumbers = function(l1, l2) {
     # 注意：请自己定义节点类来创建新节点（判题环境中 ListNode 不可直接引用）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// l1、l2 为两条链表的头节点，返回和链表的头节点
+ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -124,6 +145,46 @@ m = int(lines[2])
 b = list(map(int, lines[3].split())) if m > 0 else []
 
 # 用 a、b 构造两条链表，逐位相加后用 print 输出结果的各位
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数；第三行 m，第四行 m 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* nxt = nullptr) : val(v), next(nxt) {}
+};
+
+// 由数组构造链表
+ListNode* buildList(const vector<int>& arr) {
+    ListNode* dummy = new ListNode(0);
+    ListNode* cur = dummy;
+    for (int v : arr) {
+        cur->next = new ListNode(v);
+        cur = cur->next;
+    }
+    return dummy->next;
+}
+
+int main() {
+    int n, m;
+    cin >> n;
+    vector<int> a(n);
+    for (int i = 0; i < n; i++) cin >> a[i];
+    cin >> m;
+    vector<int> b(m);
+    for (int i = 0; i < m; i++) cin >> b[i];
+
+    ListNode* l1 = buildList(a);
+    ListNode* l2 = buildList(b);
+
+    // 在这里写你的代码：逐位相加后用 cout 输出结果的各位（空格分隔）
+
+    return 0;
+}
 `,
     },
   },
@@ -169,6 +230,38 @@ b = list(map(int, lines[3].split())) if m > 0 else []
         if l2 is not None:
             l2 = l2.next
     return dummy.next
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+    ListNode* dummy = new ListNode(0); // 哑节点，简化头节点处理
+    ListNode* cur = dummy;
+    int carry = 0;
+    while (l1 != nullptr || l2 != nullptr || carry > 0) {
+        int x = l1 != nullptr ? l1->val : 0;
+        int y = l2 != nullptr ? l2->val : 0;
+        int sum = x + y + carry;
+        carry = sum / 10; // 新的进位
+        cur->next = new ListNode(sum % 10);
+        cur = cur->next;
+        if (l1 != nullptr) l1 = l1->next;
+        if (l2 != nullptr) l2 = l2->next;
+    }
+    return dummy->next;
+}
 `,
     },
     acm: {
@@ -245,6 +338,59 @@ while l1 is not None or l2 is not None or carry > 0:
     if l2 is not None:
         l2 = l2.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* nxt = nullptr) : val(v), next(nxt) {}
+};
+
+// 由数组构造链表
+ListNode* buildList(const vector<int>& arr) {
+    ListNode* dummy = new ListNode(0);
+    ListNode* cur = dummy;
+    for (int v : arr) {
+        cur->next = new ListNode(v);
+        cur = cur->next;
+    }
+    return dummy->next;
+}
+
+int main() {
+    int n, m;
+    cin >> n;
+    vector<int> a(n);
+    for (int i = 0; i < n; i++) cin >> a[i];
+    cin >> m;
+    vector<int> b(m);
+    for (int i = 0; i < m; i++) cin >> b[i];
+
+    ListNode* l1 = buildList(a);
+    ListNode* l2 = buildList(b);
+
+    // 逐位相加，结果存入数组
+    vector<int> out;
+    int carry = 0;
+    while (l1 != nullptr || l2 != nullptr || carry > 0) {
+        int x = l1 != nullptr ? l1->val : 0;
+        int y = l2 != nullptr ? l2->val : 0;
+        int sum = x + y + carry;
+        carry = sum / 10;
+        out.push_back(sum % 10);
+        if (l1 != nullptr) l1 = l1->next;
+        if (l2 != nullptr) l2 = l2->next;
+    }
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i > 0) cout << " ";
+        cout << out[i];
+    }
+    cout << "\\n";
+    return 0;
+}
 `,
     },
   },

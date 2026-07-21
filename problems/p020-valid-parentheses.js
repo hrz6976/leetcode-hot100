@@ -102,6 +102,26 @@ var isValid = function(s) {
     # 判断括号字符串 s 是否有效，返回 True / False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判断括号字符串 s 是否有效
+bool isValid(string s) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -120,6 +140,22 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print(...) 输出小写的 true / false
+`,
+      cpp: `// ACM 模式：用 cin/cout 读写标准输入输出
+// 输入格式：一行括号字符串（可能是空行，表示空串）；输出 true 或 false（小写）
+// 注意：必须用 getline 读取整行；cin >> s 在空行用例下会读取失败
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // 在这里写你的代码，用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -153,6 +189,34 @@ s = sys.stdin.read().split('\\n')[0]
                 return False
             stack.pop()
     return len(stack) == 0
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool isValid(string s) {
+    unordered_map<char, char> match = {{')', '('}, {']', '['}, {'}', '{'}}; // 右括号 -> 对应的左括号
+    stack<char> st;
+    for (char ch : s) {
+        if (ch == '(' || ch == '[' || ch == '{') {
+            st.push(ch);
+        } else {
+            if (st.empty() || st.top() != match[ch]) return false;
+            st.pop();
+        }
+    }
+    return st.empty();
+}
 `,
     },
     acm: {
@@ -193,6 +257,36 @@ for ch in s:
 if stack:
     ok = False
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <stack>
+#include <unordered_map>
+using namespace std;
+
+int main() {
+    // 必须用 getline 读取整行，空行即空串
+    string s;
+    getline(cin, s);
+
+    unordered_map<char, char> match = {{')', '('}, {']', '['}, {'}', '{'}}; // 右括号 -> 对应的左括号
+    stack<char> st;
+    bool ok = true;
+    for (char ch : s) {
+        if (ch == '(' || ch == '[' || ch == '{') {
+            st.push(ch);
+        } else {
+            if (st.empty() || st.top() != match[ch]) {
+                ok = false;
+                break;
+            }
+            st.pop();
+        }
+    }
+    if (!st.empty()) ok = false;
+    cout << (ok ? "true" : "false") << endl;
+    return 0;
+}
 `,
     },
   },

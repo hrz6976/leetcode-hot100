@@ -94,6 +94,28 @@ var levelOrder = function(root) {
     # root 为二叉树根节点（TreeNode），返回每层节点值组成的二维列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// root 为二叉树根节点，返回每层节点值组成的二维数组
+vector<vector<int>> levelOrder(TreeNode* root) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -124,6 +146,32 @@ tokens = lines[1].split() if n > 0 else []
 arr = [None if t == 'null' else int(t) for t in tokens]
 
 # 将层序标记构造成二叉树（TreeNode），逐层用 print 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行）
+// 输出：每层一行（值空格分隔），空树不输出任何内容
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 将层序标记构造成二叉树，逐层用 cout 输出（空树不输出任何内容）
+
+    return 0;
+}
 `,
     },
   },
@@ -165,6 +213,42 @@ arr = [None if t == 'null' else int(t) for t in tokens]
                 queue.append(node.right)
         ans.append(level)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+vector<vector<int>> levelOrder(TreeNode* root) {
+    vector<vector<int>> ans;
+    if (root == nullptr) return ans;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        int size = q.size(); // 本层节点数（先固定住）
+        vector<int> level;
+        for (int i = 0; i < size; i++) {
+            TreeNode* node = q.front();
+            q.pop();
+            level.push_back(node->val);
+            if (node->left != nullptr) q.push(node->left);
+            if (node->right != nullptr) q.push(node->right);
+        }
+        ans.push_back(level);
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -248,6 +332,61 @@ if root is not None:
             if node.right is not None:
                 queue.append(node.right)
         print(' '.join(level))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 层序数组构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (!nodes[i]) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    TreeNode* root = buildTree(tokens);
+
+    // BFS 逐层输出（空树不输出任何内容）
+    if (root != nullptr) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int size = q.size(); // 本层节点数（先固定住）
+            for (int i = 0; i < size; i++) {
+                TreeNode* node = q.front();
+                q.pop();
+                if (i) cout << ' ';
+                cout << node->val;
+                if (node->left != nullptr) q.push(node->left);
+                if (node->right != nullptr) q.push(node->right);
+            }
+            cout << '\\n';
+        }
+    }
+    return 0;
+}
 `,
     },
   },

@@ -85,6 +85,16 @@ var lengthOfLIS = function(nums) {
     # 返回最长严格递增子序列的长度
     pass
 `,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+// 返回最长严格递增子序列的长度
+int lengthOfLIS(vector<int>& nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +114,22 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出最长递增子序列的长度
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出最长递增子序列的长度
+    return 0;
+}
 `,
     },
   },
@@ -144,6 +170,25 @@ nums = list(map(int, lines[1].split()))
         else:
             tails[lo] = x  # 用更小的结尾替换，长度不变更优
     return len(tails)
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int lengthOfLIS(vector<int>& nums) {
+    // tails[k] = 长度为 k+1 的递增子序列的最小结尾值（tails 始终严格递增）
+    vector<int> tails;
+    for (int x : nums) {
+        // 二分查找 tails 中第一个 >= x 的位置
+        auto it = lower_bound(tails.begin(), tails.end(), x);
+        if (it == tails.end()) {
+            tails.push_back(x);  // x 比所有结尾都大，最长子序列延长
+        } else {
+            *it = x;  // 用更小的结尾替换，长度不变更优
+        }
+    }
+    return (int)tails.size();
+}
 `,
     },
     acm: {
@@ -186,6 +231,28 @@ for x in nums:
         tails[lo] = x
 
 print(len(tails))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // tails[k] = 长度为 k+1 的递增子序列的最小结尾值
+    vector<int> tails;
+    for (int x : nums) {
+        auto it = lower_bound(tails.begin(), tails.end(), x);
+        if (it == tails.end()) tails.push_back(x);
+        else *it = x;
+    }
+    cout << tails.size() << endl;
+    return 0;
+}
 `,
     },
   },

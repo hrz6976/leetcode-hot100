@@ -94,6 +94,21 @@ def two_sum(nums, target):
     return []                              # 全部读完也没配上，返回空列表
 \`\`\`
 
+\`\`\`cpp
+// ===== C++ =====
+vector<int> twoSum(vector<int>& nums, int target) {
+    unordered_map<int, int> seen;          // 登记簿：键 = 见过的数，值 = 它的下标
+    for (int i = 0; i < (int)nums.size(); i++) {  // 从头到尾逐个读数
+        int need = target - nums[i];       // 算出当前数还差多少，即「另一半」
+        if (seen.count(need)) {            // 先查：另一半之前见过吗？
+            return {seen[need], i};        // 见过：取出它的下标，配对完成
+        }
+        seen[nums[i]] = i;                 // 没见过：把当前数和它的下标记上簿
+    }
+    return {};                             // 全部读完也没配上，返回空数组
+}
+\`\`\`
+
 如果只要判断「在不在」、不需要记下标，用更轻量的哈希集合（Set / set），只记键：
 
 - 「在不在、重没重复」→ Set / set 就够
@@ -113,6 +128,13 @@ seen.add(2)                    # 记一笔：见过 2
 7 in seen                      # 查一笔：见过 7 吗？返回 False
 \`\`\`
 
+\`\`\`cpp
+// C++：判断数组里有没有出现过数字 7
+unordered_set<int> seen;     // 只记「见过哪些数」的簿子
+seen.insert(2);              // 记一笔：见过 2
+seen.count(7);               // 查一笔：见过 7 吗？返回 0（表示没见过）
+\`\`\`
+
 还有一种廉价的番外：当键的范围很小且固定（比如只有 26 个小写字母）时，直接开一个定长**计数数组**当小哈希表用——下标就是键，格子里存出现次数，比真哈希表更省事：
 
 \`\`\`
@@ -128,6 +150,14 @@ for (const c of s) {                  // 逐个字符扫描
 cnt = [0] * 26                       # 开 26 个格子，全部初始化为 0
 for c in s:                          # 逐个字符扫描
     cnt[ord(c) - ord('a')] += 1      # ord 取字符编码，减 'a' 把字母映射到 0~25 号格子
+\`\`\`
+
+\`\`\`cpp
+// C++：统计字符串 s 里每个字母出现几次
+int cnt[26] = {0};           // 开 26 个格子，全部初始化为 0
+for (char c : s) {           // 逐个字符扫描
+    cnt[c - 'a']++;          // 字符减 'a'，把字母映射到 0~25 号格子
+}
 \`\`\`
 
 ### 亲手跑一跑
@@ -164,7 +194,40 @@ for i, x in enumerate(nums):
     seen[x] = i                                # 没见过：记上簿，再往前走
 \`\`\`
 
-预期输出（两种语言逐字一致）：
+C++：
+
+\`\`\`run-cpp#two-sum-ledger
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+using namespace std;
+
+int main() {
+    vector<int> nums = {2, 7, 11, 15};
+    int target = 9;
+    unordered_map<int, int> seen;          // 登记簿：数值 -> 下标
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int x = nums[i];
+        int need = target - x;             // 读到一个数，算出它的另一半
+        string table = "";                 // 把登记簿当前内容拼成一行
+        for (auto& p : seen) {
+            if (!table.empty()) table += ", ";
+            table += to_string(p.first) + "→" + to_string(p.second);
+        }
+        if (table.empty()) table = "(空)";
+        cout << "第" << i + 1 << "步: 读到 " << x << ", 需要 " << need << ", 登记簿: " << table << endl;
+        if (seen.count(need)) {            // 先查簿：另一半见过吗？
+            cout << "  簿上有 " << need << " (在下标 " << seen[need] << "), 配对成功! 答案 = [" << seen[need] << ", " << i << "]" << endl;
+            break;                         // 找到答案，结束
+        }
+        seen[x] = i;                       // 没见过：记上簿，再往前走
+    }
+    return 0;
+}
+\`\`\`
+
+预期输出（三种语言逐字一致）：
 
 \`\`\`
 第1步: 读到 2, 需要 7, 登记簿: (空)

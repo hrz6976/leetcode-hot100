@@ -159,6 +159,42 @@ class Trie:
     def startsWith(self, prefix):
         pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 实现 Trie（前缀树）：insert / search / startsWith 均为 O(L)
+class Trie {
+public:
+    Trie() {
+        // TODO: 在这里实现
+    }
+
+    void insert(string word) {
+        // TODO: 在这里实现
+    }
+
+    bool search(string word) {
+        // TODO: 在这里实现
+        return false;
+    }
+
+    bool startsWith(string prefix) {
+        // TODO: 在这里实现
+        return false;
+    }
+};
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -214,6 +250,47 @@ for i in range(1, n + 1):
     parts = lines[i].split()
     op = parts[0]
     # 在这里根据 op 分发操作并用 print 输出结果（注意布尔要输出小写 true / false）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n；随后 n 行，每行为 "Trie" / "insert word" / "search word" / "startsWith prefix"
+// 输出：search / startsWith 输出 true 或 false，Trie / insert 输出 null
+#include <iostream>
+#include <string>
+#include <unordered_map>
+using namespace std;
+
+class Trie {
+public:
+    Trie() {
+        // TODO: 在这里实现
+    }
+
+    void insert(string word) {
+        // TODO: 在这里实现
+    }
+
+    bool search(string word) {
+        // TODO: 在这里实现
+        return false;
+    }
+
+    bool startsWith(string prefix) {
+        // TODO: 在这里实现
+        return false;
+    }
+};
+
+int main() {
+    int n;
+    cin >> n;
+    Trie* trie = nullptr;
+    for (int i = 0; i < n; i++) {
+        string op;
+        cin >> op;
+        // 在这里根据 op 分发操作并用 cout 输出结果（布尔要输出小写 true / false）
+    }
+    return 0;
+}
 `,
     },
   },
@@ -281,6 +358,58 @@ class Trie:
 
     def startsWith(self, prefix):
         return self._search_prefix(prefix) is not None
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 每个节点：children 存放「字符 -> 子节点」，isEnd 标记是否有单词在此结束
+class Trie {
+private:
+    unordered_map<char, Trie*> children;
+    bool isEnd = false;
+
+    // 沿字符逐层向下走，返回走到的节点；走不通返回 nullptr
+    Trie* searchPrefix(const string& word) {
+        Trie* node = this;
+        for (char ch : word) {
+            if (!node->children.count(ch)) return nullptr;
+            node = node->children[ch];
+        }
+        return node;
+    }
+
+public:
+    Trie() = default;
+
+    void insert(string word) {
+        Trie* node = this;
+        for (char ch : word) {
+            if (!node->children.count(ch)) node->children[ch] = new Trie();
+            node = node->children[ch];
+        }
+        node->isEnd = true;
+    }
+
+    bool search(string word) {
+        Trie* node = searchPrefix(word);
+        return node != nullptr && node->isEnd;
+    }
+
+    bool startsWith(string prefix) {
+        return searchPrefix(prefix) != nullptr;
+    }
+};
 `,
     },
     acm: {
@@ -380,6 +509,76 @@ for i in range(1, n + 1):
         print('true' if trie.search(parts[1]) else 'false')
     elif op == 'startsWith':
         print('true' if trie.startsWith(parts[1]) else 'false')
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <unordered_map>
+using namespace std;
+
+// 每个节点：children 存放「字符 -> 子节点」，isEnd 标记是否有单词在此结束
+class Trie {
+private:
+    unordered_map<char, Trie*> children;
+    bool isEnd = false;
+
+    Trie* searchPrefix(const string& word) {
+        Trie* node = this;
+        for (char ch : word) {
+            if (!node->children.count(ch)) return nullptr;
+            node = node->children[ch];
+        }
+        return node;
+    }
+
+public:
+    Trie() = default;
+
+    void insert(string word) {
+        Trie* node = this;
+        for (char ch : word) {
+            if (!node->children.count(ch)) node->children[ch] = new Trie();
+            node = node->children[ch];
+        }
+        node->isEnd = true;
+    }
+
+    bool search(string word) {
+        Trie* node = searchPrefix(word);
+        return node != nullptr && node->isEnd;
+    }
+
+    bool startsWith(string prefix) {
+        return searchPrefix(prefix) != nullptr;
+    }
+};
+
+int main() {
+    int n;
+    cin >> n;
+    Trie* trie = nullptr;
+    for (int i = 0; i < n; i++) {
+        string op;
+        cin >> op;
+        if (op == "Trie") {
+            trie = new Trie();
+            cout << "null" << endl;
+        } else if (op == "insert") {
+            string word;
+            cin >> word;
+            trie->insert(word);
+            cout << "null" << endl;
+        } else if (op == "search") {
+            string word;
+            cin >> word;
+            cout << (trie->search(word) ? "true" : "false") << endl;
+        } else if (op == "startsWith") {
+            string prefix;
+            cin >> prefix;
+            cout << (trie->startsWith(prefix) ? "true" : "false") << endl;
+        }
+    }
+    return 0;
+}
 `,
     },
   },

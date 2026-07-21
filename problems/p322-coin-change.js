@@ -90,6 +90,16 @@ var coinChange = function(coins, amount) {
     # 返回凑成 amount 所需的最少硬币个数，凑不出返回 -1
     pass
 `,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+// 返回凑成 amount 所需的最少硬币个数，凑不出返回 -1
+int coinChange(vector<int>& coins, int amount) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -111,6 +121,24 @@ coins = list(map(int, lines[1].split()))
 amount = int(lines[2])
 
 # 在这里写你的代码，用 print 输出最少硬币个数（凑不出输出 -1）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个硬币面额，第三行 amount
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> coins(n);
+    for (int i = 0; i < n; i++) cin >> coins[i];
+    int amount;
+    cin >> amount;
+
+    // 在这里写你的代码，用 cout 输出最少硬币个数（凑不出输出 -1）
+    return 0;
+}
 `,
     },
   },
@@ -140,6 +168,23 @@ amount = int(lines[2])
             if c <= i and dp[i - c] + 1 < dp[i]:
                 dp[i] = dp[i - c] + 1
     return dp[amount] if dp[amount] <= amount else -1
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int coinChange(vector<int>& coins, int amount) {
+    // dp[i] = 凑出金额 i 所需的最少硬币数，amount + 1 作为「不可达」哨兵
+    int INF = amount + 1;
+    vector<int> dp(amount + 1, INF);
+    dp[0] = 0;
+    for (int i = 1; i <= amount; i++) {
+        for (int c : coins) {
+            if (c <= i) dp[i] = min(dp[i], dp[i - c] + 1);
+        }
+    }
+    return dp[amount] > amount ? -1 : dp[amount];
+}
 `,
     },
     acm: {
@@ -175,6 +220,32 @@ for i in range(1, amount + 1):
             dp[i] = dp[i - c] + 1
 
 print(dp[amount] if dp[amount] <= amount else -1)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> coins(n);
+    for (int i = 0; i < n; i++) cin >> coins[i];
+    int amount;
+    cin >> amount;
+
+    // dp[i] = 凑出金额 i 所需的最少硬币数，amount + 1 作为「不可达」哨兵
+    int INF = amount + 1;
+    vector<int> dp(amount + 1, INF);
+    dp[0] = 0;
+    for (int i = 1; i <= amount; i++) {
+        for (int c : coins) {
+            if (c <= i) dp[i] = min(dp[i], dp[i - c] + 1);
+        }
+    }
+    cout << (dp[amount] > amount ? -1 : dp[amount]) << endl;
+    return 0;
+}
 `,
     },
   },

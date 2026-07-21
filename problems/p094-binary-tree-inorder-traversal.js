@@ -85,6 +85,28 @@ var inorderTraversal = function(root) {
     # root 为二叉树根节点（TreeNode），返回中序遍历结果列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// root 为二叉树根节点，返回中序遍历结果数组
+vector<int> inorderTraversal(TreeNode* root) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +134,39 @@ n = int(lines[0])
 tokens = lines[1].split() if n > 0 else []
 
 # 按层序构造二叉树，完成中序遍历后用 print 输出结果（空树输出一个空行）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时该行为空行）
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    string line;
+    getline(cin, line); // 吃掉第一行剩余部分
+    getline(cin, line); // 第二行：层序标记（按整行解析，n = 0 时为空行）
+    vector<string> tokens;
+    {
+        istringstream iss(line);
+        string t;
+        while (iss >> t) tokens.push_back(t);
+    }
+
+    // 按层序构造二叉树，完成中序遍历后用 cout 输出结果（空树输出一个空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -142,6 +197,35 @@ tokens = lines[1].split() if n > 0 else []
 
     dfs(root)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+vector<int> inorderTraversal(TreeNode* root) {
+    vector<int> res;
+    function<void(TreeNode*)> dfs = [&](TreeNode* node) {
+        if (node == nullptr) return;
+        dfs(node->left);          // 左
+        res.push_back(node->val); // 根
+        dfs(node->right);         // 右
+    };
+    dfs(root);
+    return res;
+}
 `,
     },
     acm: {
@@ -218,6 +302,67 @@ def inorder(node):
 
 inorder(root)
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 按层序构造二叉树（null 表示空节点）
+TreeNode* buildTree(const vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (!nodes[i]) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+int main() {
+    int n;
+    cin >> n;
+    string line;
+    getline(cin, line); // 吃掉第一行剩余部分
+    getline(cin, line); // 第二行：层序标记（按整行解析，n = 0 时为空行）
+    vector<string> tokens;
+    {
+        istringstream iss(line);
+        string t;
+        while (iss >> t) tokens.push_back(t);
+    }
+    TreeNode* root = buildTree(tokens);
+
+    // 递归中序遍历
+    vector<string> out;
+    function<void(TreeNode*)> inorder = [&](TreeNode* node) {
+        if (node == nullptr) return;
+        inorder(node->left);
+        out.push_back(to_string(node->val));
+        inorder(node->right);
+    };
+    inorder(root);
+
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i) cout << ' ';
+        cout << out[i];
+    }
+    cout << '\\n'; // 空树时这里输出一个空行
+    return 0;
+}
 `,
     },
   },

@@ -88,6 +88,26 @@ var groupAnagrams = function(strs) {
     # 返回分组后的二维列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回分组后的二维数组
+vector<vector<string>> groupAnagrams(vector<string> strs) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -110,6 +130,39 @@ n = int(lines[0])
 strs = lines[1].split(' ') if n > 0 else []
 
 # 在这里写你的代码，按上面的约定输出
+`,
+      cpp: `// ACM 模式：用 getline 按行读输入（空串需要保留），用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个字符串（空格分隔；n = 1 且字符串为空串时该行为空行）
+// 输出约定：每组一行，组内按输入顺序空格分隔，所有行按字典序升序排序后输出
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    string firstLine, secondLine;
+    getline(cin, firstLine);
+    int n = stoi(firstLine);
+    vector<string> strs;
+    if (n > 0) {
+        getline(cin, secondLine);
+        // 按单个空格切分，保留空串（空串也是合法输入）
+        size_t start = 0;
+        while (true) {
+            size_t pos = secondLine.find(' ', start);
+            if (pos == string::npos) {
+                strs.push_back(secondLine.substr(start));
+                break;
+            }
+            strs.push_back(secondLine.substr(start, pos - start));
+            start = pos + 1;
+        }
+    }
+
+    // 在这里写你的代码，按上面的约定输出
+
+    return 0;
+}
 `,
     },
   },
@@ -134,6 +187,26 @@ strs = lines[1].split(' ') if n > 0 else []
             groups[key] = []
         groups[key].append(s)
     return list(groups.values())
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+vector<vector<string>> groupAnagrams(vector<string> strs) {
+    unordered_map<string, vector<string>> groups; // 排序后的签名 -> 同组字符串
+    vector<string> order; // 记录签名首次出现的顺序，保证输出次序稳定
+    for (const string& s : strs) {
+        string key = s;
+        sort(key.begin(), key.end());
+        if (!groups.count(key)) order.push_back(key);
+        groups[key].push_back(s);
+    }
+    vector<vector<string>> res;
+    for (const string& key : order) res.push_back(groups[key]);
+    return res;
+}
 `,
     },
     acm: {
@@ -171,6 +244,58 @@ for s in strs:
 # 组内保持输入顺序，所有行按字典序升序排序后逐行输出
 for line in sorted(' '.join(g) for g in groups.values()):
     print(line)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    string firstLine, secondLine;
+    getline(cin, firstLine);
+    int n = stoi(firstLine);
+    vector<string> strs;
+    if (n > 0) {
+        getline(cin, secondLine);
+        // 按单个空格切分，保留空串（空串也是合法输入）
+        size_t start = 0;
+        while (true) {
+            size_t pos = secondLine.find(' ', start);
+            if (pos == string::npos) {
+                strs.push_back(secondLine.substr(start));
+                break;
+            }
+            strs.push_back(secondLine.substr(start, pos - start));
+            start = pos + 1;
+        }
+    }
+
+    unordered_map<string, vector<string>> groups; // 排序后的签名 -> 同组字符串
+    vector<string> order; // 记录签名首次出现的顺序
+    for (const string& s : strs) {
+        string key = s;
+        sort(key.begin(), key.end());
+        if (!groups.count(key)) order.push_back(key);
+        groups[key].push_back(s);
+    }
+
+    // 组内保持输入顺序，所有行按字典序升序排序后逐行输出
+    vector<string> out;
+    for (const string& key : order) {
+        string line;
+        const vector<string>& g = groups[key];
+        for (int i = 0; i < (int)g.size(); i++) {
+            if (i) line += ' ';
+            line += g[i];
+        }
+        out.push_back(line);
+    }
+    sort(out.begin(), out.end());
+    for (const string& line : out) cout << line << '\\n';
+    return 0;
+}
 `,
     },
   },

@@ -105,6 +105,27 @@ var mergeKLists = function(lists) {
     # lists 为链表头节点组成的列表（元素可能为 None），返回合并后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// lists 为链表头节点组成的数组（元素可能为 nullptr），返回合并后的头节点
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -128,6 +149,35 @@ lines = sys.stdin.read().split('\\n')
 k = int(lines[0])
 
 # 解析出 k 个链表的值数组，构造链表，合并后用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 k；随后 k 行，每行为 "n v1 v2 ... vn"（n = 0 时只有 0）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int k;
+  cin >> k;
+  vector<vector<int>> values(k);
+  for (auto& vals : values) {
+    int cnt;
+    cin >> cnt;
+    vals.resize(cnt);
+    for (auto& v : vals) cin >> v;
+  }
+
+  // values 已读入 k 个链表的值数组，构造链表，合并后用 cout 输出结果（空链表输出一个空行）
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -196,6 +246,55 @@ k = int(lines[0])
             nxt.append(merge_two(arr[i], arr[i + 1]) if i + 1 < len(arr) else arr[i])
         arr = nxt
     return arr[0]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+static ListNode* mergeTwo(ListNode* l1, ListNode* l2) {
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  while (l1 != nullptr && l2 != nullptr) {
+    if (l1->val <= l2->val) {
+      cur->next = l1;
+      l1 = l1->next;
+    } else {
+      cur->next = l2;
+      l2 = l2->next;
+    }
+    cur = cur->next;
+  }
+  cur->next = l1 != nullptr ? l1 : l2;
+  return dummy.next;
+}
+
+ListNode* mergeKLists(vector<ListNode*>& lists) {
+  // 两两合并（分治）：每轮把链表两两配对合并，轮数约为 log k
+  vector<ListNode*> arr;
+  for (ListNode* h : lists) {
+    if (h != nullptr) arr.push_back(h);
+  }
+  if (arr.empty()) return nullptr;
+  while (arr.size() > 1) {
+    vector<ListNode*> next;
+    for (size_t i = 0; i < arr.size(); i += 2) {
+      next.push_back(i + 1 < arr.size() ? mergeTwo(arr[i], arr[i + 1]) : arr[i]);
+    }
+    arr = next;
+  }
+  return arr[0];
+}
 `,
     },
     acm: {
@@ -302,6 +401,81 @@ while cur is not None:
     out.append(str(cur.val))
     cur = cur.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+// 构造链表
+static ListNode* buildList(const vector<int>& vals) {
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  for (int v : vals) {
+    cur->next = new ListNode(v);
+    cur = cur->next;
+  }
+  return dummy.next;
+}
+
+// 合并两条升序链表
+static ListNode* mergeTwo(ListNode* l1, ListNode* l2) {
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  while (l1 != nullptr && l2 != nullptr) {
+    if (l1->val <= l2->val) {
+      cur->next = l1;
+      l1 = l1->next;
+    } else {
+      cur->next = l2;
+      l2 = l2->next;
+    }
+    cur = cur->next;
+  }
+  cur->next = l1 != nullptr ? l1 : l2;
+  return dummy.next;
+}
+
+int main() {
+  int k;
+  cin >> k;
+  vector<ListNode*> lists;
+  for (int i = 0; i < k; i++) {
+    int cnt;
+    cin >> cnt;
+    vector<int> vals(cnt);
+    for (auto& v : vals) cin >> v;
+    lists.push_back(buildList(vals));
+  }
+
+  // 两两合并（分治）：每轮把链表两两配对合并
+  vector<ListNode*> arr;
+  for (ListNode* h : lists) {
+    if (h != nullptr) arr.push_back(h);
+  }
+  while (arr.size() > 1) {
+    vector<ListNode*> next;
+    for (size_t i = 0; i < arr.size(); i += 2) {
+      next.push_back(i + 1 < arr.size() ? mergeTwo(arr[i], arr[i + 1]) : arr[i]);
+    }
+    arr = next;
+  }
+
+  // 输出合并后的链表（空链表输出一个空行）
+  bool first = true;
+  for (ListNode* cur = arr.empty() ? nullptr : arr[0]; cur; cur = cur->next) {
+    if (!first) cout << ' ';
+    first = false;
+    cout << cur->val;
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

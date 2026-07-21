@@ -82,6 +82,26 @@ var partitionLabels = function(s) {
     # 返回各片段长度组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回各片段长度组成的数组
+vector<int> partitionLabels(string s) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -98,6 +118,32 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print(' '.join(map(str, 结果列表))) 输出各段长度
+`,
+      cpp: `// ACM 模式：用 cin/getline 读输入，用 cout 输出答案
+// 输入格式：第一行为字符串 s（只含小写字母）
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // 在这里写你的代码，把各段长度用空格拼接后输出
+
+    return 0;
+}
 `,
     },
   },
@@ -133,6 +179,38 @@ s = sys.stdin.read().split('\\n')[0]
             res.append(end - start + 1)
             start = i + 1
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> partitionLabels(string s) {
+  vector<int> last(26, 0); // 每个字母最后出现的下标
+  for (int i = 0; i < (int)s.size(); i++) {
+    last[s[i] - 'a'] = i;
+  }
+  vector<int> res;
+  int start = 0; // 当前片段起点
+  int end = 0;   // 当前片段必须延伸到的最远下标
+  for (int i = 0; i < (int)s.size(); i++) {
+    end = max(end, last[s[i] - 'a']);
+    if (i == end) { // 片段内所有字母都到此为止，切一刀
+      res.push_back(end - start + 1);
+      start = i + 1;
+    }
+  }
+  return res;
+}
 `,
     },
     acm: {
@@ -170,6 +248,47 @@ for i, c in enumerate(s):
         start = i + 1
 
 print(' '.join(map(str, res)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  string s;
+  getline(cin, s);
+
+  vector<int> last(26, 0);
+  for (int i = 0; i < (int)s.size(); i++) {
+    last[s[i] - 'a'] = i;
+  }
+  vector<int> res;
+  int start = 0;
+  int end = 0;
+  for (int i = 0; i < (int)s.size(); i++) {
+    end = max(end, last[s[i] - 'a']);
+    if (i == end) {
+      res.push_back(end - start + 1);
+      start = i + 1;
+    }
+  }
+  for (int i = 0; i < (int)res.size(); i++) {
+    if (i) cout << ' ';
+    cout << res[i];
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

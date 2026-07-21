@@ -159,6 +159,35 @@ class LRUCache:
     def put(self, key, value):
         pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 设计一个 LRU 缓存：get / put 均为 O(1)
+class LRUCache {
+public:
+  LRUCache(int capacity) {
+    // TODO: 在这里实现
+  }
+  int get(int key) {
+    // TODO: 在这里实现
+    return -1;
+  }
+  void put(int key, int value) {
+    // TODO: 在这里实现
+  }
+};
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -210,6 +239,40 @@ for i in range(1, n + 1):
     args = list(map(int, parts[1:]))
     # 在这里根据 op 分发操作并用 print 输出结果
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n；随后 n 行，每行为 "LRUCache 容量" / "put key value" / "get key"
+// 输出：get 输出返回值，put 与构造函数输出 null
+#include <iostream>
+#include <string>
+using namespace std;
+
+// 设计一个 LRU 缓存：get / put 均为 O(1)
+class LRUCache {
+public:
+  LRUCache(int capacity) {
+    // TODO: 在这里实现
+  }
+  int get(int key) {
+    // TODO: 在这里实现
+    return -1;
+  }
+  void put(int key, int value) {
+    // TODO: 在这里实现
+  }
+};
+
+int main() {
+  int n;
+  cin >> n;
+  LRUCache* cache = nullptr;
+  for (int i = 0; i < n; i++) {
+    string op;
+    cin >> op;
+    // 在这里根据 op 分发操作并用 cout 输出结果
+  }
+  return 0;
+}
+`,
     },
   },
 
@@ -258,6 +321,41 @@ class LRUCache:
         self.od[key] = value
         if len(self.od) > self.cap:
             self.od.popitem(last=False)  # 淘汰最久未使用
+`,
+      cpp: `#include <list>
+#include <unordered_map>
+#include <utility>
+using namespace std;
+
+// 哈希表 + 双向链表：链表按使用顺序排列（头部 = 最近使用，尾部 = 最久未使用），
+// 哈希表记录 key 到链表节点的迭代器，splice 实现 O(1) 移动
+class LRUCache {
+  int cap;
+  list<pair<int, int>> lst;
+  unordered_map<int, list<pair<int, int>>::iterator> mp;
+public:
+  LRUCache(int capacity) : cap(capacity) {}
+  int get(int key) {
+    auto it = mp.find(key);
+    if (it == mp.end()) return -1;
+    lst.splice(lst.begin(), lst, it->second); // 标记为最近使用
+    return it->second->second;
+  }
+  void put(int key, int value) {
+    auto it = mp.find(key);
+    if (it != mp.end()) {
+      it->second->second = value;
+      lst.splice(lst.begin(), lst, it->second); // 标记为最近使用
+      return;
+    }
+    lst.emplace_front(key, value);
+    mp[key] = lst.begin();
+    if ((int)lst.size() > cap) {
+      mp.erase(lst.back().first); // 淘汰最久未使用
+      lst.pop_back();
+    }
+  }
+};
 `,
     },
     acm: {
@@ -336,6 +434,68 @@ for i in range(1, n + 1):
         print('null')
     elif op == 'get':
         print(cache.get(args[0]))
+`,
+      cpp: `#include <iostream>
+#include <list>
+#include <string>
+#include <unordered_map>
+#include <utility>
+using namespace std;
+
+// 哈希表 + 双向链表：链表按使用顺序排列（头部 = 最近使用，尾部 = 最久未使用）
+class LRUCache {
+  int cap;
+  list<pair<int, int>> lst;
+  unordered_map<int, list<pair<int, int>>::iterator> mp;
+public:
+  LRUCache(int capacity) : cap(capacity) {}
+  int get(int key) {
+    auto it = mp.find(key);
+    if (it == mp.end()) return -1;
+    lst.splice(lst.begin(), lst, it->second); // 标记为最近使用
+    return it->second->second;
+  }
+  void put(int key, int value) {
+    auto it = mp.find(key);
+    if (it != mp.end()) {
+      it->second->second = value;
+      lst.splice(lst.begin(), lst, it->second); // 标记为最近使用
+      return;
+    }
+    lst.emplace_front(key, value);
+    mp[key] = lst.begin();
+    if ((int)lst.size() > cap) {
+      mp.erase(lst.back().first); // 淘汰最久未使用
+      lst.pop_back();
+    }
+  }
+};
+
+int main() {
+  int n;
+  cin >> n;
+  LRUCache* cache = nullptr;
+  for (int i = 0; i < n; i++) {
+    string op;
+    cin >> op;
+    if (op == "LRUCache") {
+      int capacity;
+      cin >> capacity;
+      cache = new LRUCache(capacity);
+      cout << "null\\n";
+    } else if (op == "put") {
+      int key, value;
+      cin >> key >> value;
+      cache->put(key, value);
+      cout << "null\\n";
+    } else if (op == "get") {
+      int key;
+      cin >> key;
+      cout << cache->get(key) << "\\n";
+    }
+  }
+  return 0;
+}
 `,
     },
   },

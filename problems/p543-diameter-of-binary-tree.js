@@ -91,6 +91,27 @@ var diameterOfBinaryTree = function(root) {
     # root 为二叉树根节点（TreeNode），返回直径（边数，整数）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+// root 为二叉树根节点，返回直径（边数，整数）
+int diameterOfBinaryTree(TreeNode* root) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -121,6 +142,42 @@ tokens = lines[1].split() if n > 0 else []
 arr = [None if t == 'null' else int(t) for t in tokens]
 
 # 将层序标记构造成二叉树（TreeNode），计算直径后用 print 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行）
+// 输出：一个整数，即直径（空树输出 0）
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 将层序标记构造成二叉树（TreeNode），计算直径后用 cout 输出
+
+    return 0;
+}
 `,
     },
   },
@@ -156,6 +213,36 @@ arr = [None if t == 'null' else int(t) for t in tokens]
 
     depth(root)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+int diameterOfBinaryTree(TreeNode* root) {
+  int ans = 0;
+  // 返回以 node 为根的子树高度（节点数），顺带更新直径
+  function<int(TreeNode*)> depth = [&](TreeNode* node) -> int {
+    if (!node) return 0;
+    int l = depth(node->left);
+    int r = depth(node->right);
+    ans = max(ans, l + r); // 经过 node 的最长路径 = 左高 + 右高（边数）
+    return max(l, r) + 1;
+  };
+  depth(root);
+  return ans;
+}
 `,
     },
     acm: {
@@ -234,6 +321,64 @@ def depth(node):
 
 depth(build_tree(arr))
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+  int val;
+  TreeNode* left;
+  TreeNode* right;
+  TreeNode(int v = 0) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 层序标记构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+  if (tokens.empty() || tokens[0] == "null") return nullptr;
+  vector<TreeNode*> nodes(tokens.size(), nullptr);
+  for (size_t i = 0; i < tokens.size(); i++)
+    if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+  size_t j = 1;
+  for (size_t i = 0; i < nodes.size(); i++) {
+    if (!nodes[i]) continue;
+    if (j < nodes.size()) nodes[i]->left = nodes[j++];
+    if (j < nodes.size()) nodes[i]->right = nodes[j++];
+  }
+  return nodes[0];
+}
+
+int main() {
+  int n;
+  cin >> n;
+  vector<string> tokens(n);
+  for (int i = 0; i < n; i++) cin >> tokens[i];
+
+  int ans = 0;
+  // 返回子树高度（节点数），顺带更新直径
+  function<int(TreeNode*)> depth = [&](TreeNode* node) -> int {
+    if (!node) return 0;
+    int l = depth(node->left);
+    int r = depth(node->right);
+    ans = max(ans, l + r);
+    return max(l, r) + 1;
+  };
+  depth(buildTree(tokens));
+  cout << ans << '\\n';
+  return 0;
+}
 `,
     },
   },

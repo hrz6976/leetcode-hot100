@@ -88,6 +88,15 @@ var findDuplicate = function(nums) {
     # 返回重复的那个整数（不修改数组，O(1) 额外空间）
     pass
 `,
+      cpp: `#include <vector>
+using namespace std;
+
+// 返回重复的那个整数（不修改数组，O(1) 额外空间）
+int findDuplicate(vector<int>& nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -106,6 +115,22 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print(答案) 输出重复的整数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m（数组长度），第二行 m 个整数（取值范围 1 ~ m-1）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m;
+    cin >> m;
+    vector<int> nums(m);
+    for (int i = 0; i < m; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出重复的整数
+    return 0;
+}
 `,
     },
   },
@@ -145,6 +170,26 @@ nums = list(map(int, lines[1].split()))
         fast = nums[fast]
     return slow
 `,
+      cpp: `#include <vector>
+using namespace std;
+
+int findDuplicate(vector<int>& nums) {
+    // 把下标 i 看成节点、nums[i] 看成 next 指针，重复数就是环的入口
+    int slow = nums[0], fast = nums[0];
+    // 第一阶段：快慢指针在环内相遇
+    do {
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+    } while (slow != fast);
+    // 第二阶段：同速前进，再次相遇即环入口
+    slow = nums[0];
+    while (slow != fast) {
+        slow = nums[slow];
+        fast = nums[fast];
+    }
+    return slow;
+}
+`,
     },
     acm: {
       javascript: `const lines = input.trim().split('\\n');
@@ -178,6 +223,33 @@ while slow != fast:
     slow = nums[slow]
     fast = nums[fast]
 print(slow)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m;
+    cin >> m;
+    vector<int> nums(m);
+    for (int i = 0; i < m; i++) cin >> nums[i];
+
+    // Floyd 快慢指针：把下标看成节点、nums[i] 看成 next 指针，重复数即环入口
+    int slow = nums[0], fast = nums[0];
+    // 第一阶段：快慢指针在环内相遇
+    do {
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+    } while (slow != fast);
+    // 第二阶段：同速前进，再次相遇即环入口
+    slow = nums[0];
+    while (slow != fast) {
+        slow = nums[slow];
+        fast = nums[fast];
+    }
+    cout << slow << endl;
+    return 0;
+}
 `,
     },
   },

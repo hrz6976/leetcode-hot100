@@ -84,6 +84,26 @@ var findAnagrams = function(s, p) {
     # 返回所有异位词子串的起始下标
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有异位词子串的起始下标
+vector<int> findAnagrams(string s, string p) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,33 @@ s = lines[0]
 p = lines[1]
 
 # 在这里写你的代码，用 print 输出所有起始下标（空格分隔，无答案输出空行）
+`,
+      cpp: `// ACM 模式：用 cin/getline 读输入，用 cout 输出答案
+// 输入格式：第一行 s，第二行 p（均不含空格）
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    string s, p;
+    getline(cin, s);
+    getline(cin, p);
+
+    // 在这里写你的代码，用 cout 输出所有起始下标（空格分隔，无答案输出空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -155,6 +202,39 @@ p = lines[1]
         if cnt_s == cnt_p:
             res.append(i - n + 1)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<int> findAnagrams(string s, string p) {
+  int m = s.size(), n = p.size();
+  vector<int> res;
+  if (m < n) return res;
+  vector<int> cntS(26, 0); // 当前窗口的字母频次
+  vector<int> cntP(26, 0); // p 的字母频次
+  for (int i = 0; i < n; i++) {
+    cntS[s[i] - 'a']++;
+    cntP[p[i] - 'a']++;
+  }
+  if (cntS == cntP) res.push_back(0);
+  for (int i = n; i < m; i++) {
+    cntS[s[i] - 'a']++;     // 右端字符进入窗口
+    cntS[s[i - n] - 'a']--; // 左端字符离开窗口
+    if (cntS == cntP) res.push_back(i - n + 1);
+  }
+  return res;
+}
 `,
     },
     acm: {
@@ -209,6 +289,47 @@ if m >= n:
         if cnt_s == cnt_p:
             res.append(i - n + 1)
 print(' '.join(map(str, res)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  string s, p;
+  getline(cin, s);
+  getline(cin, p);
+
+  int m = s.size(), n = p.size();
+  vector<int> res;
+  vector<int> cntS(26, 0), cntP(26, 0);
+  for (char ch : p) cntP[ch - 'a']++;
+  if (m >= n) {
+    for (int i = 0; i < n; i++) cntS[s[i] - 'a']++;
+    if (cntS == cntP) res.push_back(0);
+    for (int i = n; i < m; i++) {
+      cntS[s[i] - 'a']++;
+      cntS[s[i - n] - 'a']--;
+      if (cntS == cntP) res.push_back(i - n + 1);
+    }
+  }
+  for (int i = 0; i < (int)res.size(); i++) {
+    if (i) cout << ' ';
+    cout << res[i];
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

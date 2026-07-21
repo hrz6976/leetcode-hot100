@@ -90,6 +90,26 @@ var threeSum = function(nums) {
     # 返回所有和为 0 的不重复三元组（每个三元组内部升序）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有和为 0 的不重复三元组（每个三元组内部升序）
+vector<vector<int>> threeSum(vector<int>& nums) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,24 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print(a, b, c) 逐行输出每个三元组
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+// 输出格式：每个三元组一行（组内升序、空格分隔），各行按字典序升序；无解则不输出
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，逐行用 cout << a << " " << b << " " << c << "\\n" 输出每个三元组
+
+    return 0;
+}
 `,
     },
   },
@@ -170,6 +208,47 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
             else:
                 right -= 1
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<vector<int>> threeSum(vector<int>& nums) {
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> ans;
+    int n = nums.size();
+    for (int i = 0; i < n - 2; i++) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue; // 跳过重复的第一个数
+        if (nums[i] > 0) break; // 排序后最小数已大于 0，后面不可能凑出 0
+        int left = i + 1;
+        int right = n - 1;
+        while (left < right) {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (sum == 0) {
+                ans.push_back({nums[i], nums[left], nums[right]});
+                while (left < right && nums[left] == nums[left + 1]) left++; // 跳过重复的 left
+                while (left < right && nums[right] == nums[right - 1]) right--; // 跳过重复的 right
+                left++;
+                right--;
+            } else if (sum < 0) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -240,6 +319,48 @@ for i in range(m - 2):
 ans.sort()
 for t in ans:
     print(t[0], t[1], t[2])
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> ans;
+    for (int i = 0; i < n - 2; i++) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+        if (nums[i] > 0) break;
+        int left = i + 1;
+        int right = n - 1;
+        while (left < right) {
+            int sum = nums[i] + nums[left] + nums[right];
+            if (sum == 0) {
+                ans.push_back({nums[i], nums[left], nums[right]});
+                while (left < right && nums[left] == nums[left + 1]) left++;
+                while (left < right && nums[right] == nums[right - 1]) right--;
+                left++;
+                right--;
+            } else if (sum < 0) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+
+    // 按字典序升序输出（排序 + 双指针的结果天然有序，这里再显式排一次保险）；无解时循环不执行、无输出
+    sort(ans.begin(), ans.end());
+    for (auto& t : ans) {
+        cout << t[0] << " " << t[1] << " " << t[2] << "\\n";
+    }
+    return 0;
+}
 `,
     },
   },

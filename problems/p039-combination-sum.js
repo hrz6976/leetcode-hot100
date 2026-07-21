@@ -91,6 +91,26 @@ var combinationSum = function(candidates, target) {
     # 返回所有和为 target 的组合（每个数字可重复选取）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有和为 target 的组合（每个数字可重复选取）
+vector<vector<int>> combinationSum(vector<int> candidates, int target) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -115,6 +135,27 @@ candidates = list(map(int, lines[1].split()))
 target = int(lines[2])
 
 # 在这里写你的代码
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个互不相同的整数，第三行 target
+// 输出：每个组合一行，组内升序空格分隔，各行按字典序排序；无组合时不输出
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> candidates(n);
+    for (int i = 0; i < n; i++) cin >> candidates[i];
+    int target;
+    cin >> target;
+
+    // 在这里写你的代码
+
+    return 0;
+}
 `,
     },
   },
@@ -159,6 +200,32 @@ target = int(lines[2])
 
     dfs(0, target)
     return ans
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+#include <functional>
+using namespace std;
+
+vector<vector<int>> combinationSum(vector<int> candidates, int target) {
+    vector<int> arr = candidates;
+    sort(arr.begin(), arr.end()); // 排序：组合内升序 + 便于剪枝
+    vector<vector<int>> ans;
+    vector<int> path;
+    function<void(int, int)> dfs = [&](int start, int remain) {
+        if (remain == 0) {
+            ans.push_back(path); // 存拷贝
+            return;
+        }
+        for (int i = start; i < (int)arr.size(); i++) {
+            if (arr[i] > remain) break; // 剪枝：后面的数更大，都不用试
+            path.push_back(arr[i]);
+            dfs(i, remain - arr[i]); // 传 i 而非 i+1：同一数字可重复选取
+            path.pop_back();
+        }
+    };
+    dfs(0, target);
+    return ans;
+}
 `,
     },
     acm: {
@@ -216,6 +283,48 @@ dfs(0, target)
 out.sort()  # 各行按字符串字典序排序
 for line in out:
     print(line)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <functional>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> candidates(n);
+    for (int i = 0; i < n; i++) cin >> candidates[i];
+    int target;
+    cin >> target;
+    sort(candidates.begin(), candidates.end());
+
+    vector<string> out;
+    vector<int> path;
+    function<void(int, int)> dfs = [&](int start, int remain) {
+        if (remain == 0) {
+            string line;
+            for (int i = 0; i < (int)path.size(); i++) {
+                if (i) line += ' ';
+                line += to_string(path[i]);
+            }
+            out.push_back(line);
+            return;
+        }
+        for (int i = start; i < (int)candidates.size(); i++) {
+            if (candidates[i] > remain) break;
+            path.push_back(candidates[i]);
+            dfs(i, remain - candidates[i]);
+            path.pop_back();
+        }
+    };
+    dfs(0, target);
+
+    sort(out.begin(), out.end()); // 各行按字符串字典序排序
+    for (const string& line : out) cout << line << '\\n';
+    return 0;
+}
 `,
     },
   },

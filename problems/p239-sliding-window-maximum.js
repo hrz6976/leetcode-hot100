@@ -89,6 +89,16 @@ var maxSlidingWindow = function(nums, k) {
     # 返回每个窗口的最大值组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <deque>
+using namespace std;
+
+// 返回每个窗口的最大值组成的数组
+vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -109,6 +119,24 @@ nums = list(map(int, lines[1].split()))
 k = int(lines[2])
 
 # 在这里写你的代码，用 print 输出各窗口最大值（空格分隔）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    // 在这里写你的代码，用 cout 输出各窗口最大值（空格分隔）
+    return 0;
+}
 `,
     },
   },
@@ -148,6 +176,25 @@ def maxSlidingWindow(nums, k):
         if i >= k - 1:
             ans.append(nums[dq[0]])
     return ans
+`,
+      cpp: `#include <vector>
+#include <deque>
+using namespace std;
+
+vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+    deque<int> dq;   // 双端队列：存下标，对应值从队首到队尾单调递减
+    vector<int> ans;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        // 队尾所有比 nums[i] 小的元素都不可能再成为最大值，弹出
+        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        // 队首下标滑出窗口 [i-k+1, i] 时出队
+        if (dq.front() <= i - k) dq.pop_front();
+        // 窗口形成后，队首就是当前窗口最大值
+        if (i >= k - 1) ans.push_back(nums[dq.front()]);
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -190,6 +237,39 @@ for i, x in enumerate(nums):
     if i >= k - 1:
         ans.append(nums[dq[0]])
 print(' '.join(map(str, ans)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <deque>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+    int k;
+    cin >> k;
+
+    deque<int> dq;   // 双端队列：存下标，对应值从队首到队尾单调递减
+    vector<int> ans;
+    for (int i = 0; i < n; i++) {
+        // 队尾所有比 nums[i] 小的元素都不可能再成为最大值，弹出
+        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back();
+        dq.push_back(i);
+        // 队首下标滑出窗口 [i-k+1, i] 时出队
+        if (dq.front() <= i - k) dq.pop_front();
+        // 窗口形成后，队首就是当前窗口最大值
+        if (i >= k - 1) ans.push_back(nums[dq.front()]);
+    }
+
+    for (int i = 0; i < (int)ans.size(); i++) {
+        if (i) cout << ' ';
+        cout << ans[i];
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

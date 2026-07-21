@@ -101,6 +101,24 @@ def lengthOfLongestSubstring(s):
     return max_len                  # 走完全程，纪录就是答案
 \`\`\`
 
+\`\`\`
+// C++：无重复字符的最长子串（LeetCode 3）
+int lengthOfLongestSubstring(string s) {
+  unordered_set<char> win;          // 窗口集合：记着窗口里现在有哪些字符
+  int left = 0;                     // 窗口左边界（下标）
+  int maxLen = 0;                   // 历史最长窗口的长度
+  for (int right = 0; right < (int)s.size(); right++) {  // 右边界一格一格右移
+    while (win.count(s[right])) {   // 新字符已在窗口里 → 必须收缩
+      win.erase(s[left]);           //   把最左边的字符踢出集合
+      left++;                       //   左边界右移一格
+    }                               // 循环结束时，窗口里一定没有 s[right] 了
+    win.insert(s[right]);           // 放心把新字符吞进窗口
+    maxLen = max(maxLen, right - left + 1);  // 窗口长度 = 右 - 左 + 1，刷新纪录
+  }
+  return maxLen;                    // 走完全程，纪录就是答案
+}
+\`\`\`
+
 其他滑窗题都是在这个骨架上换三个零件：①「窗口里记什么」（字符集合、字符计数、元素和）；②「什么算违规」（有重复、和超过 k、还没凑齐所有字符）；③「什么时候更新答案」（最长类在收缩**之后**更新，最短类在收缩**过程中**每步尝试更新）。
 
 背模板别背整段代码，背这四句口诀就能现场还原：
@@ -149,7 +167,34 @@ for right in range(len(s)):
 print('答案：' + str(max_len))
 \`\`\`
 
-预期输出（两个版本完全一致）：
+\`\`\`run-cpp#window-walkthrough
+#include <iostream>
+#include <string>
+#include <unordered_set>
+#include <algorithm>
+using namespace std;
+
+int main() {
+  string s = "abcabcbb";
+  unordered_set<char> win;      // 当前窗口里的字符
+  int left = 0, maxLen = 0;
+  for (int right = 0; right < (int)s.size(); right++) {
+    char c = s[right];
+    while (win.count(c)) {      // 新字符已在窗口里，从左边踢，直到不重复
+      cout << "  窗口里已有 " << c << "，踢出最左边的 " << s[left] << "，left " << left << " -> " << (left + 1) << "\\n";
+      win.erase(s[left]);
+      left++;
+    }
+    win.insert(c);              // 吞入新字符
+    maxLen = max(maxLen, right - left + 1);
+    cout << "right=" << right << " 吞入 " << c << "，窗口 [" << left << "," << right << "] = \\"" << s.substr(left, right - left + 1) << "\\"，历史最长 " << maxLen << "\\n";
+  }
+  cout << "答案：" << maxLen << "\\n";
+  return 0;
+}
+\`\`\`
+
+预期输出（三个版本完全一致）：
 
 \`\`\`
 right=0 吞入 a，窗口 [0,0] = "a"，历史最长 1

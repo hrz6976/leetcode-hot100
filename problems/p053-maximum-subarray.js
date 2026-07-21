@@ -84,6 +84,26 @@ var maxSubArray = function(nums) {
     # 返回最大子数组和
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最大子数组和
+int maxSubArray(vector<int> nums) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出最大子数组和
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出最大子数组和
+
+    return 0;
+}
 `,
     },
   },
@@ -126,6 +163,20 @@ nums = list(map(int, lines[1].split()))
         cur = max(x, cur + x)  # 接着累加 or 重新起头
         best = max(best, cur)
     return best
+`,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int maxSubArray(vector<int> nums) {
+    int best = nums[0]; // 全局最大和
+    int cur = nums[0];  // 以当前元素结尾的最大子数组和
+    for (int i = 1; i < (int)nums.size(); i++) {
+        cur = max(nums[i], cur + nums[i]); // 接着累加 or 重新起头
+        best = max(best, cur);
+    }
+    return best;
+}
 `,
     },
     acm: {
@@ -152,6 +203,27 @@ for x in nums[1:]:
     cur = max(x, cur + x)
     best = max(best, cur)
 print(best)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int best = nums[0]; // 全局最大和
+    int cur = nums[0];  // 以当前元素结尾的最大子数组和
+    for (int i = 1; i < n; i++) {
+        cur = max(nums[i], cur + nums[i]); // 接着累加 or 重新起头
+        best = max(best, cur);
+    }
+    cout << best << '\\n';
+    return 0;
+}
 `,
     },
   },

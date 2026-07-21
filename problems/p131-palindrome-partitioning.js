@@ -96,6 +96,26 @@ var partition = function(s) {
     # 返回所有分割方案，每个方案是若干回文子串组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有分割方案，每个方案是若干回文子串组成的列表
+vector<vector<string>> partition(string s) {
+    // TODO: 在这里实现
+    return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +134,21 @@ s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码
 # 输出：每种分割方案一行，各段用一个空格分隔；所有方案按字典序排列
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为字符串 s
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // TODO: 在这里实现算法
+    // 输出：每种分割方案一行，各段用一个空格分隔；所有方案按字典序排列
+    return 0;
+}
 `,
     },
   },
@@ -178,6 +213,52 @@ s = sys.stdin.read().split('\\n')[0]
 
     dfs(0)
     return res
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+vector<vector<string>> partition(string s) {
+    vector<vector<string>> res;
+    vector<string> path; // 当前已经切出的回文段
+
+    // 双指针判断 s[l..r] 是否回文
+    auto isPal = [&](int l, int r) {
+        while (l < r) {
+            if (s[l] != s[r]) return false;
+            l++;
+            r--;
+        }
+        return true;
+    };
+
+    // 从下标 start 开始往后切
+    function<void(int)> dfs = [&](int start) {
+        if (start == (int)s.size()) {
+            res.push_back(path); // 注意存拷贝
+            return;
+        }
+        for (int end = start; end < (int)s.size(); end++) {
+            if (isPal(start, end)) {
+                path.push_back(s.substr(start, end - start + 1));
+                dfs(end + 1);
+                path.pop_back(); // 撤销选择
+            }
+        }
+    };
+    dfs(0);
+    return res;
+}
 `,
     },
     acm: {
@@ -245,6 +326,61 @@ dfs(0)
 # 每种方案拼成一行（各段空格分隔），按字典序排序后输出
 for line in sorted(' '.join(p) for p in res):
     print(line)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <functional>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    vector<vector<string>> res;
+    vector<string> path; // 当前已经切出的回文段
+
+    // 双指针判断 s[l..r] 是否回文
+    auto isPal = [&](int l, int r) {
+        while (l < r) {
+            if (s[l] != s[r]) return false;
+            l++;
+            r--;
+        }
+        return true;
+    };
+
+    // 从下标 start 开始往后切
+    function<void(int)> dfs = [&](int start) {
+        if (start == (int)s.size()) {
+            res.push_back(path); // 注意存拷贝
+            return;
+        }
+        for (int end = start; end < (int)s.size(); end++) {
+            if (isPal(start, end)) {
+                path.push_back(s.substr(start, end - start + 1));
+                dfs(end + 1);
+                path.pop_back(); // 撤销选择
+            }
+        }
+    };
+    dfs(0);
+
+    // 每种方案拼成一行（各段空格分隔），按字典序排序后输出
+    vector<string> lines;
+    for (const auto& p : res) {
+        string line;
+        for (size_t i = 0; i < p.size(); i++) {
+            if (i) line += ' ';
+            line += p[i];
+        }
+        lines.push_back(line);
+    }
+    sort(lines.begin(), lines.end());
+    for (const auto& line : lines) cout << line << "\\n";
+    return 0;
+}
 `,
     },
   },

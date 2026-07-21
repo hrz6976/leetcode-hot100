@@ -90,6 +90,27 @@ var detectCycle = function(head) {
     # 返回环入口节点；无环返回 None
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// 返回环入口节点；无环返回 nullptr
+ListNode* detectCycle(ListNode* head) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -119,6 +140,31 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
 pos = int(lines[2])
 
 # 构造带环链表（尾节点指向第 pos 个节点），找到环入口后用 print 输出其下标
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行），第三行 pos（-1 表示无环）
+// 输出：环入口下标，无环输出 -1
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n, pos;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+  cin >> pos;
+
+  // 构造带环链表（尾节点指向第 pos 个节点），找到环入口后用 cout 输出其下标
+
+  return 0;
+}
 `,
     },
   },
@@ -159,6 +205,27 @@ pos = int(lines[2])
                 slow = slow.next
             return p
     return None
+`,
+      cpp: `// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* detectCycle(ListNode* head) {
+  ListNode* slow = head;
+  ListNode* fast = head;
+  // 第一阶段：快慢指针，相遇则有环
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;
+    fast = fast->next->next;
+    if (slow == fast) {
+      // 第二阶段：从头节点与相遇点同步各走一步，相遇处即环入口
+      ListNode* p = head;
+      while (p != slow) {
+        p = p->next;
+        slow = slow->next;
+      }
+      return p;
+    }
+  }
+  return nullptr;
+}
 `,
     },
     acm: {
@@ -234,6 +301,62 @@ if entry is not None:
             idx = i
             break
 print(idx)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n, pos;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+  cin >> pos;
+
+  // 构造带环链表：nodes 保存所有节点，尾节点指向 nodes[pos]
+  vector<ListNode*> nodes;
+  for (int v : vals) nodes.push_back(new ListNode(v));
+  for (int i = 0; i + 1 < n; i++) nodes[i]->next = nodes[i + 1];
+  if (pos >= 0 && pos < n) nodes[n - 1]->next = nodes[pos];
+  ListNode* head = n > 0 ? nodes[0] : nullptr;
+
+  // Floyd 快慢指针
+  ListNode* slow = head;
+  ListNode* fast = head;
+  ListNode* entry = nullptr;
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;
+    fast = fast->next->next;
+    if (slow == fast) {
+      ListNode* p = head;
+      while (p != slow) {
+        p = p->next;
+        slow = slow->next;
+      }
+      entry = p;
+      break;
+    }
+  }
+
+  // 按节点身份在 nodes 中查找下标
+  int idx = -1;
+  if (entry != nullptr) {
+    for (int i = 0; i < n; i++) {
+      if (nodes[i] == entry) {
+        idx = i;
+        break;
+      }
+    }
+  }
+  cout << idx << "\\n";
+  return 0;
+}
 `,
     },
   },

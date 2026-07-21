@@ -101,6 +101,22 @@ def dfs(grid, r, c):
     dfs(grid, r, c - 1)                      # 丢给左
 \`\`\`
 
+C++ 版本（逻辑一模一样）：
+
+\`\`\`
+// C++
+void dfs(vector<vector<int>>& grid, int r, int c) {
+  int rows = grid.size(), cols = grid[0].size();  // 行数、列数
+  if (r < 0 || r >= rows || c < 0 || c >= cols) return;  // 出界了，放弃
+  if (grid[r][c] != 1) return;           // 是水或已淹过，放弃
+  grid[r][c] = 0;                        // 先标记（淹掉），再散开
+  dfs(grid, r + 1, c);                   // 把下游任务丢给下
+  dfs(grid, r - 1, c);                   // 丢给上
+  dfs(grid, r, c + 1);                   // 丢给右
+  dfs(grid, r, c - 1);                   // 丢给左
+}
+\`\`\`
+
 模板二：网格 BFS——从起点一圈一圈向外扩。DFS 是「谁先连上就立刻追到底」，BFS 是「先处理完手边这一圈，再处理下一圈」，靠**队列**保证先来先处理：
 
 \`\`\`
@@ -143,6 +159,34 @@ def bfs(grid, r0, c0):
                 continue                 # 水或已访问
             grid[nr][nc] = 0             # 入队时立刻标记
             queue.append((nr, nc))       # 排进队尾，等下一圈
+\`\`\`
+
+\`\`\`
+// C++
+#include <queue>
+#include <vector>
+#include <utility>
+using namespace std;
+
+void bfs(vector<vector<int>>& grid, int r0, int c0) {
+  int rows = grid.size(), cols = grid[0].size();
+  queue<pair<int, int>> q;           // 队列：等待处理的格子
+  q.push({r0, c0});
+  grid[r0][c0] = 0;                  // 入队时就做标记
+  int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};  // 下上右左
+  while (!q.empty()) {               // 队列没空就继续
+    pair<int, int> cur = q.front();  // 取出最早入队的格子
+    q.pop();
+    int r = cur.first, c = cur.second;
+    for (auto& d : dirs) {           // 看它的四个邻居
+      int nr = r + d[0], nc = c + d[1];
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;  // 先判越界
+      if (grid[nr][nc] != 1) continue;  // 水或已访问
+      grid[nr][nc] = 0;              // 入队时立刻标记
+      q.push({nr, nc});              // 排进队尾，等下一圈
+    }
+  }
+}
 \`\`\`
 
 > 重点：BFS 为什么「一圈一圈」？因为队列先进先出——第 1 圈入队的点全部处理完之前，它们发现的第 2 圈的点只能排在后面等。在**无权图（或每条边代价相同）**中，节点第一次被发现并入队时的层数，就是它到起点的最短步数；带不同权重的边不能直接套普通 BFS。
@@ -205,6 +249,38 @@ for r in range(rows):
             print(f'发现第 {count} 座岛，起点 ({r},{c})')
             dfs(r, c)
 print(f'岛屿总数 = {count}')
+\`\`\`
+
+\`\`\`run-cpp#island-flood-fill
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<vector<int>> grid = {{1, 1, 0}, {0, 1, 0}, {0, 0, 1}};
+int rows = 3, cols = 3;
+
+void dfs(int r, int c) {
+  if (r < 0 || r >= rows || c < 0 || c >= cols) return;
+  if (grid[r][c] != 1) return;
+  grid[r][c] = 0;
+  cout << "  淹没 (" << r << "," << c << ")" << "\\n";
+  dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
+}
+
+int main() {
+  int count = 0;
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      if (grid[r][c] == 1) {
+        count++;
+        cout << "发现第 " << count << " 座岛，起点 (" << r << "," << c << ")" << "\\n";
+        dfs(r, c);
+      }
+    }
+  }
+  cout << "岛屿总数 = " << count << "\\n";
+  return 0;
+}
 \`\`\`
 
 实际运行输出：

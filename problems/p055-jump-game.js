@@ -83,6 +83,26 @@ var canJump = function(nums) {
     # 返回布尔值：能否到达最后一个下标
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool canJump(vector<int>& nums) {
+    // 返回布尔值：能否到达最后一个下标
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -103,6 +123,23 @@ n = int(lines[0])
 nums = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print('true') 或 print('false') 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个非负整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout 输出 true 或 false（小写）
+
+    return 0;
+}
 `,
     },
   },
@@ -128,6 +165,30 @@ nums = list(map(int, lines[1].split())) if n > 0 else []
         if farthest >= len(nums) - 1:
             return True  # 终点可达
     return True
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool canJump(vector<int>& nums) {
+    int farthest = 0; // 当前能到达的最远下标
+    for (int i = 0; i < (int)nums.size(); i++) {
+        if (i > farthest) return false; // 当前位置不可达
+        farthest = max(farthest, i + nums[i]);
+        if (farthest >= (int)nums.size() - 1) return true; // 终点可达
+    }
+    return true;
+}
 `,
     },
     acm: {
@@ -162,6 +223,30 @@ for i, x in enumerate(nums):
     farthest = max(farthest, i + x)
 
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int farthest = 0;
+    bool ok = true;
+    for (int i = 0; i < n; i++) {
+        if (i > farthest) {
+            ok = false;
+            break;
+        }
+        farthest = max(farthest, i + nums[i]);
+    }
+
+    cout << (ok ? "true" : "false") << "\\n";
+    return 0;
+}
 `,
     },
   },

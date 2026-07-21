@@ -91,6 +91,27 @@ var numIslands = function(grid) {
     # grid 为字符二维数组（'0'/'1'），返回岛屿数量
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// grid 为字符二维数组（'0'/'1'，每个元素是单字符字符串），返回岛屿数量
+int numIslands(vector<vector<string>>& grid) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +135,24 @@ m, n = map(int, lines[0].split())
 grid = [list(lines[i + 1].strip()) for i in range(m)]
 
 # 在这里写你的代码，用 print 输出岛屿数量
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 m n（行数 列数），随后 m 行每行一个长度为 n 的 01 字符串
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<string> grid(m);
+    for (int i = 0; i < m; i++) cin >> grid[i];
+
+    // 在这里写你的代码，用 cout 输出岛屿数量
+
+    return 0;
+}
 `,
     },
   },
@@ -163,6 +202,44 @@ grid = [list(lines[i + 1].strip()) for i in range(m)]
                 count += 1   # 发现一座新岛屿
                 dfs(r, c)    # 把整座岛屿淹没
     return count
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+int numIslands(vector<vector<string>>& grid) {
+    int m = grid.size(), n = grid[0].size();
+    vector<vector<string>> g = grid; // 复制一份，避免修改原始数据
+    int count = 0;
+    function<void(int, int)> dfs = [&](int r, int c) {
+        if (r < 0 || r >= m || c < 0 || c >= n || g[r][c] != "1") return;
+        g[r][c] = "0"; // 就地淹没，避免重复访问
+        dfs(r + 1, c);
+        dfs(r - 1, c);
+        dfs(r, c + 1);
+        dfs(r, c - 1);
+    };
+    for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+            if (g[r][c] == "1") {
+                count++;   // 发现一座新岛屿
+                dfs(r, c); // 把整座岛屿淹没
+            }
+        }
+    }
+    return count;
+}
 `,
     },
     acm: {
@@ -218,6 +295,40 @@ for r in range(rows):
             dfs(r, c)
 
 print(count)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<string> grid(m);
+    for (int i = 0; i < m; i++) cin >> grid[i];
+
+    int count = 0;
+    function<void(int, int)> dfs = [&](int r, int c) {
+        if (r < 0 || r >= m || c < 0 || c >= n || grid[r][c] != '1') return;
+        grid[r][c] = '0'; // 就地淹没，避免重复访问
+        dfs(r + 1, c);
+        dfs(r - 1, c);
+        dfs(r, c + 1);
+        dfs(r, c - 1);
+    };
+    for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+            if (grid[r][c] == '1') {
+                count++;   // 发现一座新岛屿
+                dfs(r, c); // 把整座岛屿淹没
+            }
+        }
+    }
+
+    cout << count << endl;
+    return 0;
+}
 `,
     },
   },

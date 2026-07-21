@@ -89,6 +89,26 @@ var maxArea = function(height) {
     # 返回最大水量
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回最大水量
+int maxArea(vector<int>& height) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -109,6 +129,23 @@ n = int(lines[0])
 height = list(map(int, lines[1].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print 输出答案
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> height(n);
+    for (int i = 0; i < n; i++) cin >> height[i];
+
+    // 在这里写你的代码，用 cout 输出答案
+
+    return 0;
+}
 `,
     },
   },
@@ -142,6 +179,34 @@ height = list(map(int, lines[1].split())) if n > 0 else []
         else:
             right -= 1
     return best
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int maxArea(vector<int>& height) {
+    int left = 0;
+    int right = (int)height.size() - 1;
+    int best = 0;
+    while (left < right) {
+        int h = min(height[left], height[right]);
+        best = max(best, h * (right - left));
+        // 移动较短的那条线，才可能找到更高的容器
+        if (height[left] < height[right]) left++;
+        else right--;
+    }
+    return best;
+}
 `,
     },
     acm: {
@@ -177,6 +242,31 @@ while left < right:
     else:
         right -= 1
 print(best)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> height(n);
+    for (int i = 0; i < n; i++) cin >> height[i];
+
+    int left = 0;
+    int right = n - 1;
+    int best = 0;
+    while (left < right) {
+        int h = min(height[left], height[right]);
+        best = max(best, h * (right - left));
+        // 移动较短的那条线，才可能找到更高的容器
+        if (height[left] < height[right]) left++;
+        else right--;
+    }
+    cout << best << endl;
+    return 0;
+}
 `,
     },
   },

@@ -89,6 +89,26 @@ var decodeString = function(s) {
     # 返回解码后的字符串
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回解码后的字符串
+string decodeString(string s) {
+    // TODO: 在这里实现
+    return "";
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -105,6 +125,32 @@ import sys
 s = sys.stdin.read().split('\\n')[0]
 
 # 在这里写你的代码，用 print 输出解码后的字符串
+`,
+      cpp: `// ACM 模式：用 cin/getline 读输入，用 cout 输出答案
+// 输入格式：第一行为编码后的字符串 s
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    string s;
+    getline(cin, s);
+
+    // 在这里写你的代码，用 cout 输出解码后的字符串
+
+    return 0;
+}
 `,
     },
   },
@@ -156,6 +202,49 @@ s = sys.stdin.read().split('\\n')[0]
             cur += ch
     return cur
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+string decodeString(string s) {
+  stack<int> numStack;    // 各层的重复次数
+  stack<string> strStack; // 各层「左括号之前」已拼好的字符串
+  int num = 0;            // 当前正在读取的数字
+  string cur;             // 当前这一层已拼好的字符串
+
+  for (char ch : s) {
+    if (ch >= '0' && ch <= '9') {
+      num = num * 10 + (ch - '0'); // 支持多位数
+    } else if (ch == '[') {
+      numStack.push(num);
+      strStack.push(cur);
+      num = 0;
+      cur = ""; // 括号内是新的一层，从零开始拼
+    } else if (ch == ']') {
+      int k = numStack.top();
+      numStack.pop();
+      string prev = strStack.top();
+      strStack.pop();
+      string repeated;
+      for (int i = 0; i < k; i++) repeated += cur;
+      cur = prev + repeated; // 重复 k 次后接回上一层
+    } else {
+      cur += ch;
+    }
+  }
+  return cur;
+}
+`,
     },
     acm: {
       javascript: `const s = input.split('\\n')[0];
@@ -206,6 +295,54 @@ for ch in s:
         cur += ch
 
 print(cur)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  string s;
+  getline(cin, s);
+
+  stack<int> numStack;
+  stack<string> strStack;
+  int num = 0;
+  string cur;
+
+  for (char ch : s) {
+    if (ch >= '0' && ch <= '9') {
+      num = num * 10 + (ch - '0');
+    } else if (ch == '[') {
+      numStack.push(num);
+      strStack.push(cur);
+      num = 0;
+      cur = "";
+    } else if (ch == ']') {
+      int k = numStack.top();
+      numStack.pop();
+      string prev = strStack.top();
+      strStack.pop();
+      string repeated;
+      for (int i = 0; i < k; i++) repeated += cur;
+      cur = prev + repeated;
+    } else {
+      cur += ch;
+    }
+  }
+  cout << cur << '\\n';
+  return 0;
+}
 `,
     },
   },

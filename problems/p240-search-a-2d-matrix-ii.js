@@ -91,6 +91,15 @@ var searchMatrix = function(matrix, target) {
     # 返回 True 或 False
     pass
 `,
+      cpp: `#include <vector>
+using namespace std;
+
+// 返回 true 或 false
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -116,6 +125,25 @@ matrix = [list(map(int, lines[i + 1].split())) for i in range(m)]
 target = int(lines[m + 1])
 
 # 在这里搜索 target，用 print('true') 或 print('false') 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为 m n（行数与列数）；随后 m 行，每行 n 个整数（空格分隔）；最后一行为 target
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+    int target;
+    cin >> target;
+
+    // 在这里搜索 target，用 cout 输出 true 或 false
+    return 0;
+}
 `,
     },
   },
@@ -150,6 +178,24 @@ target = int(lines[m + 1])
         else:
             i += 1  # 该行左侧的元素都更小，排除整行
     return False
+`,
+      cpp: `#include <vector>
+using namespace std;
+
+bool searchMatrix(vector<vector<int>>& matrix, int target) {
+    int m = matrix.size();
+    int n = matrix[0].size();
+    int i = 0, j = n - 1;  // 从右上角出发
+    while (i < m && j >= 0) {
+        if (matrix[i][j] == target) return true;
+        if (matrix[i][j] > target) {
+            j--;  // 该列下方的元素都更大，排除整列
+        } else {
+            i++;  // 该行左侧的元素都更小，排除整行
+        }
+    }
+    return false;
+}
 `,
     },
     acm: {
@@ -192,6 +238,34 @@ while i < m and j >= 0:
     else:
         i += 1
 print('true' if found else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+    int target;
+    cin >> target;
+
+    // 从右上角开始阶梯搜索：偏大左移，偏小下移
+    int i = 0, j = n - 1;
+    bool found = false;
+    while (i < m && j >= 0) {
+        if (matrix[i][j] == target) {
+            found = true;
+            break;
+        }
+        if (matrix[i][j] > target) j--;
+        else i++;
+    }
+    cout << (found ? "true" : "false") << endl;
+    return 0;
+}
 `,
     },
   },

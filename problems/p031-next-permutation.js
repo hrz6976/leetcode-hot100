@@ -94,6 +94,25 @@ var nextPermutation = function(nums) {
     # 原地修改 nums 为下一个排列，无需返回值
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 原地修改 nums 为下一个排列，无需返回值
+void nextPermutation(vector<int>& nums) {
+  // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +131,24 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里原地修改 nums 为下一个排列，并用 print(' '.join(map(str, nums))) 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+
+  // 在这里原地修改 nums 为下一个排列，并用 cout 空格分隔输出结果
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -156,6 +193,35 @@ nums = list(map(int, lines[1].split()))
         lo += 1
         hi -= 1
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+void nextPermutation(vector<int>& nums) {
+  int n = nums.size();
+  // 1. 从右往左找第一个下降点 i（i 右侧是递减后缀）
+  int i = n - 2;
+  while (i >= 0 && nums[i] >= nums[i + 1]) i--;
+  // 2. 在 i 右侧找最小的大于 nums[i] 的数，与之交换
+  if (i >= 0) {
+    int j = n - 1;
+    while (nums[j] <= nums[i]) j--;
+    swap(nums[i], nums[j]);
+  }
+  // 3. 反转 i 右侧后缀（i == -1 时恰好整体反转，覆盖最大排列的情况）
+  reverse(nums.begin() + i + 1, nums.end());
+}
+`,
     },
     acm: {
       javascript: `const lines = input.trim().split('\\n');
@@ -196,6 +262,37 @@ while lo < hi:
     lo += 1
     hi -= 1
 print(' '.join(map(str, nums)))
+`,
+      cpp: `#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (auto& v : nums) cin >> v;
+
+  // 1. 从右往左找第一个下降点 i（i 右侧是递减后缀）
+  int i = n - 2;
+  while (i >= 0 && nums[i] >= nums[i + 1]) i--;
+  // 2. 在 i 右侧找最小的大于 nums[i] 的数，与之交换
+  if (i >= 0) {
+    int j = n - 1;
+    while (nums[j] <= nums[i]) j--;
+    swap(nums[i], nums[j]);
+  }
+  // 3. 反转 i 右侧后缀
+  reverse(nums.begin() + i + 1, nums.end());
+
+  for (int k = 0; k < n; k++) {
+    if (k) cout << ' ';
+    cout << nums[k];
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

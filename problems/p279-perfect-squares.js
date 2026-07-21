@@ -82,6 +82,16 @@ var numSquares = function(n) {
     # 返回和为 n 的完全平方数的最少数量
     pass
 `,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+// 返回和为 n 的完全平方数的最少数量
+int numSquares(int n) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -98,6 +108,19 @@ import sys
 n = int(sys.stdin.read().strip())
 
 # 在这里写你的代码，用 print 输出最少完全平方数的个数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：一行，整数 n
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    // 在这里写你的代码，用 cout 输出最少完全平方数的个数
+    return 0;
+}
 `,
     },
   },
@@ -130,6 +153,23 @@ n = int(sys.stdin.read().strip())
         dp[i] = best + 1
     return dp[n]
 `,
+      cpp: `#include <vector>
+#include <algorithm>
+using namespace std;
+
+int numSquares(int n) {
+    // dp[i] = 和为 i 的完全平方数的最少数量
+    vector<int> dp(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        int best = i;  // 上界：i 个 1 相加
+        for (int j = 1; j * j <= i; j++) {
+            best = min(best, dp[i - j * j]);
+        }
+        dp[i] = best + 1;
+    }
+    return dp[n];
+}
+`,
     },
     acm: {
       javascript: `const n = Number(input.trim());
@@ -161,6 +201,28 @@ for i in range(1, n + 1):
     dp[i] = best + 1
 
 print(dp[n])
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    // dp[i] = 和为 i 的完全平方数的最少数量
+    vector<int> dp(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        int best = i;  // 上界：i 个 1 相加
+        for (int j = 1; j * j <= i; j++) {
+            best = min(best, dp[i - j * j]);
+        }
+        dp[i] = best + 1;
+    }
+    cout << dp[n] << endl;
+    return 0;
+}
 `,
     },
   },

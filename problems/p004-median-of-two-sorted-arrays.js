@@ -88,6 +88,26 @@ var findMedianSortedArrays = function(nums1, nums2) {
     # 返回两个正序数组合并后的中位数（浮点数）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回两个正序数组合并后的中位数
+double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+    // TODO: 在这里实现
+    return 0.0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,26 @@ n = int(lines[2])
 nums2 = list(map(int, lines[3].split())) if n > 0 else []
 
 # 在这里写你的代码，用 print 输出中位数
+`,
+      cpp: `// ACM 模式：用 cin 读输入、cout 输出答案
+// 输入格式：第一行 m，第二行 m 个整数（m = 0 时为空行），第三行 n，第四行 n 个整数（n = 0 时为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m;
+    vector<int> nums1(m);
+    for (int i = 0; i < m; i++) cin >> nums1[i];
+    cin >> n;
+    vector<int> nums2(n);
+    for (int i = 0; i < n; i++) cin >> nums2[i];
+
+    // 在这里写你的代码，用 cout 输出中位数
+
+    return 0;
+}
 `,
     },
   },
@@ -169,6 +209,44 @@ nums2 = list(map(int, lines[3].split())) if n > 0 else []
         else:
             lo = i + 1
     return 0.0
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+    // 保证 nums1 是较短的数组，在它上面二分
+    if (nums1.size() > nums2.size()) return findMedianSortedArrays(nums2, nums1);
+    int m = nums1.size(), n = nums2.size();
+    int half = (m + n + 1) / 2; // 合并后左半部分的元素个数
+    int lo = 0, hi = m;
+    while (lo <= hi) {
+        int i = (lo + hi) / 2; // nums1 左半取 i 个
+        int j = half - i; // nums2 左半取 j 个
+        double l1 = i == 0 ? -1e18 : nums1[i - 1]; // 边界用哨兵值
+        double r1 = i == m ? 1e18 : nums1[i];
+        double l2 = j == 0 ? -1e18 : nums2[j - 1];
+        double r2 = j == n ? 1e18 : nums2[j];
+        if (l1 <= r2 && l2 <= r1) {
+            // 合法划分：左半最大值 <= 右半最小值
+            if ((m + n) % 2 == 1) return max(l1, l2);
+            return (max(l1, l2) + min(r1, r2)) / 2;
+        }
+        if (l1 > r2) hi = i - 1; // nums1 左半取多了
+        else lo = i + 1;
+    }
+    return 0.0;
+}
 `,
     },
     acm: {
@@ -238,6 +316,50 @@ def median(a, b):
     return 0.0
 
 print(median(nums1, nums2))
+`,
+      cpp: `#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// 在较短的数组上二分划分位置
+double median(vector<int>& a, vector<int>& b) {
+    if (a.size() > b.size()) return median(b, a);
+    int m = a.size(), n = b.size();
+    int half = (m + n + 1) / 2;
+    int lo = 0, hi = m;
+    while (lo <= hi) {
+        int i = (lo + hi) / 2;
+        int j = half - i;
+        double l1 = i == 0 ? -1e18 : a[i - 1]; // 边界用哨兵值
+        double r1 = i == m ? 1e18 : a[i];
+        double l2 = j == 0 ? -1e18 : b[j - 1];
+        double r2 = j == n ? 1e18 : b[j];
+        if (l1 <= r2 && l2 <= r1) {
+            if ((m + n) % 2 == 1) return max(l1, l2);
+            return (max(l1, l2) + min(r1, r2)) / 2;
+        }
+        if (l1 > r2) hi = i - 1;
+        else lo = i + 1;
+    }
+    return 0.0;
+}
+
+int main() {
+    int m, n;
+    cin >> m;
+    vector<int> nums1(m);
+    for (int i = 0; i < m; i++) cin >> nums1[i];
+    cin >> n;
+    vector<int> nums2(n);
+    for (int i = 0; i < n; i++) cin >> nums2[i];
+
+    double ans = median(nums1, nums2);
+    // 中位数只会是 x.0 或 x.5，统一按一位小数输出（与 2.0 / 2.5 格式一致）
+    cout << fixed << setprecision(1) << ans << "\\n";
+    return 0;
+}
 `,
     },
   },

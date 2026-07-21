@@ -84,6 +84,27 @@ var reverseList = function(head) {
     # head 为链表头节点（ListNode），返回反转后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点，返回反转后的头节点
+ListNode* reverseList(ListNode* head) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -109,6 +130,29 @@ n = int(lines[0])
 vals = list(map(int, lines[1].split())) if n > 0 else []
 
 # 构造链表，完成反转后用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> vals(n);
+    for (int i = 0; i < n; i++) cin >> vals[i];
+
+    // 构造链表，完成反转后用 cout 输出结果（空格分隔；空链表输出一个空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -136,6 +180,33 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
         prev = cur       # prev 前移
         cur = nxt        # cur 前移
     return prev
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* reverseList(ListNode* head) {
+    ListNode* prev = nullptr;
+    ListNode* cur = head;
+    while (cur != nullptr) {
+        ListNode* next = cur->next; // 暂存后继
+        cur->next = prev;           // 反转指针
+        prev = cur;                 // prev 前移
+        cur = next;                 // cur 前移
+    }
+    return prev;
+}
 `,
     },
     acm: {
@@ -204,6 +275,52 @@ while prev is not None:
     out.append(str(prev.val))
     prev = prev.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> vals(n);
+    for (int i = 0; i < n; i++) cin >> vals[i];
+
+    // 构造链表
+    ListNode dummy;
+    ListNode* tail = &dummy;
+    for (int v : vals) {
+        tail->next = new ListNode(v);
+        tail = tail->next;
+    }
+
+    // 迭代反转
+    ListNode* prev = nullptr;
+    ListNode* cur = dummy.next;
+    while (cur != nullptr) {
+        ListNode* next = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = next;
+    }
+
+    // 输出反转后的链表
+    bool first = true;
+    while (prev != nullptr) {
+        if (!first) cout << ' ';
+        first = false;
+        cout << prev->val;
+        prev = prev->next;
+    }
+    cout << endl;
+    return 0;
+}
 `,
     },
   },

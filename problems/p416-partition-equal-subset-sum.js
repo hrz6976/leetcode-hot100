@@ -81,6 +81,26 @@ var canPartition = function(nums) {
     # 能分割成两个等和子集返回 True，否则返回 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 能分割成两个等和子集返回 true，否则返回 false
+bool canPartition(vector<int>& nums) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -99,6 +119,34 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print('true' if ok else 'false') 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数；输出 true 或 false（小写）
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里写你的代码，用 cout << (ok ? "true" : "false") 输出结果
+
+    return 0;
+}
 `,
     },
   },
@@ -138,6 +186,37 @@ nums = list(map(int, lines[1].split()))
             if dp[j - x]:
                 dp[j] = True
     return dp[target]
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+bool canPartition(vector<int>& nums) {
+  int sum = accumulate(nums.begin(), nums.end(), 0);
+  if (sum % 2 == 1) return false; // 和为奇数不可能等分
+  int target = sum / 2;
+
+  // 01 背包：dp[j] 表示能否凑出和 j
+  vector<bool> dp(target + 1, false);
+  dp[0] = true; // 空子集凑出 0
+  for (int x : nums) {
+    // 倒序更新，保证每个数字只使用一次
+    for (int j = target; j >= x; j--) {
+      if (dp[j - x]) dp[j] = true;
+    }
+  }
+  return dp[target];
+}
 `,
     },
     acm: {
@@ -180,6 +259,44 @@ if s % 2 == 0:
                 dp[j] = True
     ok = dp[target]
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> nums(n);
+  for (int i = 0; i < n; i++) cin >> nums[i];
+
+  int sum = accumulate(nums.begin(), nums.end(), 0);
+  bool ok = false;
+  if (sum % 2 == 0) {
+    int target = sum / 2;
+    vector<bool> dp(target + 1, false);
+    dp[0] = true;
+    for (int x : nums) {
+      for (int j = target; j >= x; j--) {
+        if (dp[j - x]) dp[j] = true;
+      }
+    }
+    ok = dp[target];
+  }
+  cout << (ok ? "true" : "false") << '\\n';
+  return 0;
+}
 `,
     },
   },

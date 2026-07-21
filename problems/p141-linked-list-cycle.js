@@ -93,6 +93,27 @@ var hasCycle = function(head) {
     # head 为链表头节点（ListNode），返回 True 或 False
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点（可能带环），返回 true 表示有环，false 表示无环
+bool hasCycle(ListNode* head) {
+  // TODO: 在这里实现
+  return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -121,6 +142,30 @@ pos = int(lines[2])
 
 # 按 vals 与 pos 构造（带环）链表，判断是否有环后用 print 输出 true 或 false
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行），第三行 pos（-1 表示无环）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n, pos;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+  cin >> pos;
+
+  // 按 vals 与 pos 构造（带环）链表，判断是否有环后用 cout 输出 true 或 false
+
+  return 0;
+}
+`,
     },
   },
 
@@ -146,6 +191,18 @@ pos = int(lines[2])
         if slow is fast:        # 相遇说明有环
             return True
     return False  # 快指针走到尽头说明无环
+`,
+      cpp: `// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+bool hasCycle(ListNode* head) {
+  ListNode* slow = head;
+  ListNode* fast = head;
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;        // 慢指针走一步
+    fast = fast->next->next;  // 快指针走两步
+    if (slow == fast) return true; // 相遇说明有环
+  }
+  return false; // 快指针走到尽头说明无环
+}
 `,
     },
     acm: {
@@ -220,6 +277,52 @@ while fast is not None and fast.next is not None:
         has_cycle = True
         break
 print('true' if has_cycle else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n, pos;
+  cin >> n;
+  vector<int> vals(n);
+  for (int i = 0; i < n; i++) cin >> vals[i];
+  cin >> pos;
+
+  // 构造链表，记录所有节点以便接环
+  vector<ListNode*> nodes;
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  for (int v : vals) {
+    cur->next = new ListNode(v);
+    cur = cur->next;
+    nodes.push_back(cur);
+  }
+  ListNode* head = dummy.next;
+  // pos >= 0 时把尾节点接到 pos 位置的节点上，形成环
+  if (!nodes.empty() && pos >= 0 && pos < (int)nodes.size()) cur->next = nodes[pos];
+
+  // Floyd 快慢指针判环
+  ListNode* slow = head;
+  ListNode* fast = head;
+  bool hasCycle = false;
+  while (fast != nullptr && fast->next != nullptr) {
+    slow = slow->next;
+    fast = fast->next->next;
+    if (slow == fast) {
+      hasCycle = true;
+      break;
+    }
+  }
+  cout << (hasCycle ? "true" : "false") << "\\n";
+  return 0;
+}
 `,
     },
   },

@@ -90,6 +90,26 @@ var minDistance = function(word1, word2) {
     # 返回把 word1 转换成 word2 所需的最少操作数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int minDistance(string word1, string word2) {
+    // 返回把 word1 转换成 word2 所需的最少操作数
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -112,6 +132,24 @@ word1 = lines[0]
 word2 = lines[1] if len(lines) > 1 else ''
 
 # 在这里写你的代码，用 print 输出最少操作数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为 word1，第二行为 word2（可能为空行）
+// 注意：不要用 cin >> 读取，否则空串用例（空行）会被跳过；用 getline 按行读取
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    string word1, word2;
+    getline(cin, word1);
+    getline(cin, word2);
+
+    // 在这里写你的代码，用 cout 输出最少操作数
+
+    return 0;
+}
 `,
     },
   },
@@ -160,6 +198,41 @@ word2 = lines[1] if len(lines) > 1 else ''
                 ) + 1
     return dp[m][n]
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int minDistance(string word1, string word2) {
+    int m = (int)word1.size(), n = (int)word2.size();
+    // dp[i][j]：word1 前 i 个字符转换成 word2 前 j 个字符的最少操作数
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 0; i <= m; i++) dp[i][0] = i; // word2 为空：只能全删
+    for (int j = 0; j <= n; j++) dp[0][j] = j; // word1 为空：只能全插入
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (word1[i - 1] == word2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1]; // 末位相同，不产生操作
+            } else {
+                dp[i][j] = min({dp[i - 1][j],    // 删除 word1[i-1]
+                                dp[i][j - 1],    // 在 word1 末尾插入 word2[j-1]
+                                dp[i - 1][j - 1] // 把 word1[i-1] 替换为 word2[j-1]
+                               }) + 1;
+            }
+        }
+    }
+    return dp[m][n];
+}
+`,
     },
     acm: {
       javascript: `// 不要对整个 input 用 trim()，否则空串用例会被吞掉
@@ -203,6 +276,35 @@ for i in range(1, m + 1):
             dp[i][j] = min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1
 
 print(dp[m][n])
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    // 注意：不要用 cin >> 读取，否则空串用例（空行）会被跳过
+    string word1, word2;
+    getline(cin, word1);
+    getline(cin, word2);
+
+    int m = (int)word1.size(), n = (int)word2.size();
+    vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+    for (int i = 0; i <= m; i++) dp[i][0] = i;
+    for (int j = 0; j <= n; j++) dp[0][j] = j;
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (word1[i - 1] == word2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]}) + 1;
+            }
+        }
+    }
+    cout << dp[m][n] << "\\n";
+    return 0;
+}
 `,
     },
   },

@@ -620,6 +620,26 @@ var generateParenthesis = function(n) {
     # 返回所有有效括号组合组成的列表
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回所有有效括号组合组成的数组
+vector<string> generateParenthesis(int n) {
+  // TODO: 在这里实现
+  return {};
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -638,6 +658,24 @@ import sys
 n = int(sys.stdin.read().strip())
 
 # 在这里写你的代码
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为整数 n（括号对数）
+// 输出：每个合法括号串一行，按字典序排列
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+
+  // 在这里写你的代码，逐行输出合法括号串
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -686,6 +724,44 @@ n = int(sys.stdin.read().strip())
 
     dfs(0, 0)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+vector<string> generateParenthesis(int n) {
+  vector<string> ans;
+  string path;
+  function<void(int, int)> dfs = [&](int openCnt, int closeCnt) {
+    if ((int)path.size() == 2 * n) {
+      ans.push_back(path);
+      return;
+    }
+    if (openCnt < n) {
+      path.push_back('('); // 左括号还没放满 n 个，可以放
+      dfs(openCnt + 1, closeCnt);
+      path.pop_back();
+    }
+    if (closeCnt < openCnt) {
+      path.push_back(')'); // 右括号少于左括号，放了才合法
+      dfs(openCnt, closeCnt + 1);
+      path.pop_back();
+    }
+  };
+  dfs(0, 0);
+  return ans;
+}
 `,
     },
     acm: {
@@ -741,6 +817,42 @@ dfs(0, 0)
 ans.sort()  # 回溯生成的顺序本就是字典序，排序作保险
 for s in ans:
     print(s)
+`,
+      cpp: `#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+  int n;
+  cin >> n;
+
+  vector<string> ans;
+  string path;
+  function<void(int, int)> dfs = [&](int openCnt, int closeCnt) {
+    if ((int)path.size() == 2 * n) {
+      ans.push_back(path);
+      return;
+    }
+    if (openCnt < n) {
+      path.push_back('(');
+      dfs(openCnt + 1, closeCnt);
+      path.pop_back();
+    }
+    if (closeCnt < openCnt) {
+      path.push_back(')');
+      dfs(openCnt, closeCnt + 1);
+      path.pop_back();
+    }
+  };
+  dfs(0, 0);
+
+  sort(ans.begin(), ans.end()); // 回溯生成的顺序本就是字典序，排序作保险
+  for (const auto& s : ans) cout << s << '\\n';
+  return 0;
+}
 `,
     },
   },

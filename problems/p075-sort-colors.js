@@ -90,6 +90,25 @@ var sortColors = function(nums) {
     # 原地修改 nums，无需返回值
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+void sortColors(vector<int>& nums) {
+    // 原地修改 nums，无需返回值
+    // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -108,6 +127,23 @@ lines = sys.stdin.read().split('\\n')
 nums = list(map(int, lines[1].split()))
 
 # 在这里原地排序 nums，并用 print(' '.join(map(str, nums))) 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（仅 0/1/2）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    // 在这里原地排序 nums，并用 cout 空格分隔输出结果（末尾换行）
+
+    return 0;
+}
 `,
     },
   },
@@ -143,6 +179,36 @@ nums = list(map(int, lines[1].split()))
             hi -= 1  # 换过来的元素还没看过，i 不能动
         else:
             i += 1
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+void sortColors(vector<int>& nums) {
+    int lo = 0, i = 0, hi = (int)nums.size() - 1;
+    // 不变量：[0, lo) 全 0，[lo, i) 全 1，(hi, n-1] 全 2
+    while (i <= hi) {
+        if (nums[i] == 0) {
+            swap(nums[lo], nums[i]);
+            lo++; i++; // 换过来的一定是已处理区域，可以放心前进
+        } else if (nums[i] == 2) {
+            swap(nums[hi], nums[i]);
+            hi--; // 换过来的元素还没看过，i 不能动
+        } else {
+            i++;
+        }
+    }
+}
 `,
     },
     acm: {
@@ -180,6 +246,37 @@ while i <= hi:
     else:
         i += 1
 print(' '.join(map(str, nums)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> nums(n);
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    int lo = 0, i = 0, hi = n - 1;
+    while (i <= hi) {
+        if (nums[i] == 0) {
+            swap(nums[lo], nums[i]);
+            lo++; i++;
+        } else if (nums[i] == 2) {
+            swap(nums[hi], nums[i]);
+            hi--;
+        } else {
+            i++;
+        }
+    }
+
+    for (int k = 0; k < n; k++) {
+        if (k) cout << " ";
+        cout << nums[k];
+    }
+    cout << "\\n";
+    return 0;
+}
 `,
     },
   },

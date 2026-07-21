@@ -153,6 +153,26 @@ class MedianFinder:
     def findMedian(self):
         pass
 `,
+      cpp: `#include <vector>
+#include <queue>
+#include <functional>
+using namespace std;
+
+// 设计数据流中位数结构：addNum O(log n)，findMedian O(1)
+class MedianFinder {
+public:
+    MedianFinder() {
+        // TODO: 在这里初始化
+    }
+    void addNum(int num) {
+        // TODO: 在这里实现
+    }
+    double findMedian() {
+        // TODO: 在这里实现
+        return 0;
+    }
+};
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -201,6 +221,39 @@ for i in range(1, n + 1):
     parts = lines[i].split()
     op = parts[0]
     # 在这里根据 op 分发操作并用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n；随后 n 行，每行为 "MedianFinder" / "addNum num" / "findMedian"
+// 输出：findMedian 输出中位数，MedianFinder / addNum 输出 null
+#include <iostream>
+#include <string>
+using namespace std;
+
+class MedianFinder {
+public:
+    MedianFinder() {
+        // TODO: 在这里初始化
+    }
+    void addNum(int num) {
+        // TODO: 在这里实现
+    }
+    double findMedian() {
+        // TODO: 在这里实现
+        return 0;
+    }
+};
+
+int main() {
+    int n;
+    cin >> n;
+    MedianFinder* mf = nullptr;
+    for (int i = 0; i < n; i++) {
+        string op;
+        cin >> op;
+        // 在这里根据 op 分发操作并用 cout 输出结果
+    }
+    return 0;
+}
 `,
     },
   },
@@ -293,6 +346,40 @@ class MedianFinder:
             # small[0] 是相反数，取负才是较小一半的最大值
             return (self.large[0] - self.small[0]) / 2
         return float(self.large[0])
+`,
+      cpp: `#include <vector>
+#include <queue>
+#include <functional>
+using namespace std;
+
+// small 是大顶堆（存较小的一半），large 是小顶堆（存较大的一半）
+class MedianFinder {
+    priority_queue<int> small;                             // 大顶堆：较小的一半
+    priority_queue<int, vector<int>, greater<int>> large;  // 小顶堆：较大的一半
+public:
+    MedianFinder() {}
+    void addNum(int num) {
+        if (small.size() == large.size()) {
+            // 新数「过一遍」small 再进 large，保证 large 多存一个
+            small.push(num);
+            large.push(small.top());
+            small.pop();
+        } else {
+            // 新数「过一遍」large 再进 small，恢复两堆等大
+            large.push(num);
+            small.push(large.top());
+            large.pop();
+        }
+    }
+    double findMedian() {
+        if (small.size() == large.size()) {
+            // 偶数个元素：中位数是两堆顶的平均值
+            return (small.top() + large.top()) / 2.0;
+        }
+        // 奇数个元素：中位数是 large 的堆顶
+        return large.top();
+    }
+};
 `,
     },
     acm: {
@@ -407,6 +494,66 @@ for i in range(1, n + 1):
         print('null')
     elif op == 'findMedian':
         print(mf.findMedian())
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <functional>
+using namespace std;
+
+// small 是大顶堆（存较小的一半），large 是小顶堆（存较大的一半）
+class MedianFinder {
+    priority_queue<int> small;                             // 大顶堆：较小的一半
+    priority_queue<int, vector<int>, greater<int>> large;  // 小顶堆：较大的一半
+public:
+    MedianFinder() {}
+    void addNum(int num) {
+        if (small.size() == large.size()) {
+            // 新数「过一遍」small 再进 large，保证 large 多存一个
+            small.push(num);
+            large.push(small.top());
+            small.pop();
+        } else {
+            // 新数「过一遍」large 再进 small，恢复两堆等大
+            large.push(num);
+            small.push(large.top());
+            large.pop();
+        }
+    }
+    double findMedian() {
+        if (small.size() == large.size()) {
+            return (small.top() + large.top()) / 2.0;
+        }
+        return large.top();
+    }
+};
+
+int main() {
+    int n;
+    cin >> n;
+    MedianFinder* mf = nullptr;
+    for (int i = 0; i < n; i++) {
+        string op;
+        cin >> op;
+        if (op == "MedianFinder") {
+            mf = new MedianFinder();
+            cout << "null" << endl;
+        } else if (op == "addNum") {
+            int num;
+            cin >> num;
+            mf->addNum(num);
+            cout << "null" << endl;
+        } else if (op == "findMedian") {
+            double median = mf->findMedian();
+            // 整数值按整数形式打印，否则按原样打印（判题有数值容差）
+            long long asInt = (long long)median;
+            if (median == (double)asInt) cout << asInt << endl;
+            else cout << median << endl;
+        }
+    }
+    return 0;
+}
 `,
     },
   },

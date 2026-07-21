@@ -88,6 +88,26 @@ var uniquePaths = function(m, n) {
     # 返回从网格左上角到右下角的不同路径总数
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int uniquePaths(int m, int n) {
+    // 返回从网格左上角到右下角的不同路径总数
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -104,6 +124,21 @@ import sys
 m, n = map(int, sys.stdin.read().split())
 
 # 在这里写你的代码，用 print 输出路径总数
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：仅一行，两个整数 m n（空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+
+    // 在这里写你的代码，用 cout 输出路径总数
+
+    return 0;
+}
 `,
     },
   },
@@ -127,6 +162,30 @@ m, n = map(int, sys.stdin.read().split())
             dp[j] += dp[j - 1]  # f(i, j) = f(i-1, j) + f(i, j-1)
     return dp[n - 1]
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int uniquePaths(int m, int n) {
+    vector<int> dp(n, 1); // dp[j]：到达当前行第 j 列的路径数，初始为第一行
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            dp[j] += dp[j - 1]; // f(i, j) = f(i-1, j) + f(i, j-1)
+        }
+    }
+    return dp[n - 1];
+}
+`,
     },
     acm: {
       javascript: `const [m, n] = input.trim().split(/\\s+/).map(Number);
@@ -149,6 +208,24 @@ for _ in range(1, m):
         dp[j] += dp[j - 1]
 
 print(dp[n - 1])
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+
+    vector<int> dp(n, 1);
+    for (int i = 1; i < m; i++) {
+        for (int j = 1; j < n; j++) {
+            dp[j] += dp[j - 1];
+        }
+    }
+    cout << dp[n - 1] << "\\n";
+    return 0;
+}
 `,
     },
   },

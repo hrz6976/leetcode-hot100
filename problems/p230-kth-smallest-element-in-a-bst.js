@@ -85,6 +85,28 @@ var kthSmallest = function(root, k) {
     # root 为二叉搜索树根节点（TreeNode），返回第 k 小的元素值（k 从 1 开始）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+// root 为二叉搜索树根节点，返回第 k 小的元素值（k 从 1 开始）
+int kthSmallest(TreeNode* root, int k) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +136,33 @@ tokens = lines[1].split() if n > 0 else []
 k = int(lines[2])
 
 # 按层序构造二叉搜索树，找到第 k 小的元素后用 print 输出
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时该行为空行），第三行 k
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    int k;
+    cin >> k;
+
+    // 按层序构造二叉搜索树，找到第 k 小的元素后用 cout 输出
+
+    return 0;
+}
 `,
     },
   },
@@ -154,6 +203,39 @@ k = int(lines[2])
 
     dfs(root)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+int kthSmallest(TreeNode* root, int k) {
+    int count = 0; // 已访问的节点数
+    int ans = 0;
+    function<void(TreeNode*)> dfs = [&](TreeNode* node) {
+        if (node == nullptr || count >= k) return; // 已找到答案，提前终止
+        dfs(node->left);
+        count += 1;
+        if (count == k) {
+            ans = node->val; // 中序第 k 个节点即为答案
+            return;
+        }
+        dfs(node->right);
+    };
+    dfs(root);
+    return ans;
+}
 `,
     },
     acm: {
@@ -243,6 +325,62 @@ def dfs(node):
 
 dfs(root)
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v = 0, TreeNode* l = nullptr, TreeNode* r = nullptr) : val(v), left(l), right(r) {}
+};
+
+// 按层序构造二叉树（null 表示空节点）
+TreeNode* buildTree(vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (nodes[i] == nullptr) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    int k;
+    cin >> k;
+    TreeNode* root = buildTree(tokens);
+
+    // 中序遍历，第 k 个访问到的节点即为答案
+    int count = 0;
+    int ans = 0;
+    function<void(TreeNode*)> dfs = [&](TreeNode* node) {
+        if (node == nullptr || count >= k) return;
+        dfs(node->left);
+        count += 1;
+        if (count == k) {
+            ans = node->val;
+            return;
+        }
+        dfs(node->right);
+    };
+    dfs(root);
+
+    cout << ans << endl;
+    return 0;
+}
 `,
     },
   },

@@ -157,6 +157,27 @@ var reverseKGroup = function(head, k) {
     # head 为链表头节点（ListNode），k 为正整数，返回分组翻转后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// head 为链表头节点，k 为正整数，返回分组翻转后的头节点
+ListNode* reverseKGroup(ListNode* head, int k) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -184,6 +205,32 @@ vals = list(map(int, lines[1].split())) if n > 0 else []
 k = int(lines[2])
 
 # 构造链表，完成 k 个一组翻转后用 print 输出结果
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数，第三行 k
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (auto& v : vals) cin >> v;
+  int k;
+  cin >> k;
+
+  // 构造链表，完成 k 个一组翻转后用 cout 输出结果
+  // TODO: 在这里实现
+
+  return 0;
+}
 `,
     },
   },
@@ -229,6 +276,42 @@ k = int(lines[2])
     # head 已成为这一组的尾，接上下一段递归翻转的结果
     head.next = reverseKGroup(tail, k)
     return prev
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* reverseKGroup(ListNode* head, int k) {
+  // 先探出这一组的末尾之后的位置；不足 k 个节点则保持原样
+  ListNode* tail = head;
+  for (int i = 0; i < k; i++) {
+    if (tail == nullptr) return head;
+    tail = tail->next;
+  }
+  // 翻转区间 [head, tail) 内的 k 个节点
+  ListNode* prev = nullptr;
+  ListNode* cur = head;
+  while (cur != tail) {
+    ListNode* next = cur->next;
+    cur->next = prev;
+    prev = cur;
+    cur = next;
+  }
+  // head 已成为这一组的尾，接上下一段递归翻转的结果
+  head->next = reverseKGroup(tail, k);
+  return prev;
+}
 `,
     },
     acm: {
@@ -320,6 +403,64 @@ while head is not None:
     out.append(str(head.val))
     head = head.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+// 每 k 个一组递归翻转
+static ListNode* reverseKGroup(ListNode* h, int k) {
+  ListNode* t = h;
+  for (int i = 0; i < k; i++) {
+    if (t == nullptr) return h;
+    t = t->next;
+  }
+  ListNode* prev = nullptr;
+  ListNode* cur = h;
+  while (cur != t) {
+    ListNode* next = cur->next;
+    cur->next = prev;
+    prev = cur;
+    cur = next;
+  }
+  h->next = reverseKGroup(t, k);
+  return prev;
+}
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals(n);
+  for (auto& v : vals) cin >> v;
+  int k;
+  cin >> k;
+
+  // 构造链表
+  ListNode dummy;
+  ListNode* tail = &dummy;
+  for (int v : vals) {
+    tail->next = new ListNode(v);
+    tail = tail->next;
+  }
+
+  ListNode* head = reverseKGroup(dummy.next, k);
+
+  // 输出翻转后的链表
+  bool first = true;
+  for (ListNode* cur = head; cur; cur = cur->next) {
+    if (!first) cout << ' ';
+    first = false;
+    cout << cur->val;
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

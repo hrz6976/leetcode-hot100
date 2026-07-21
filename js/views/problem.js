@@ -5,6 +5,7 @@ import { compareAcmOutput } from '../compare.js';
 import { createEditor } from '../editor.js';
 import { registerDraftProvider } from '../assistant.js';
 import { md } from '../md.js';
+import { mountDirectory } from '../directory.js';
 import { problems } from '../../problems/index.js';
 import { articles } from '../../knowledge/index.js';
 import {
@@ -31,7 +32,7 @@ import {
 } from '../store.js';
 
 const DIFF_LABEL = { easy: '简单', medium: '中等', hard: '困难' };
-const LANG_LABEL = { javascript: 'JavaScript', python: 'Python' };
+const LANG_LABEL = { javascript: 'JavaScript', python: 'Python', cpp: 'C++' };
 
 function escapeHtml(s) {
   return String(s)
@@ -46,7 +47,7 @@ export function renderProblem(container, problem) {
   const savedAssist = getAssistState(problem.id);
   const state = {
     mode: 'core', // core | acm
-    lang: getLangPref(), // javascript | python（跟随全局语言偏好，默认 Python）
+    lang: getLangPref(), // javascript | python | cpp（跟随全局语言偏好，默认 Python）
     tab: 'desc', // desc | solution
     mobileTab: 'problem', // problem | code | result
     revealed: savedAssist.revealed,
@@ -100,6 +101,7 @@ export function renderProblem(container, problem) {
       <div class="seg" id="lang-seg" role="group" aria-label="编程语言">
         <button type="button" data-lang="python">Python</button>
         <button type="button" data-lang="javascript">JavaScript</button>
+        <button type="button" data-lang="cpp">C++</button>
       </div>
     </div>
     ${
@@ -247,6 +249,8 @@ export function renderProblem(container, problem) {
         : `实现函数 ${problem.functionName}，判题器会自动调用并比对返回值`;
     } else if (state.lang === 'javascript') {
       hint.textContent = '从 input 变量读取全部输入（字符串），用 console.log 输出答案';
+    } else if (state.lang === 'cpp') {
+      hint.textContent = '用 cin 读取输入，用 cout 输出答案（C++ 判题需联网，走远程编译）';
     } else {
       hint.textContent = '用 input() 或 sys.stdin 读取输入，并用 print 输出答案';
     }
@@ -349,7 +353,7 @@ export function renderProblem(container, problem) {
         input,
         onStatus: (stage) => {
           if (!validRoute(token, customToken)) return;
-          status.textContent = stage === 'loading' ? '正在加载 Python 环境…' : '运行中…';
+          status.textContent = stage === 'loading' ? '正在加载 Python 环境…' : stage === 'compiling' ? '正在远程编译运行 C++…' : '运行中…';
         },
       });
       if (!validRoute(token, customToken)) return;
@@ -509,6 +513,9 @@ export function renderProblem(container, problem) {
       }, 1500);
     });
   }
+
+  // 左侧跳转目录：全部题目，排版跟随题库列表页视图偏好
+  const directory = mountDirectory({ kind: 'problems', currentId: problem.id });
 
   // ---------- 判题结果 ----------
 
@@ -823,7 +830,7 @@ export function renderProblem(container, problem) {
         lang: snapshot.lang,
         onStatus: (stage) => {
           if (!validRoute(token, runToken)) return;
-          runStatus.textContent = stage === 'loading' ? '正在加载 Python 环境（首次约需几秒）…' : '运行中…';
+          runStatus.textContent = stage === 'loading' ? '正在加载 Python 环境（首次约需几秒）…' : stage === 'compiling' ? '正在远程编译运行 C++（需联网）…' : '运行中…';
         },
       });
       if (!validRoute(token, runToken)) return;
@@ -1108,6 +1115,7 @@ export function renderProblem(container, problem) {
     invalidateAsync();
     registerDraftProvider(null);
     flushDraft();
+    directory.dispose();
     clearTimeout(customInputTimer);
     reportStorage(saveCustomInput(problem.id, state.mode, $('#custom-input').value), '保存自定义输入');
     disposed = true;

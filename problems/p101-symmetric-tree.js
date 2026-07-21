@@ -89,6 +89,28 @@ var isSymmetric = function(root) {
     # root 为二叉树根节点（TreeNode），返回是否轴对称（布尔值）
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// root 为二叉树根节点，返回是否轴对称
+bool isSymmetric(TreeNode* root) {
+    // TODO: 在这里实现
+    return false;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -119,6 +141,32 @@ tokens = lines[1].split() if n > 0 else []
 arr = [None if t == 'null' else int(t) for t in tokens]
 
 # 将层序标记构造成二叉树（TreeNode），判断对称后输出 true / false
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个标记（整数或 null，层序；n = 0 时为空行）
+// 输出：true 或 false（小写）
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+
+    // 将层序标记构造成二叉树，判断对称后用 cout 输出 true / false
+
+    return 0;
+}
 `,
     },
   },
@@ -153,6 +201,35 @@ arr = [None if t == 'null' else int(t) for t in tokens]
         )
 
     return root is None or is_mirror(root.left, root.right)
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+bool isSymmetric(TreeNode* root) {
+    // 判断两棵树是否互为镜像
+    function<bool(TreeNode*, TreeNode*)> isMirror = [&](TreeNode* a, TreeNode* b) -> bool {
+        if (a == nullptr && b == nullptr) return true;
+        if (a == nullptr || b == nullptr) return false;
+        return a->val == b->val
+            && isMirror(a->left, b->right)   // 外侧对外侧
+            && isMirror(a->right, b->left);  // 内侧对内侧
+    };
+    return root == nullptr || isMirror(root->left, root->right);
+}
 `,
     },
     acm: {
@@ -226,6 +303,51 @@ def is_mirror(a, b):
 root = build_tree(arr)
 ok = root is None or is_mirror(root.left, root.right)
 print('true' if ok else 'false')
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+// 层序数组构造二叉树
+TreeNode* buildTree(const vector<string>& tokens) {
+    if (tokens.empty() || tokens[0] == "null") return nullptr;
+    vector<TreeNode*> nodes(tokens.size(), nullptr);
+    for (size_t i = 0; i < tokens.size(); i++)
+        if (tokens[i] != "null") nodes[i] = new TreeNode(stoi(tokens[i]));
+    size_t j = 1;
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (!nodes[i]) continue;
+        if (j < nodes.size()) nodes[i]->left = nodes[j++];
+        if (j < nodes.size()) nodes[i]->right = nodes[j++];
+    }
+    return nodes[0];
+}
+
+// 判断两棵树是否互为镜像
+bool isMirror(TreeNode* a, TreeNode* b) {
+    if (a == nullptr && b == nullptr) return true;
+    if (a == nullptr || b == nullptr) return false;
+    return a->val == b->val && isMirror(a->left, b->right) && isMirror(a->right, b->left);
+}
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> tokens(n);
+    for (int i = 0; i < n; i++) cin >> tokens[i];
+    TreeNode* root = buildTree(tokens);
+    bool ok = root == nullptr || isMirror(root->left, root->right);
+    cout << (ok ? "true" : "false") << '\\n';
+    return 0;
+}
 `,
     },
   },

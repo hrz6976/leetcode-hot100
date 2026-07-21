@@ -2,6 +2,7 @@
 
 import { articles } from '../../knowledge/index.js';
 import { md } from '../md.js';
+import { mountDirectory } from '../directory.js';
 import { runSnippet } from '../judge.js';
 import { createEditor } from '../editor.js';
 import {
@@ -87,7 +88,7 @@ export function renderKnowledgeDetail(container, article) {
   const articleIndex = articles.findIndex((item) => item.slug === article.slug);
   const previous = articleIndex > 0 ? articles[articleIndex - 1] : null;
   const next = articleIndex >= 0 && articleIndex < articles.length - 1 ? articles[articleIndex + 1] : null;
-  let clang = getLangPref() === 'javascript' ? 'javascript' : 'python';
+  let clang = ['python', 'javascript', 'cpp'].includes(getLangPref()) ? getLangPref() : 'python';
   let status = getKnowledgeStatus(article.slug);
   if (status === 'unread') {
     const result = saveDraft(`knowledge:${article.slug}`, 'article', 'state', 'studying');
@@ -105,6 +106,7 @@ export function renderKnowledgeDetail(container, article) {
       <div class="seg" id="clang-seg">
         <button data-clang="python">Python</button>
         <button data-clang="javascript">JavaScript</button>
+        <button data-clang="cpp">C++</button>
       </div>
     </div>
     <div class="panel karticle-panel">
@@ -112,32 +114,32 @@ export function renderKnowledgeDetail(container, article) {
         <div class="karticle-layout">
           <div class="karticle-main">
             <div class="desc">${md(article.content)}</div>
-          </div>
-          <aside class="karticle-side">
             ${related.length ? `
-              <h3 class="krelated-title">关联题目（${related.length}）</h3>
-              <div class="plist">
-                ${related.map((problem) => {
-                  const problemState = problemStatus(problem.id);
-                  const icon = problemState === 'solved'
-                    ? '<span class="solved">✓</span>'
-                    : problemState === 'attempted' ? '<span class="attempted">◐</span>' : '';
-                  const relationLabel = RELATION_LABEL[problem.relationStage] || problem.relationStage;
-                  return `
-                  <div class="plist-row" data-pid="${problem.id}" title="${escapeHtml(problem.relationReason || relationLabel)}">
-                    <div class="status">${icon}</div>
-                    <div class="pid">${problem.id}</div>
-                    <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a></div>
-                    <div class="row-tags"><span class="tag">${escapeHtml(relationLabel)}</span>${problem.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
-                    <div class="diff ${problem.difficulty}">${DIFF_LABEL[problem.difficulty]}</div>
-                  </div>`;
-                }).join('')}
-              </div>` : ''}
+              <section class="karticle-related">
+                <h3 class="krelated-title">关联题目（${related.length}）</h3>
+                <div class="plist">
+                  ${related.map((problem) => {
+                    const problemState = problemStatus(problem.id);
+                    const icon = problemState === 'solved'
+                      ? '<span class="solved">✓</span>'
+                      : problemState === 'attempted' ? '<span class="attempted">◐</span>' : '';
+                    const relationLabel = RELATION_LABEL[problem.relationStage] || problem.relationStage;
+                    return `
+                    <div class="plist-row" data-pid="${problem.id}" title="${escapeHtml(problem.relationReason || relationLabel)}">
+                      <div class="status">${icon}</div>
+                      <div class="pid">${problem.id}</div>
+                      <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a></div>
+                      <div class="row-tags"><span class="tag">${escapeHtml(relationLabel)}</span>${problem.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
+                      <div class="diff ${problem.difficulty}">${DIFF_LABEL[problem.difficulty]}</div>
+                    </div>`;
+                  }).join('')}
+                </div>
+              </section>` : ''}
             <div class="pnav">
               ${previous ? `<a class="btn" href="#/knowledge/${escapeHtml(previous.slug)}">← ${escapeHtml(previous.title)}</a>` : '<span></span>'}
               ${next ? `<a class="btn" href="#/knowledge/${escapeHtml(next.slug)}">${escapeHtml(next.title)} →</a>` : '<span></span>'}
             </div>
-          </aside>
+          </div>
         </div>
       </div>
     </div>
@@ -323,7 +325,7 @@ export function renderKnowledgeDetail(container, article) {
       try {
         const result = await runSnippet(currentCode, lang, (stage) => {
           if (!disposed && currentRun === runGeneration) {
-            output.textContent = stage === 'loading' ? '正在加载 Python 环境（首次较慢）…' : '运行中…';
+            output.textContent = stage === 'loading' ? '正在加载 Python 环境（首次较慢）…' : stage === 'compiling' ? '正在远程编译运行 C++（需联网）…' : '运行中…';
           }
         });
         if (disposed || currentRun !== runGeneration) return;
@@ -352,11 +354,15 @@ export function renderKnowledgeDetail(container, article) {
   const pagehide = () => flushDrafts();
   window.addEventListener('pagehide', pagehide);
 
+  // 左侧跳转目录：全部知识文章
+  const directory = mountDirectory({ kind: 'articles', currentId: article.slug });
+
   return () => {
     disposed = true;
     runGeneration += 1;
     clearTimeout(saveTimer);
     flushDrafts();
+    directory.dispose();
     for (const cleanupRunner of runnerCleanups) cleanupRunner();
     window.removeEventListener('pagehide', pagehide);
     container.removeEventListener('click', rowClick);

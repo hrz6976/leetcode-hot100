@@ -91,6 +91,28 @@ var buildTree = function(preorder, inorder) {
     # preorder / inorder 为前序、中序遍历序列（整数列表，无重复元素），返回构造出的二叉树根节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+// preorder / inorder 为前序、中序遍历序列（无重复元素），返回构造出的二叉树根节点
+TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+    // TODO: 在这里实现
+    return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -120,6 +142,32 @@ preorder = list(map(int, lines[1].split())) if n > 0 else []
 inorder = list(map(int, lines[2].split())) if n > 0 else []
 
 # 由前序、中序序列构造二叉树，再按层序输出（null 保留、末尾 null 省略；空树输出一个空行）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行前序 n 个整数，第三行中序 n 个整数（n = 0 时两行为空行）
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> preorder(n), inorder(n);
+    for (int i = 0; i < n; i++) cin >> preorder[i];
+    for (int i = 0; i < n; i++) cin >> inorder[i];
+
+    // 由前序、中序序列构造二叉树，再按层序输出（null 保留、末尾 null 省略；空树输出一个空行）
+
+    return 0;
+}
 `,
     },
   },
@@ -164,6 +212,38 @@ inorder = list(map(int, lines[2].split())) if n > 0 else []
         return node
 
     return build(0, len(inorder) - 1)
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+#include <functional>
+using namespace std;
+
+// 判题环境已预定义 struct TreeNode（val/left/right）与构造函数 TreeNode(v, left, right)，请勿重复定义
+
+TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+    unordered_map<int, int> index; // 中序：值 -> 下标
+    for (int i = 0; i < (int)inorder.size(); i++) index[inorder[i]] = i;
+    int pre = 0; // 前序序列中当前子树根的位置
+    function<TreeNode*(int, int)> build = [&](int lo, int hi) -> TreeNode* { // 中序区间 [lo, hi]
+        if (lo > hi) return nullptr;
+        TreeNode* node = new TreeNode(preorder[pre++]);
+        int mid = index[node->val];
+        node->left = build(lo, mid - 1);  // 先建左子树，按序消费前序序列
+        node->right = build(mid + 1, hi);
+        return node;
+    };
+    return build(0, (int)inorder.size() - 1);
+}
 `,
     },
     acm: {
@@ -246,6 +326,67 @@ while queue:
 while out and out[-1] == 'null':
     out.pop()
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <unordered_map>
+#include <functional>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> preorder(n), inorder(n);
+    for (int i = 0; i < n; i++) cin >> preorder[i];
+    for (int i = 0; i < n; i++) cin >> inorder[i];
+
+    // 哈希表定位中序根下标 + 分治构造
+    unordered_map<int, int> index;
+    for (int i = 0; i < n; i++) index[inorder[i]] = i;
+    int pre = 0;
+    function<TreeNode*(int, int)> build = [&](int lo, int hi) -> TreeNode* {
+        if (lo > hi) return nullptr;
+        TreeNode* node = new TreeNode(preorder[pre++]);
+        int mid = index[node->val];
+        node->left = build(lo, mid - 1);  // 先建左子树，按序消费前序序列
+        node->right = build(mid + 1, hi);
+        return node;
+    };
+    TreeNode* root = build(0, n - 1);
+
+    // 层序序列化（末尾 null 省略）
+    vector<string> out;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        TreeNode* node = q.front();
+        q.pop();
+        if (node == nullptr) {
+            out.push_back("null");
+        } else {
+            out.push_back(to_string(node->val));
+            q.push(node->left);
+            q.push(node->right);
+        }
+    }
+    while (!out.empty() && out.back() == "null") out.pop_back();
+
+    for (size_t i = 0; i < out.size(); i++) {
+        if (i) cout << ' ';
+        cout << out[i];
+    }
+    cout << '\\n'; // 空树时这里输出一个空行
+    return 0;
+}
 `,
     },
   },

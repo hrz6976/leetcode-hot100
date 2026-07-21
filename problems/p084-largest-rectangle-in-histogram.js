@@ -83,6 +83,26 @@ var largestRectangleArea = function(heights) {
     # 返回柱状图中最大矩形的面积
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 返回柱状图中最大矩形的面积
+int largestRectangleArea(vector<int>& heights) {
+    // TODO: 在这里实现
+    return 0;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -103,6 +123,23 @@ n = int(lines[0])
 heights = list(map(int, lines[1].split()))
 
 # 在这里写你的代码，用 print 输出最大矩形面积
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个非负整数
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> heights(n);
+    for (int i = 0; i < n; i++) cin >> heights[i];
+
+    // 在这里写你的代码，用 cout 输出最大矩形面积
+
+    return 0;
+}
 `,
     },
   },
@@ -135,6 +172,40 @@ heights = list(map(int, lines[1].split()))
             ans = max(ans, height * (i - stack[-1] - 1))
         stack.append(i)
     return ans
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+int largestRectangleArea(vector<int>& heights) {
+    vector<int> h;
+    h.reserve(heights.size() + 2);
+    h.push_back(0); // 两端补 0 作哨兵
+    for (int x : heights) h.push_back(x);
+    h.push_back(0);
+    vector<int> st = {0}; // 存下标，对应高度从栈底到栈顶单调递增
+    int ans = 0;
+    for (int i = 1; i < (int)h.size(); i++) {
+        while (h[i] < h[st.back()]) {
+            int height = h[st.back()];
+            st.pop_back();
+            // 弹出后的新栈顶是左边第一个更矮柱，i 是右边第一个更矮柱
+            ans = max(ans, height * (i - st.back() - 1));
+        }
+        st.push_back(i);
+    }
+    return ans;
+}
 `,
     },
     acm: {
@@ -169,6 +240,36 @@ for i in range(1, len(h)):
         ans = max(ans, height * (i - stack[-1] - 1))
     stack.append(i)
 print(ans)
+`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<int> heights(n);
+    for (int i = 0; i < n; i++) cin >> heights[i];
+
+    vector<int> h;
+    h.reserve(n + 2);
+    h.push_back(0); // 两端补 0 作哨兵
+    for (int x : heights) h.push_back(x);
+    h.push_back(0);
+    vector<int> st = {0};
+    int ans = 0;
+    for (int i = 1; i < (int)h.size(); i++) {
+        while (h[i] < h[st.back()]) {
+            int height = h[st.back()];
+            st.pop_back();
+            ans = max(ans, height * (i - st.back() - 1));
+        }
+        st.push_back(i);
+    }
+    cout << ans << '\\n';
+    return 0;
+}
 `,
     },
   },

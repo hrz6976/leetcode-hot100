@@ -108,6 +108,27 @@ var mergeTwoLists = function(list1, list2) {
     # list1 / list2 为两条升序链表的头节点（ListNode），返回合并后的头节点
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+// list1 / list2 为两条升序链表的头节点，返回合并后的头节点
+ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
+  // TODO: 在这里实现
+  return nullptr;
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -138,6 +159,34 @@ vals2 = list(map(int, lines[3].split())) if m > 0 else []
 
 # 构造两条链表，合并后用 print 输出结果（空链表输出空行）
 `,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行 n，第二行 n 个整数（n = 0 时为空行）；第三行 m，第四行 m 个整数（m = 0 时为空行）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals1(n);
+  for (auto& v : vals1) cin >> v;
+  int m;
+  cin >> m;
+  vector<int> vals2(m);
+  for (auto& v : vals2) cin >> v;
+
+  // 构造两条链表，合并后用 cout 输出结果（空链表输出一个空行）
+  // TODO: 在这里实现
+
+  return 0;
+}
+`,
     },
   },
 
@@ -164,6 +213,32 @@ vals2 = list(map(int, lines[3].split())) if m > 0 else []
         return list1
     list2.next = mergeTwoLists(list1, list2.next)
     return list2
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+// 判题环境已预定义 struct ListNode（val/next）与构造函数 ListNode(v, next)，请勿重复定义
+ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
+  if (list1 == nullptr) return list2; // 边界：一条为空，直接返回另一条
+  if (list2 == nullptr) return list1;
+  if (list1->val <= list2->val) {
+    list1->next = mergeTwoLists(list1->next, list2); // list1 头更小，接上剩余部分的合并结果
+    return list1;
+  }
+  list2->next = mergeTwoLists(list1, list2->next);
+  return list2;
+}
 `,
     },
     acm: {
@@ -248,6 +323,62 @@ while head is not None:
     out.append(str(head.val))
     head = head.next
 print(' '.join(out))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+struct ListNode {
+  int val;
+  ListNode* next;
+  ListNode(int v = 0, ListNode* n = nullptr) : val(v), next(n) {}
+};
+
+// 构造链表
+static ListNode* buildList(const vector<int>& vals) {
+  ListNode dummy;
+  ListNode* cur = &dummy;
+  for (int v : vals) {
+    cur->next = new ListNode(v);
+    cur = cur->next;
+  }
+  return dummy.next;
+}
+
+// 递归合并
+static ListNode* merge(ListNode* l1, ListNode* l2) {
+  if (l1 == nullptr) return l2;
+  if (l2 == nullptr) return l1;
+  if (l1->val <= l2->val) {
+    l1->next = merge(l1->next, l2);
+    return l1;
+  }
+  l2->next = merge(l1, l2->next);
+  return l2;
+}
+
+int main() {
+  int n;
+  cin >> n;
+  vector<int> vals1(n);
+  for (auto& v : vals1) cin >> v;
+  int m;
+  cin >> m;
+  vector<int> vals2(m);
+  for (auto& v : vals2) cin >> v;
+
+  ListNode* head = merge(buildList(vals1), buildList(vals2));
+
+  // 输出合并后的链表（空链表输出一个空行）
+  bool first = true;
+  for (ListNode* cur = head; cur; cur = cur->next) {
+    if (!first) cout << ' ';
+    first = false;
+    cout << cur->val;
+  }
+  cout << '\\n';
+  return 0;
+}
 `,
     },
   },

@@ -91,6 +91,25 @@ var setZeroes = function(matrix) {
     # 原地修改 matrix，不需要返回值
     pass
 `,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+void setZeroes(vector<vector<int>>& matrix) {
+    // 原地修改 matrix，不需要返回值
+    // TODO: 在这里实现
+}
+`,
     },
     acm: {
       javascript: `// ACM 模式：input 是全部输入（字符串），用 console.log 输出答案
@@ -114,6 +133,24 @@ m, n = map(int, lines[0].split())
 matrix = [list(map(int, lines[i + 1].split())) for i in range(m)]
 
 # 在这里原地修改 matrix，并逐行输出（print(' '.join(map(str, row)))）
+`,
+      cpp: `// ACM 模式：用 cin 读输入，用 cout 输出答案
+// 输入格式：第一行为 m n（行数与列数）；随后 m 行，每行 n 个整数（空格分隔）
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    // 在这里原地修改 matrix，并逐行空格分隔输出（每行末尾换行）
+
+    return 0;
+}
 `,
     },
   },
@@ -165,6 +202,46 @@ matrix = [list(map(int, lines[i + 1].split())) for i in range(m)]
                 matrix[i][j] = 0
         if col0_has_zero:
             matrix[i][0] = 0
+`,
+      cpp: `#include <vector>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <queue>
+#include <stack>
+#include <deque>
+#include <list>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <climits>
+using namespace std;
+
+void setZeroes(vector<vector<int>>& matrix) {
+    int m = (int)matrix.size();
+    int n = (int)matrix[0].size();
+    // 用第一行、第一列作为标记位；matrix[0][0] 只负责标记第一行，
+    // “第一列是否有零”用单独变量记录，否则两个含义会冲突
+    bool col0HasZero = false;
+    for (int i = 0; i < m; i++) {
+        if (matrix[i][0] == 0) col0HasZero = true;
+        for (int j = 1; j < n; j++) {
+            if (matrix[i][j] == 0) {
+                matrix[i][0] = 0; // 第 i 行需要置零
+                matrix[0][j] = 0; // 第 j 列需要置零
+            }
+        }
+    }
+    // 从右下角往回处理：保证读到的标记位还没被自己覆盖
+    for (int i = m - 1; i >= 0; i--) {
+        for (int j = n - 1; j >= 1; j--) {
+            if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                matrix[i][j] = 0;
+            }
+        }
+        if (col0HasZero) matrix[i][0] = 0;
+    }
+}
 `,
     },
     acm: {
@@ -221,6 +298,46 @@ for i in range(m - 1, -1, -1):
 
 for row in matrix:
     print(' '.join(map(str, row)))
+`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<vector<int>> matrix(m, vector<int>(n));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < n; j++) cin >> matrix[i][j];
+
+    bool col0HasZero = false;
+    for (int i = 0; i < m; i++) {
+        if (matrix[i][0] == 0) col0HasZero = true;
+        for (int j = 1; j < n; j++) {
+            if (matrix[i][j] == 0) {
+                matrix[i][0] = 0;
+                matrix[0][j] = 0;
+            }
+        }
+    }
+    for (int i = m - 1; i >= 0; i--) {
+        for (int j = n - 1; j >= 1; j--) {
+            if (matrix[i][0] == 0 || matrix[0][j] == 0) {
+                matrix[i][j] = 0;
+            }
+        }
+        if (col0HasZero) matrix[i][0] = 0;
+    }
+
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (j) cout << " ";
+            cout << matrix[i][j];
+        }
+        cout << "\\n";
+    }
+    return 0;
+}
 `,
     },
   },

@@ -27,7 +27,8 @@ const fingerprint = payload => JSON.stringify(canonical(payload.data));
 const meaningful = p => ['progress', 'drafts', 'mistakes', 'customInputs'].some(k => Object.keys(p.data[k] || {}).length) || Object.keys(p.data.learning.problems).length;
 export async function initLocalProgress() {
   const toggle = document.createElement('button');
-  toggle.className = 'progress-tab'; toggle.textContent = '进度';
+  toggle.type = 'button';
+  toggle.className = 'progress-tab'; toggle.innerHTML = '<span>进<br>度</span>';
   toggle.setAttribute('aria-label', '打开保存与备份');
   toggle.setAttribute('aria-controls', 'local-progress-panel');
   const panel = document.createElement('aside');
@@ -44,6 +45,7 @@ export async function initLocalProgress() {
   panel.append(head, intro, bar);
   function setOpen(open, restoreFocus = false) {
     panel.hidden = !open;
+    toggle.hidden = open;
     toggle.setAttribute('aria-expanded', String(open));
     if (open) {
       document.dispatchEvent(new CustomEvent('hot100-panel-open', { detail: 'progress' }));

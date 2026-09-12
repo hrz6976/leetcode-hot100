@@ -91,6 +91,7 @@
 [data-theme='dark'] .mistake-reason { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
 
 /* ---------- AI 助手悬浮窗 ---------- */
+.ai-tab, .progress-tab { width:28px; box-sizing:border-box; }
 .ai-tab {
   position: fixed; right: 0; top: 45%; z-index: 1000;
   padding: 10px 7px;
@@ -179,9 +180,9 @@
 
 .progress-tab {
   position:fixed; right:0; top:calc(45% + 76px); z-index:1000;
-  padding:12px 7px; border:1px solid var(--border); border-right:0;
+  padding:10px 7px; border:none;
   border-radius:8px 0 0 8px; background:var(--card); color:var(--text);
-  writing-mode:vertical-rl; font:inherit; font-size:13px; cursor:pointer;
+  font-size:13px; line-height:1.2; cursor:pointer;
   box-shadow:-2px 2px 8px rgba(0,0,0,.1);
 }
 .progress-tab:hover { border-color:var(--primary); color:var(--primary); }

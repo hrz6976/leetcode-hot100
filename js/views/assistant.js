@@ -1,3 +1,4 @@
+import { STATIC_SITE, CLOUD_PROXY } from '../runtime-mode.js';
 import { localGoAvailable } from '../local-progress.js';
 // AI 助手悬浮窗：折叠时屏幕右边缘竖条，展开为右下浮窗；配置 OpenAI 兼容 API 后即可提问。
 // 在题目页 / 知识文章页默认附带当前内容作为上下文（可勾选关闭）。
@@ -47,7 +48,7 @@ export function initAssistant() {
       <button type="button" class="ai-icon-btn" id="ai-collapse" title="收起到屏幕右边缘（未固定时也可以点击面板外任意处或按 Esc）" aria-label="收起">»</button>
     </header>
     <form class="ai-config" id="ai-config" hidden>
-      <p class="ai-config-tip">OpenCode Go 请填控制台的 API Key，可使用 kimi-k2.6、glm-5.1 等 Chat Completions 模型。手动填写的 Key 仅保存在本浏览器，不写入进度文件。${localGoAvailable() ? '已检测到本机 OpenCode Go 登录，使用 Go 时可以不填 Key。' : ''}</p>
+      <p class="ai-config-tip">${CLOUD_PROXY ? '在线版通过本站 Cloudflare Worker 转发 AI 请求。请填写自己的 API Key；它会随请求转发至所选服务，Worker 不保存 Key。' : 'OpenCode Go 可复用本机登录，也可以手动填写 Key。'}支持修改 Base URL 和模型名（OpenAI 兼容协议）。手动填写的 Key 保存在本浏览器，不写入进度备份。${localGoAvailable() ? '已检测到本机 OpenCode Go 登录，使用 Go 时可以不填 Key。' : ''}</p>
       <label>服务
         <select id="ai-preset">
           ${PRESETS.map((p) => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join('')}
@@ -97,6 +98,11 @@ export function initAssistant() {
   };
 
   function syncProxyTip() {
+    if (CLOUD_PROXY) {
+      els.proxyTip.hidden = false;
+      els.proxyTip.textContent = 'Go、Kimi Coding、DeepSeek 等预设已支持转发。自定义地址需加入服务端允许列表。Coding Plan 是否可用由服务商的账号权限决定。';
+      return;
+    }
     els.proxyTip.hidden = !proxyUrlFor(els.baseUrl.value.trim().replace(/\/+$/, ''));
   }
 

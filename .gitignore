@@ -6,3 +6,5 @@ progress/*.tmp
 progress/.write-lock
 .env
 .env.local
+dist/
+.wrangler/

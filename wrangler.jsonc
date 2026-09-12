@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "leetcode-hot100-hrz",
+  "compatibility_date": "2026-09-12",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "main": "tools/cloudflare-worker.mjs",
+  "routes": [
+    {
+      "pattern": "hot100.1919114.xyz",
+      "custom_domain": true
+    }
+  ],
+  "workers_dev": true
+}

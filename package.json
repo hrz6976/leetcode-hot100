@@ -8,6 +8,8 @@
     "test:node": "node --test",
     "validate": "node tools/validate.mjs",
     "test": "npm run check:manifests && npm run test:node && npm run validate",
-    "start": "node tools/start.mjs"
+    "start": "node tools/start.mjs",
+    "build:static": "node tools/build-static.mjs",
+    "deploy": "npm run build:static && npx wrangler@4.129.0 deploy"
   }
 }

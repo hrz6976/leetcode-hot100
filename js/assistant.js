@@ -1,3 +1,4 @@
+import { STATIC_SITE, CLOUD_PROXY } from './runtime-mode.js';
 import { localHeaders, localGoAvailable } from './local-progress.js';
 // AI 助手纯逻辑层（无 DOM，可在 Node 下测试）：
 // - OpenAI 兼容 API 预设与流式（SSE）调用
@@ -6,6 +7,7 @@ import { localHeaders, localGoAvailable } from './local-progress.js';
 
 export const PRESETS = [
   { id: 'opencode-go', label: 'OpenCode Go 订阅', baseUrl: 'https://opencode.ai/zen/go/v1', model: 'kimi-k2.6' },
+  { id: 'kimi-coding', label: 'Kimi Coding Plan', baseUrl: 'https://api.kimi.com/coding/v1', model: 'kimi-for-coding' },
   { id: 'moonshot', label: 'Kimi (Moonshot)', baseUrl: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
   { id: 'deepseek', label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
   { id: 'openai', label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
@@ -157,9 +159,10 @@ export function proxyUrlFor(baseUrl) {
 export function resolveConfig(cfg) {
   const preset = PRESETS.find((p) => p.id === cfg?.preset) || PRESETS.find((p) => p.id === 'custom');
   const direct = (cfg?.baseUrl || preset.baseUrl).replace(/\/+$/, '');
-  const proxied = direct === 'https://opencode.ai/zen/go/v1' ? '/api/go' : proxyUrlFor(direct);
+  const proxied = CLOUD_PROXY ? '/api/ai' : STATIC_SITE ? null : direct === 'https://opencode.ai/zen/go/v1' ? '/api/go' : proxyUrlFor(direct);
   return {
     baseUrl: proxied || direct,
+    ...(CLOUD_PROXY ? { upstreamBaseUrl: direct } : {}),
     apiKey: cfg?.apiKey || '',
     model: direct === 'https://opencode.ai/zen/go/v1'
       ? (cfg?.model || preset.model).replace(/^opencode-go\//, '') : cfg?.model || preset.model,
@@ -168,10 +171,11 @@ export function resolveConfig(cfg) {
 }
 
 export async function chat({ config, messages, signal, onToken }) {
-  const { baseUrl, apiKey, model, viaProxy } = resolveConfig(config);
-  if (!baseUrl) throw new Error('尚未配置 API 接口地址');
+  const { baseUrl, upstreamBaseUrl, apiKey, model, viaProxy } = resolveConfig(config);
+  if (!baseUrl || (baseUrl === '/api/ai' && !upstreamBaseUrl)) throw new Error('尚未配置 API 接口地址');
+  if (STATIC_SITE && baseUrl === 'https://opencode.ai/zen/go/v1') throw new Error('OpenCode Go 当前不支持浏览器跨域直连。请使用本地版本，或配置支持浏览器跨域的 AI 接口。');
   const goHeaders = baseUrl === '/api/go' ? await localHeaders() : null;
-  if (!apiKey && !(goHeaders && localGoAvailable())) throw new Error('尚未配置 API Key；也可以先在本机 OpenCode 中连接 Go 订阅');
+  if (!apiKey && !(goHeaders && localGoAvailable())) throw new Error(STATIC_SITE ? '请在 AI 设置中填写对应服务的 API Key' : '尚未配置 API Key；也可以先在本机 OpenCode 中连接 Go 订阅');
   if (!model) throw new Error('尚未配置模型名');
   let response;
   try {
@@ -180,6 +184,7 @@ export async function chat({ config, messages, signal, onToken }) {
       headers: {
         'Content-Type': 'application/json',
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(baseUrl === '/api/ai' ? { 'x-hot100-base-url': upstreamBaseUrl, 'x-opencode-session': sessionId } : {}),
         ...(goHeaders ? { ...goHeaders, 'x-opencode-session': sessionId } : {}),
       },
       body: JSON.stringify({ model, messages, stream: true }),
@@ -188,6 +193,7 @@ export async function chat({ config, messages, signal, onToken }) {
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
     if (baseUrl === '/api/go') throw new Error(`OpenCode Go 连接失败：${error.message}`);
+    if (baseUrl === '/api/ai') throw new Error('无法连接 AI 转发接口，请检查网络后重试');
     if (viaProxy) {
       throw new Error('无法连接本地代理（127.0.0.1:8966）：该接口不支持浏览器直连，需要本地代理转发。请用一键启动脚本启动，或手动运行 node tools/cors-proxy.mjs');
     }

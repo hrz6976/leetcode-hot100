@@ -105,3 +105,25 @@ npm test
 ## 许可说明
 
 这是个人学习用的非官方项目，与 LeetCode / 力扣没有隶属或授权关系。相关题目内容的版权归其权利人所有。项目自有代码采用 [MIT License](LICENSE)；第三方组件说明见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+
+## Cloudflare 在线部署
+
+在线域名：https://hot100.1919114.xyz
+
+运行 `npm run deploy`（需要 Wrangler 登录）会生成 `dist/`，发布静态前端与一个 AI 转发 Worker。普通页面直接由 Static Assets 提供，只有 `/api/*` 进入 Worker。部署包不包含 `progress/`、本机凭据、Git 或开发工具。
+
+在线版进度保存在当前浏览器。右侧「进度」可导出 JSON，在题库页可导入；要提交到 Git，可将导出的备份保存为仓库的 `progress/learning.json` 后 commit。线上域名和 localhost 的浏览器存储相互独立，首次使用需手动导入。
+
+JavaScript 和 Python 仍在浏览器执行，C++ 依赖公共远程判题服务。AI 设置支持服务预设、Base URL、模型名和 API Key：
+
+| 服务 | Base URL | 示例模型 |
+| --- | --- | --- |
+| OpenCode Go | `https://opencode.ai/zen/go/v1` | `kimi-k2.6` |
+| Kimi Coding Plan | `https://api.kimi.com/coding/v1` | `kimi-for-coding` |
+| DeepSeek | `https://api.deepseek.com/v1` | 按账号提供的模型填写 |
+
+AI 使用 OpenAI 兼容 Chat Completions 协议，支持流式输出与取消。在线请求经同域 `/api/ai/chat/completions` 转发，解决浏览器跨域问题。Key 由用户填写、保存在其浏览器中，随请求发送给本站 Worker 和所选服务；Worker 不保存密钥，不使用本机订阅，也不提供共享密钥。订阅权限由服务商决定，客户端使用真实身份 `hot100-learning-assistant/2.0`。
+
+默认允许 Go、Kimi Coding、DeepSeek、Moonshot 和 OpenAI 的官方地址。要接入其他服务，先在 `wrangler.jsonc` 的 `vars.AI_ALLOWED_BASE_URLS` 中加入其完整 HTTPS Base URL（多个地址用逗号分隔），重新部署，然后在网页选择「自定义」。Worker 限制目标地址、方法、来源和请求体大小，并禁止跟随上游重定向。
+
+本地 `npm start` 继续支持自动写入进度文件和读取本机 Go 凭据。若只需要无后端的纯静态版本，可将构建生成的 `js/runtime-mode.js` 中 `CLOUD_PROXY` 改为 `false`，仅发布 `dist/`；此时 AI 接口必须允许浏览器跨域访问。

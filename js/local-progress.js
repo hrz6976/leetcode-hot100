@@ -1,3 +1,4 @@
+import { STATIC_SITE } from './runtime-mode.js';
 import { exportAll, importAll, flushDrafts } from './store.js';
 let token = '';
 let goAvailable = false;
@@ -74,6 +75,14 @@ export async function initLocalProgress() {
     toggle.classList.toggle('needs-attention', attention);
     toggle.setAttribute('aria-label', attention ? '保存与备份：需要处理' : '打开保存与备份');
     toggle.title = message;
+  }
+  if (STATIC_SITE) {
+    intro.textContent = '进度自动保存在当前浏览器。换设备或清理浏览器前，请导出备份；可在题库页导入。';
+    save.hidden = true;
+    showStatus('浏览器保存已启用 · 不会自动同步到其他设备或电脑文件');
+    document.addEventListener('visibilitychange', () => { if (document.hidden) flushDrafts(); });
+    window.addEventListener('beforeunload', () => flushDrafts());
+    return;
   }
   let revision = null, last = '', paused = true;
   let saving = Promise.resolve();

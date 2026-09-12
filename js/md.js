@@ -1,6 +1,6 @@
 // 极简 Markdown 渲染，支持的语法：
 // - ``` 代码块（首行可带语言标记：js/python/cpp/run/run-js/run-py/run-cpp；可运行块用 #id 提供稳定 ID）
-// - `行内代码`、**加粗**、### 标题、- 列表、空行分段
+// - `行内代码`、**加粗**、1–6 级标题、分隔线、有序和无序列表、空行分段
 // - | 表格 |（第二行 --- 分隔）
 // - > 提示框（首词为 注意/提示/重点/例子 时着色，否则默认样式）
 // 代码块会嗅探语言并打上 data-lang 标记，可运行示例打 data-run 标记。
@@ -14,9 +14,15 @@ function escapeHtml(s) {
 }
 
 function renderInline(s) {
-  return escapeHtml(s)
-    .replace(/\*\*([^*]+)\*\*/g, (_, t) => `<strong>${t}</strong>`)
-    .replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+  // 先隔离行内代码，避免代码中的星号被当作强调语法。
+  return s.split(/(`+[^`]+`+)/g).map(part => {
+    if (/^(`+)([^`]+)\1$/.test(part)) return `<code>${escapeHtml(part.replace(/^`+|`+$/g, ''))}</code>`;
+    return escapeHtml(part)
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+      .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+      .replace(/~~([^~]+)~~/g, '<del>$1</del>');
+  }).join('');
 }
 
 // 根据代码块内容嗅探语言：优先显式标记（// JavaScript / # Python），其次语法特征；识别不了返回空串（始终展示）
@@ -87,7 +93,7 @@ function renderCallout(lines) {
 }
 
 export function md(src) {
-  const blocks = String(src).split(/```/);
+  const blocks = String(src).replace(/\r\n?/g, '\n').split(/```/);
   let html = '';
   blocks.forEach((block, i) => {
     if (i % 2 === 1) {
@@ -114,6 +120,8 @@ export function md(src) {
     const lines = block.split('\n');
     let para = [];
     let list = [];
+    let listType = 'ul';
+    let listStart = 1;
     let tbl = [];
     let quote = [];
     const flushPara = () => {
@@ -124,7 +132,7 @@ export function md(src) {
     };
     const flushList = () => {
       if (list.length) {
-        html += `<ul>${list.map((li) => `<li>${renderInline(li)}</li>`).join('')}</ul>`;
+        html += `<${listType}${listType === 'ol' ? ` start="${listStart}"` : ''}>${list.map((li) => `<li>${renderInline(li)}</li>`).join('')}</${listType}>`;
         list = [];
       }
     };
@@ -148,9 +156,16 @@ export function md(src) {
     };
     for (const line of lines) {
       const trimmed = line.trim();
-      if (trimmed.startsWith('### ')) {
+      const heading = trimmed.match(/^(#{1,6})\s+(.+?)(?:\s+#+)?$/);
+      const bullet = trimmed.match(/^([-+*])\s+(.+)$/);
+      const ordered = trimmed.match(/^(\d+)[.)]\s+(.+)$/);
+      if (heading) {
         flushAll();
-        html += `<h3>${renderInline(trimmed.slice(4))}</h3>`;
+        const level = heading[1].length;
+        html += `<h${level}>${renderInline(heading[2])}</h${level}>`;
+      } else if (/^(?:-\s*){3,}$|^(?:\*\s*){3,}$|^(?:_\s*){3,}$/.test(trimmed)) {
+        flushAll(); html += '<hr>';
+
       } else if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
         flushPara();
         flushList();
@@ -161,11 +176,15 @@ export function md(src) {
         flushList();
         flushTable();
         quote.push(trimmed);
-      } else if (trimmed.startsWith('- ')) {
+      } else if (bullet || ordered) {
         flushPara();
         flushTable();
         flushQuote();
-        list.push(trimmed.slice(2));
+        const type = ordered ? 'ol' : 'ul';
+        if (list.length && listType !== type) flushList();
+        if (!list.length) listStart = ordered ? Number(ordered[1]) : 1;
+        listType = type;
+        list.push(ordered ? ordered[2] : bullet[2]);
       } else if (trimmed === '') {
         flushAll();
       } else {

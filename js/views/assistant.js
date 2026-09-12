@@ -1,3 +1,4 @@
+import { createLineBuffer } from '../stream-markdown.js';
 import { STATIC_SITE, CLOUD_PROXY } from '../runtime-mode.js';
 import { localGoAvailable } from '../local-progress.js';
 // AI 助手悬浮窗：折叠时屏幕右边缘竖条，展开为右下浮窗；配置 OpenAI 兼容 API 后即可提问。
@@ -282,6 +283,11 @@ export function initAssistant() {
     appendHistory('user', question);
     const bubble = addBubble('assistant', '<span class="ai-typing">思考中…</span>');
     let answer = '';
+    const lineBuffer = createLineBuffer(text => {
+      const follow = els.msgs.scrollHeight - els.msgs.scrollTop - els.msgs.clientHeight < 60;
+      bubble.innerHTML = md(text);
+      if (follow) scrollMsgs();
+    });
 
     aborter = new AbortController();
     setStreaming(true);
@@ -292,10 +298,10 @@ export function initAssistant() {
         signal: aborter.signal,
         onToken(delta) {
           answer += delta;
-          bubble.innerHTML = md(answer);
-          scrollMsgs();
+          lineBuffer.push(delta);
         },
       });
+      lineBuffer.finish();
       if (!answer) {
         bubble.innerHTML = '<span class="ai-typing">（没有收到内容）</span>';
       }

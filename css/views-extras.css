@@ -251,3 +251,17 @@
 .progress-summary { padding:16px 16px 0; }
 .progress-summary-label { display:flex; justify-content:space-between; font-size:13px; }
 .progress-summary-count { font-variant-numeric:tabular-nums; color:var(--muted); }
+
+.ai-msg.assistant { min-width:0; overflow-wrap:anywhere; }
+.ai-msg.assistant h1, .ai-msg.assistant h2, .ai-msg.assistant h3,
+.ai-msg.assistant h4, .ai-msg.assistant h5, .ai-msg.assistant h6 { margin:12px 0 6px; line-height:1.45; }
+.ai-msg.assistant h1 { font-size:19px; }
+.ai-msg.assistant h2 { font-size:17px; }
+.ai-msg.assistant h3 { font-size:15px; }
+.ai-msg.assistant h4, .ai-msg.assistant h5, .ai-msg.assistant h6 { font-size:13px; }
+.ai-msg.assistant > :first-child { margin-top:0; }
+.ai-msg.assistant hr { border:0; border-top:1px solid var(--border); margin:12px 0; }
+.ai-msg.assistant ul, .ai-msg.assistant ol { padding-left:22px; margin:6px 0; }
+.ai-msg.assistant li { margin:3px 0; }
+.ai-msg.assistant table { display:block; max-width:100%; overflow-x:auto; border-collapse:collapse; margin:8px 0; }
+.ai-msg.assistant th, .ai-msg.assistant td { border:1px solid var(--border); padding:5px 8px; }

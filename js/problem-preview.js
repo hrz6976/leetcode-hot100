@@ -37,9 +37,8 @@ export function mountProblemPreviews(container) {
   const dialog = document.createElement('dialog'); dialog.className = 'problem-preview';
   dialog.setAttribute('aria-labelledby', 'problem-preview-title');
   dialog.innerHTML = `<div class="problem-preview-layout">
-    <header class="problem-preview-head"><div><span class="problem-preview-eyebrow">题目预览</span><h2 id="problem-preview-title"></h2></div><button type="button" class="btn" aria-label="关闭题目预览" autofocus>关闭</button></header>
+    <header class="problem-preview-head"><div><span class="problem-preview-eyebrow">题目预览</span><h2 id="problem-preview-title"></h2></div><div class="problem-preview-actions"><a class="btn primary" href="#/knowledge">去做这题 →</a><button type="button" class="btn" aria-label="关闭题目预览" autofocus>关闭</button></div></header>
     <div class="problem-preview-body desc" aria-live="polite"></div>
-    <footer class="problem-preview-foot"><span>关闭后继续阅读原文</span><a class="btn" href="#/knowledge">去做这题 →</a></footer>
   </div>`;
   document.body.append(dialog);
   const title = dialog.querySelector('h2');

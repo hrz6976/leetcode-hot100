@@ -1,3 +1,4 @@
+import { mountProblemPreviews } from '../problem-preview.js';
 // 知识讲解详情页：文章正文、可编辑运行示例与关联题目
 
 import { articles } from '../../knowledge/index.js';
@@ -113,6 +114,7 @@ export function renderKnowledgeDetail(container, article) {
       <div class="panel-body karticle" id="karticle">
         <div class="karticle-layout">
           <div class="karticle-main">
+            <p class="problem-preview-tip">文中的题号可以点击，随时预览题目。</p>
             <div class="desc">${md(article.content)}</div>
             ${related.length ? `
               <section class="karticle-related">
@@ -128,7 +130,7 @@ export function renderKnowledgeDetail(container, article) {
                     <div class="plist-row" data-pid="${problem.id}" title="${escapeHtml(problem.relationReason || relationLabel)}">
                       <div class="status">${icon}</div>
                       <div class="pid">${problem.id}</div>
-                      <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a><div class="practice-reason">${escapeHtml(problem.relationReason)}</div></div>
+                      <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a> <button type="button" class="problem-preview-link" data-preview-problem="${problem.id}" aria-label="预览第 ${problem.id} 题：${escapeHtml(problem.title)}" aria-haspopup="dialog">预览题目</button><div class="practice-reason">${escapeHtml(problem.relationReason)}</div></div>
                       <div class="row-tags"><span class="tag">${escapeHtml(relationLabel)}</span>${problem.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
                       <div class="diff ${problem.difficulty}">${DIFF_LABEL[problem.difficulty]}</div>
                     </div>`;
@@ -145,6 +147,7 @@ export function renderKnowledgeDetail(container, article) {
     </div>
   `;
 
+  const disposePreviews = mountProblemPreviews(container);
   let disposed = false;
   let runGeneration = 0;
   let saveTimer = null;
@@ -359,6 +362,7 @@ export function renderKnowledgeDetail(container, article) {
 
   return () => {
     disposed = true;
+    disposePreviews();
     runGeneration += 1;
     clearTimeout(saveTimer);
     flushDrafts();

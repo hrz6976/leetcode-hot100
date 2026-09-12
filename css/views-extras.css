@@ -214,3 +214,34 @@
 }
 /* 为右侧入口留出空隙，展开后仍可直接切换侧栏。 */
 .ai-panel, .progress-panel { right:44px; max-width:calc(100vw - 60px); }
+
+/* 知识正文中的题目引用：按需预览，不改变文章滚动位置。 */
+.problem-preview-tip { color:var(--muted); font-size:12px; margin:0 0 16px; }
+.problem-reference, .problem-preview-link {
+  border:0; background:transparent; color:var(--primary); font:inherit;
+  padding:0; cursor:pointer; text-decoration:underline; text-decoration-style:dotted;
+  text-underline-offset:3px;
+}
+.problem-reference:hover, .problem-preview-link:hover { text-decoration-style:solid; }
+.problem-reference:focus-visible, .problem-preview-link:focus-visible { outline:2px solid var(--primary); outline-offset:3px; border-radius:2px; }
+.problem-preview-link { font-size:12px; white-space:nowrap; margin-left:6px; }
+.problem-preview {
+  margin:auto; inset:0;
+  width:min(680px, calc(100vw - 32px)); max-width:calc(100vw - 32px);
+  max-height:calc(100dvh - 40px); padding:0; border:1px solid var(--border);
+  border-radius:14px; color:var(--text); background:var(--card);
+  box-shadow:0 12px 48px rgba(0,0,0,.25); overflow:hidden;
+}
+.problem-preview::backdrop { background:rgba(15,23,42,.35); }
+.problem-preview-layout { display:flex; flex-direction:column; max-height:calc(100dvh - 42px); }
+.problem-preview-head, .problem-preview-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; flex-shrink:0; }
+.problem-preview-head { border-bottom:1px solid var(--border); }
+.problem-preview-head h2 { margin:4px 0 0; font-size:18px; line-height:1.5; }
+.problem-preview-eyebrow, .problem-preview-foot span { font-size:12px; color:var(--muted); }
+.problem-preview-head .btn { flex-shrink:0; }
+.problem-preview-body { padding:8px 20px 20px; overflow-y:auto; overscroll-behavior:contain; min-height:0; overflow-wrap:anywhere; }
+.problem-preview-foot { border-top:1px solid var(--border); }
+@media (max-width:640px) {
+  .problem-preview-head, .problem-preview-foot { padding:12px 14px; gap:10px; }
+  .problem-preview-body { padding:4px 14px 14px; }
+}

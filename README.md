@@ -127,3 +127,11 @@ AI 使用 OpenAI 兼容 Chat Completions 协议，支持流式输出与取消。
 默认允许 Go、Kimi Coding、DeepSeek、Moonshot 和 OpenAI 的官方地址。要接入其他服务，先在 `wrangler.jsonc` 的 `vars.AI_ALLOWED_BASE_URLS` 中加入其完整 HTTPS Base URL（多个地址用逗号分隔），重新部署，然后在网页选择「自定义」。Worker 限制目标地址、方法、来源和请求体大小，并禁止跟随上游重定向。
 
 本地 `npm start` 继续支持自动写入进度文件和读取本机 Go 凭据。若只需要无后端的纯静态版本，可将构建生成的 `js/runtime-mode.js` 中 `CLOUD_PROXY` 改为 `false`，仅发布 `dist/`；此时 AI 接口必须允许浏览器跨域访问。
+
+## 自动检查与部署
+
+GitHub Actions 工作流位于 `.github/workflows/deploy.yml`：PR 执行索引检查、全部 Node 测试和静态构建；推送到 `main` 后，检查通过才部署至 https://hot100.1919114.xyz 。也可以在 Actions 页面手动运行。只提交 `progress/`、交接记录或 Markdown 文档不会触发部署。
+
+仓库变量 `CLOUDFLARE_ACCOUNT_ID` 已配置。自动部署还需要仓库 Secret `CLOUDFLARE_API_TOKEN`（Cloudflare 的 Edit Cloudflare Workers 模板，限定部署账号与 `1919114.xyz` 区域）。本机 Wrangler OAuth 登录不用于 GitHub Actions。设置位置：GitHub 仓库 Settings → Secrets and variables → Actions。
+
+知识文章中的题号支持点击预览，弹窗展示题意和示例；按 Esc、点击关闭或背景即可返回原文。文末练习列表也有「预览题目」按钮。

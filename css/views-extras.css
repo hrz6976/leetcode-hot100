@@ -1,5 +1,4 @@
-/* 体验优化附加样式：新手横幅、推荐原因徽章、错题页增强、宽屏两列题库列表。
-   本文件只新增规则，不改移动端（<900px）既有行为。 */
+/* 体验优化附加样式：新手横幅、推荐原因徽章、错题页增强、宽屏两列题库列表。本文件只新增规则，不动移动端（<900px）原有布局。 */
 
 /* ---------- 新手横幅（题库页） ---------- */
 .onboarding-banner {
@@ -70,13 +69,13 @@
 .mistake-related a { font-weight: 500; }
 
 /* ---------- 宽屏（≥1600px）题库平铺列表两列 ----------
-   只作用于题库页平铺视图（#plist-wrap 内的 .plist），
-   分组视图、错题页与知识页列表不受影响。 */
+   只作用于题库页平铺视图（#plist-wrap 里的 .plist），
+   分组视图、错题页和知识页列表不受影响。 */
 @media (min-width: 1600px) {
   #plist-wrap > .plist { display: grid; grid-template-columns: 1fr 1fr; }
   #plist-wrap > .plist > .plist-row { border-bottom: 1px solid var(--border); }
   #plist-wrap > .plist > .plist-row:nth-child(odd) { border-right: 1px solid var(--border); }
-  /* 末行不再显示分隔线：奇数条时最后一行，偶数条时最后两行 */
+  /* 末行不显示分隔线：奇数行时最后一行，偶数行时最后两行 */
   #plist-wrap > .plist > .plist-row:last-child,
   #plist-wrap > .plist > .plist-row:nth-last-child(2):nth-child(odd) { border-bottom: none; }
   #plist-wrap > .plist > .empty-tip { grid-column: 1 / -1; }
@@ -110,7 +109,7 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
   overflow: hidden;
 }
-/* hidden 属性会被 display:flex/grid 覆盖，显式补回 */
+/* hidden 属性会被 display:flex/grid 覆盖，这里显式补回 */
 .ai-panel[hidden], .ai-ctx[hidden] { display: none; }
 
 .ai-head {

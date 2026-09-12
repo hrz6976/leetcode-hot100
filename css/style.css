@@ -35,7 +35,7 @@ code, pre, .mono {
 
 #app { max-width: 1440px; margin: 0 auto; padding: 16px 20px 48px; }
 
-/* 做题页布局放宽 */
+/* 做题页布局更宽一点 */
 #app.app-wide { max-width: 1760px; }
 
 /* ---------- 顶栏 ---------- */
@@ -316,14 +316,14 @@ code, pre, .mono {
 .karticle { max-height: none; }
 .krelated-title { margin: 24px 0 10px; font-size: 15px; }
 
-/* 知识列表：关联错题角标（仅桌面端显示，移动端媒体查询中隐藏） */
+/* 知识列表：关联错题角标（只在桌面端显示） */
 .kcard-mistakes {
   position: absolute; top: 12px; right: 14px;
   font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
   background: #fee2e2; color: var(--fail);
 }
 
-/* 知识详情：正文单列居中限宽；关联题与上一篇/下一篇放在正文末尾，关联题用卡片网格铺满 */
+/* 知识详情：正文居中加宽；关联题和上一篇/下一篇放在正文末尾，用卡片网格展示 */
 @media (min-width: 901px) {
   .karticle-main { max-width: 84ch; margin: 0 auto; }
   .karticle-related .plist { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; background: transparent; border: none; overflow: visible; }
@@ -648,7 +648,7 @@ kbd {
   background: var(--card); color: var(--text);
 }
 
-/* 错题行允许操作区自然换行，编辑区与所属题目保持视觉关联。 */
+/* 错题行操作区允许自然换行，编辑区跟所属题目保持视觉关联 */
 .mistakes-head + #mistakes-live { min-height: 1.5em; margin: 0 0 8px; }
 .pgroup-body > .custom-test { margin: 0 12px 12px 58px; }
 .pgroup-body > .plist-row + .custom-test { border-top-left-radius: 0; border-top-right-radius: 0; }
@@ -726,7 +726,7 @@ kbd {
   .data-bar { justify-content: flex-start; }
   .data-tip { flex-basis: 100%; }
   .pnav .btn { max-width: 50%; padding-inline: 10px; }
-  /* 知识卡片错题角标为桌面端增强，移动端保持原有卡片布局 */
+  /* 知识卡片错题角标是桌面端增强，移动端保持原有布局 */
   .kcard-mistakes { display: none; }
   .theme-toggle {
     right: 12px; bottom: max(12px, env(safe-area-inset-bottom));

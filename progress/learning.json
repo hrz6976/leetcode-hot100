@@ -1,0 +1,32 @@
+{
+  "app": "hot100",
+  "version": 2,
+  "exportedAt": "2026-09-12T06:45:29.523Z",
+  "data": {
+    "preferences": {
+      "lang": "python",
+      "theme": "light",
+      "listView": "diff",
+      "collapsedGroups": [],
+      "editorHeight": 400,
+      "listFilters": {
+        "q": "",
+        "diff": "",
+        "tag": "",
+        "status": ""
+      },
+      "onboardingDismissed": false
+    },
+    "progress": {},
+    "mistakes": {},
+    "learning": {
+      "version": 2,
+      "revision": 0,
+      "problems": {}
+    },
+    "drafts": {
+      "[\"knowledge:complexity\",\"article\",\"state\"]": "studying"
+    },
+    "customInputs": {}
+  }
+}

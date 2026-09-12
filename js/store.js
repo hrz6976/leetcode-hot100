@@ -742,6 +742,7 @@ export function importAll(payload, { mode = 'merge', preserveSecrets = false } =
     error.rolledBack = result.rolledBack;
     throw error;
   }
+  if (mode === 'replace') pendingDrafts.clear();
   return { ok: true, imported: incoming.length, mode };
 }
 

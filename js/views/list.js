@@ -1,3 +1,4 @@
+import { flushLocalProgress } from '../local-progress.js';
 // 列表页：进度统计 + 按难度（默认）/平铺/按分类分组视图 + 筛选/搜索
 
 import { problems, allTags } from '../../problems/index.js';
@@ -198,7 +199,7 @@ export function renderList(container) {
       <span id="filter-result" class="data-tip" role="status" aria-live="polite"></span>
     </div>
     <div id="plist-wrap"></div>
-    <div class="footer-tip">进度、代码草稿与列表偏好由浏览器本地保存 · 判题在本地浏览器内完成</div>
+    <div class="footer-tip">保存位置见页面顶部 · JavaScript/Python 在本地执行，C++ 需要联网</div>
     <div class="data-bar">
       <button class="tool-btn" id="export-btn">⬇ 导出刷题数据</button>
       <label for="import-mode" class="data-tip">导入方式</label>
@@ -546,6 +547,11 @@ export function renderList(container) {
         return;
       }
       const result = importAll(payload, { mode });
+      const fileSave = await flushLocalProgress();
+      if (!fileSave.ok) {
+        showTip('备份已导入浏览器，但尚未写入本地文件。请按页面顶部的提示处理后刷新。', { persistent: true, error: true });
+        return;
+      }
       showTip(`导入成功：${result.imported} 个数据项，${mode === 'replace' ? '替换' : '合并'}模式`, { persistent: true });
       setTimeout(() => location.reload(), 700);
     } catch (err) {

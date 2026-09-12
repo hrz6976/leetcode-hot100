@@ -1,6 +1,10 @@
 import { exportAll, importAll, flushDrafts } from './store.js';
 let token = '';
 let goAvailable = false;
+let saveToFile = null;
+export async function flushLocalProgress() {
+  return saveToFile ? saveToFile() : { ok: true, browserOnly: true };
+}
 export function localGoAvailable() { return goAvailable; }
 export async function localHeaders() {
   if (!token) {
@@ -31,28 +35,35 @@ export async function initLocalProgress() {
     const link = document.createElement('a'); link.href = url; link.download = 'hot100-browser-backup.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   bar.append(label, save, backup); document.body.prepend(bar);
-  let revision = null, last = '', busy = false, paused = true;
+  let revision = null, last = '', paused = true;
+  let saving = Promise.resolve();
   const marker = 'hot100_local_file_base';
   const checksum = async text => {
     const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
     return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
   };
   const remember = async () => { try { localStorage.setItem(marker, await checksum(last)); } catch {} };
-  async function persist(force = false) {
-    if (busy || paused) return;
-    busy = true;
+  function persist(force = false) {
+    saving = saving.then(() => writeCurrent(force));
+    return saving;
+  }
+  async function writeCurrent(force = false) {
+    if (paused) return { ok: false };
     try {
       const flushed = flushDrafts(); if (!flushed.ok) throw flushed.error;
       const payload = exportAll(); const next = fingerprint(payload);
-      if (!force && next === last) return;
+      if (!force && next === last) return { ok: true };
       label.textContent = '正在保存到本地…';
       const response = await fetch('/api/progress', { method: 'PUT', headers: await localHeaders(), body: JSON.stringify({ revision, payload }), signal: AbortSignal.timeout(10000) });
       const result = await response.json();
       if (!response.ok) { if (response.status === 409) { paused = true; save.disabled = true; } throw new Error(result.error); }
       revision = result.revision; last = next; await remember();
       label.textContent = `已保存到 progress/learning.json · ${new Date().toLocaleTimeString()}`;
-    } catch (error) { label.textContent = `本地文件未保存：${error.message}`; }
-    finally { busy = false; }
+      return { ok: true };
+    } catch (error) {
+      label.textContent = `本地文件未保存：${error.message}`;
+      return { ok: false, error: error.message };
+    }
   }
   save.onclick = () => persist(true);
   label.textContent = '正在读取本地进度…';
@@ -82,6 +93,7 @@ export async function initLocalProgress() {
     const firstVisit = !disk.payload && !meaningful(browser);
     last = disk.payload ? fingerprint(disk.payload) : firstVisit ? browserPrint : '';
     paused = false;
+    saveToFile = () => persist(true);
     if (fingerprint(exportAll()) !== last) await persist();
     else {
       await remember();

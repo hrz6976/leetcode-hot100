@@ -495,3 +495,12 @@ test('本地文件恢复保留 API Key，并移除文件中不存在的旧草稿
   assert.ok(!JSON.stringify(store.exportAll()).includes('test-secret'));
   assert.doesNotThrow(() => store.validateBackup(store.exportAll()));
 });
+
+test('完整替换备份后不再写回替换前尚未刷新的草稿', () => {
+  reset();
+  const blank = store.exportAll();
+  store.stageDraft(1, 'core', 'python', '# 替换前的待保存内容');
+  store.importAll(blank, { mode:'replace' });
+  store.flushDrafts();
+  assert.equal(store.getDraft(1, 'core', 'python'), null);
+});

@@ -1,5 +1,6 @@
+import { problems } from '../problems/index.js';
 import { STATIC_SITE } from './runtime-mode.js';
-import { exportAll, importAll, flushDrafts } from './store.js';
+import { exportAll, importAll, flushDrafts, problemStatus } from './store.js';
 let token = '';
 let goAvailable = false;
 let saveToFile = null;
@@ -42,8 +43,25 @@ export async function initLocalProgress() {
   const intro = document.createElement('p'); intro.className = 'progress-intro';
   intro.textContent = '学习记录会自动保存，无需每次手动操作。';
   const bar = document.createElement('div'); bar.className = 'local-progress';
-  panel.append(head, intro, bar);
+  const summary = document.createElement('div'); summary.className = 'progress-summary';
+  summary.innerHTML = '<div class="progress-summary-label"><span>已通过</span><span class="progress-summary-count"></span></div><div class="bar" role="progressbar" aria-label="已通过进度" aria-valuemin="0"><div></div></div>';
+  const meter = summary.querySelector('.bar');
+  const count = summary.querySelector('.progress-summary-count');
+  let summaryTimer = null;
+  function updateSummary() {
+    const total = problems.length;
+    const solved = problems.filter(problem => problemStatus(problem.id) === 'solved').length;
+    const text = `${solved} / ${total}`;
+    if (count.textContent === text) return;
+    count.textContent = text;
+    meter.setAttribute('aria-valuemax', String(total));
+    meter.setAttribute('aria-valuenow', String(solved));
+    meter.firstElementChild.style.width = `${total ? Math.round(solved / total * 100) : 0}%`;
+  }
+  panel.append(head, summary, intro, bar);
   function setOpen(open, restoreFocus = false) {
+    clearInterval(summaryTimer);
+    if (open) { updateSummary(); summaryTimer = setInterval(updateSummary, 1000); }
     panel.hidden = !open;
     toggle.hidden = open;
     toggle.setAttribute('aria-expanded', String(open));

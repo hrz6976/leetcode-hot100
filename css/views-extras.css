@@ -247,3 +247,7 @@
   .problem-preview-actions { margin-left:auto; }
   .problem-preview-body { padding:4px 14px 14px; }
 }
+
+.progress-summary { padding:16px 16px 0; }
+.progress-summary-label { display:flex; justify-content:space-between; font-size:13px; }
+.progress-summary-count { font-variant-numeric:tabular-nums; color:var(--muted); }

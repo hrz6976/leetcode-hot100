@@ -3,7 +3,6 @@
 // - setError/clearError：判题报错时在指定行标红并跳转
 // - retry/upgrade：加载失败后可重试，并将降级编辑区中的内容无损升级到 Monaco
 
-import { getThemePref } from './store.js';
 
 const MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs';
 // 本地自托管的 Monaco（vendor/monaco/vs），离线可用；缺失或加载失败时回退 CDN。
@@ -272,7 +271,7 @@ export async function createEditor(container, { language, value, onChange, lazy 
         model = monaco.editor.createModel(currentValue, currentLanguage);
         editor = monaco.editor.create(mount, {
           model,
-          theme: getThemePref() === 'dark' ? 'vs-dark' : 'vs',
+          theme: document.documentElement.dataset.theme === 'dark' ? 'vs-dark' : 'vs',
           minimap: { enabled: false },
           fontSize: 13,
           automaticLayout: true,

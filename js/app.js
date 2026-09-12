@@ -1,8 +1,7 @@
-// 入口：hash 路由 + 全局主题切换
+// 入口：hash 路由
 
 import { articles, loadArticle } from '../knowledge/index.js';
 import { loadProblem, problems } from '../problems/index.js';
-import { getThemePref, setThemePref } from './store.js';
 import { setAssistantContext } from './assistant.js';
 import { initAssistant } from './views/assistant.js';
 
@@ -13,30 +12,6 @@ const app = document.getElementById('app');
 let cleanup = null;
 let routeSequence = 0;
 
-// ---------- 全局主题切换（右下角悬浮按钮） ----------
-
-function initThemeToggle() {
-  const btn = document.createElement('button');
-  btn.className = 'theme-toggle';
-  btn.title = '切换亮色 / 暗色';
-  document.body.appendChild(btn);
-  const apply = (theme) => {
-    document.documentElement.dataset.theme = theme;
-    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-    if (window.monaco) {
-      window.monaco.editor.setTheme(theme === 'dark' ? 'vs-dark' : 'vs');
-    }
-  };
-  let theme = getThemePref();
-  apply(theme);
-  btn.addEventListener('click', () => {
-    theme = theme === 'dark' ? 'light' : 'dark';
-    setThemePref(theme);
-    apply(theme);
-  });
-}
-
-initThemeToggle();
 initAssistant();
 
 function disposeCurrentView() {

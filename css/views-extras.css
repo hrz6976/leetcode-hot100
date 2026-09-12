@@ -178,8 +178,31 @@
 }
 .lc-link:hover { border-color: var(--primary); }
 
-.local-progress { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px 24px; border-bottom:1px solid var(--border, #ddd); font-size:13px; }
-.local-progress span { flex:1; min-width:220px; }
+.progress-tab {
+  position:fixed; right:0; top:calc(45% + 76px); z-index:1000;
+  padding:12px 7px; border:1px solid var(--border); border-right:0;
+  border-radius:8px 0 0 8px; background:var(--card); color:var(--text);
+  writing-mode:vertical-rl; font:inherit; font-size:13px; cursor:pointer;
+  box-shadow:-2px 2px 8px rgba(0,0,0,.1);
+}
+.progress-tab:hover { border-color:var(--primary); color:var(--primary); }
+.progress-tab.needs-attention::after {
+  content:''; position:absolute; top:4px; left:4px; width:7px; height:7px;
+  border-radius:50%; background:var(--fail, #dc2626);
+}
+.progress-panel {
+  position:fixed; right:16px; bottom:76px; z-index:1100;
+  width:min(360px, calc(100vw - 32px)); max-height:calc(100dvh - 100px);
+  overflow-y:auto; border:1px solid var(--border); border-radius:12px;
+  background:var(--card); color:var(--text); box-shadow:0 8px 30px rgba(0,0,0,.18);
+}
+.progress-panel[hidden] { display:none; }
+.progress-head { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--border); }
+.progress-intro { margin:14px 16px 0; font-size:13px; color:var(--muted); line-height:1.6; }
+.local-progress { display:flex; flex-direction:column; gap:10px; padding:14px 16px 16px; font-size:13px; }
+.local-progress span { line-height:1.7; overflow-wrap:anywhere; }
+.local-progress .btn { width:100%; white-space:normal; }
+.local-progress .btn[hidden] { display:none; }
 .local-progress .btn { font-size:12px; }
 .practice-reason { font-size:12px; color:var(--muted, #666); margin-top:4px; white-space:normal; line-height:1.6; }
 /* 配置较长时单独滚动，保证手机上的发送按钮始终可见。 */
@@ -187,7 +210,7 @@
 .ai-config { min-height:0; max-height:52%; flex-shrink:1; overflow-y:auto; }
 .ai-msgs { min-height:0; }
 @media (max-width:640px) {
-  .local-progress { padding:10px 12px; }
-  .local-progress span { flex-basis:100%; }
   .ai-panel { bottom:60px; height:min(640px, 82dvh); }
 }
+/* 为右侧入口留出空隙，展开后仍可直接切换侧栏。 */
+.ai-panel, .progress-panel { right:44px; max-width:calc(100vw - 60px); }

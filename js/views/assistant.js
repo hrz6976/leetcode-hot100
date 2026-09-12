@@ -182,6 +182,7 @@ export function initAssistant() {
   }
 
   function open() {
+    document.dispatchEvent(new CustomEvent('hot100-panel-open', { detail: 'assistant' }));
     panel.hidden = false;
     tab.hidden = true;
     fillConfigForm();
@@ -197,6 +198,9 @@ export function initAssistant() {
     tab.hidden = false;
   }
 
+  document.addEventListener('hot100-panel-open', event => {
+    if (event.detail !== 'assistant') collapse();
+  });
   tab.addEventListener('click', open);
   panel.querySelector('#ai-collapse').addEventListener('click', collapse);
   panel.querySelector('#ai-settings').addEventListener('click', () => {

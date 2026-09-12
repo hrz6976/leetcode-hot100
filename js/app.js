@@ -6,6 +6,9 @@ import { getThemePref, setThemePref } from './store.js';
 import { setAssistantContext } from './assistant.js';
 import { initAssistant } from './views/assistant.js';
 
+import { initLocalProgress } from './local-progress.js';
+
+await initLocalProgress();
 const app = document.getElementById('app');
 let cleanup = null;
 let routeSequence = 0;
@@ -109,7 +112,7 @@ async function route() {
     }
     if (hash === '#/knowledge') {
       const { renderKnowledge } = await import('./views/knowledge.js');
-      commitView(sequence, `知识补充 · ${BASE_TITLE}`, () => renderKnowledge(app));
+      commitView(sequence, `知识讲解 · ${BASE_TITLE}`, () => renderKnowledge(app));
       return;
     }
 

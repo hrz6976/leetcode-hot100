@@ -64,7 +64,7 @@ test('列表视图、折叠分组和编辑器高度安全持久化', () => {
 
 test('AI 助手配置安全持久化，损坏值回退默认', () => {
   reset();
-  assert.deepEqual(store.getAssistantConfig(), { preset: 'moonshot', baseUrl: '', apiKey: '', model: '', pinned: false });
+  assert.deepEqual(store.getAssistantConfig(), { preset: 'opencode-go', baseUrl: '', apiKey: '', model: '', pinned: false });
 
   assert.deepEqual(store.setAssistantConfig({
     preset: 'deepseek', baseUrl: 'https://api.deepseek.com/v1/', apiKey: 'sk-x', model: 'deepseek-chat', pinned: true,
@@ -84,7 +84,7 @@ test('AI 助手配置安全持久化，损坏值回退默认', () => {
   }
 
   reset({ hot100_assistant_v1: '{"preset":1}' });
-  assert.deepEqual(store.getAssistantConfig(), { preset: 'moonshot', baseUrl: '', apiKey: '', model: '', pinned: false });
+  assert.deepEqual(store.getAssistantConfig(), { preset: 'opencode-go', baseUrl: '', apiKey: '', model: '', pinned: false });
 });
 
 test('新偏好拒绝非法写入并对损坏存储值使用安全默认值', () => {
@@ -478,4 +478,20 @@ test('新手引导关闭偏好按布尔持久化并纳入备份 preferences', ()
   const corrupt = structuredClone(payload);
   corrupt.data.preferences.onboardingDismissed = 'yes';
   assert.throws(() => store.importAll(corrupt), /新手引导/);
+});
+
+test('本地文件恢复保留 API Key，并移除文件中不存在的旧草稿', () => {
+  reset();
+  store.saveDraft(1, 'core', 'python', '# 要保留的草稿');
+  store.recordLearningAttempt(1, 'core', 'pass');
+  const payload = store.exportAll();
+  store.setAssistantConfig({ preset:'opencode-go', apiKey:'test-secret', baseUrl:'', model:'kimi-k2.6' });
+  store.saveDraft(2, 'core', 'javascript', '// 浏览器里的旧草稿');
+  store.importAll(payload, { mode:'replace', preserveSecrets:true });
+  assert.equal(store.getAssistantConfig().apiKey, 'test-secret');
+  assert.equal(store.getDraft(2, 'core', 'javascript'), null);
+  assert.equal(store.getDraft(1, 'core', 'python'), '# 要保留的草稿');
+  assert.equal(store.problemStatus(1), 'solved');
+  assert.ok(!JSON.stringify(store.exportAll()).includes('test-secret'));
+  assert.doesNotThrow(() => store.validateBackup(store.exportAll()));
 });

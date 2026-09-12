@@ -1,40 +1,31 @@
 @echo off
-rem Windows 一键启动：双击本文件即可
+chcp 65001 >nul
 cd /d "%~dp0"
-set PORT=8931
-
-rem AI 助手的本地 CORS 代理（有 Node 才启动，随本窗口关闭；不用 AI 助手可忽略）
 where node >nul 2>nul
-if %errorlevel%==0 start "" /b cmd /c "node tools\cors-proxy.mjs >nul 2>&1"
+if %errorlevel%==0 goto NODE
 
+echo 当前仅保存到浏览器。安装 Node.js 18+ 可启用本地进度文件和 OpenCode Go。
 where python >nul 2>nul
 if %errorlevel%==0 goto PYTHON
 where py >nul 2>nul
 if %errorlevel%==0 goto PYLAUNCHER
-where node >nul 2>nul
-if %errorlevel%==0 goto NODE
-
-echo 错误：未找到 Python 或 Node.js
-echo 请先安装其一：https://www.python.org 或 https://nodejs.org
+echo 请安装 Node.js：https://nodejs.org
 pause
 exit /b 1
 
+:NODE
+node tools\start.mjs
+if errorlevel 1 pause
+exit /b
+
 :PYTHON
-echo 启动：http://127.0.0.1:%PORT% （关闭本窗口即停止）
-start "" cmd /c "timeout /t 1 >nul & start http://127.0.0.1:%PORT%/"
-python -m http.server %PORT% --bind 127.0.0.1
+start "" http://127.0.0.1:8931/
+python -m http.server 8931 --bind 127.0.0.1
 goto END
 
 :PYLAUNCHER
-echo 启动：http://127.0.0.1:%PORT% （关闭本窗口即停止）
-start "" cmd /c "timeout /t 1 >nul & start http://127.0.0.1:%PORT%/"
-py -m http.server %PORT% --bind 127.0.0.1
-goto END
-
-:NODE
-echo 启动：http://127.0.0.1:%PORT% （关闭本窗口即停止）
-start "" cmd /c "timeout /t 1 >nul & start http://127.0.0.1:%PORT%/"
-node tools\serve.js %PORT%
-goto END
+start "" http://127.0.0.1:8931/
+py -m http.server 8931 --bind 127.0.0.1
 
 :END
+pause

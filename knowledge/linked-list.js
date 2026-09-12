@@ -1,288 +1,168 @@
-// 知识文章：链表
-// 数据格式约定（所有知识文章遵循）：
-// - slug: 英文短横线命名，同时是文件名与路由
-// - tags: 与题库中题目的 tags 匹配，用于自动关联题目
-// - content: Markdown 子集（### 标题、- 列表、``` 代码块、`行内代码`）
+// 知识文章：链表与指针修改
 export default {
-  slug: 'linked-list',
-  title: '链表',
-  intro: '指针基本功：dummy 哨兵、反转链表、快慢指针三大套路',
-  tags: ['链表', '双指针', '递归'],
-  relatedProblems: [2, 19, 21, 23, 24, 25, 138, 141, 142, 146, 148, 160, 206, 234],
-
+  "slug": "linked-list",
+  "title": "链表与指针修改",
+  "intro": "先保留未处理部分，再改连接；把头节点和空节点处理清楚。",
+  "tags": ["链表","双指针"],
+  "relatedProblems": [
+    {
+      "id": 206,
+      "stage": "core",
+      "reason": "保存后继后逐个反转"
+    },
+    {
+      "id": 21,
+      "stage": "core",
+      "reason": "连接两条有序链表"
+    },
+    {
+      "id": 19,
+      "stage": "practice",
+      "reason": "用临时头节点统一删除操作"
+    },
+    {
+      "id": 141,
+      "stage": "practice",
+      "reason": "判断有没有环"
+    },
+    {
+      "id": 142,
+      "stage": "practice",
+      "reason": "由相遇点推导环入口"
+    },
+    {
+      "id": 24,
+      "stage": "practice",
+      "reason": "交换一对节点并接回"
+    },
+    {
+      "id": 25,
+      "stage": "practice",
+      "reason": "检查长度后反转一组"
+    }
+  ],
   content: `
-> 提示：这篇只需要你会写 \`while\` 循环和 \`if\` 判断，几乎是零基础可直接读。唯一建议的前置是《数组与哈希表》——先建立「数组在内存里是连续一整排」的直觉，再对比链表会特别清楚。
+链表由一个个节点组成。每个节点保存数据，还保存下一个节点的位置。你通常只拿到头节点 head，想访问后面的节点，要沿 next 一步步走。
 
-玩过一个寻宝游戏吗：每个地点只藏着两样东西——**一份宝贝，和一张写着「下一个地点在哪」的纸条**。你不知道全部地图，只能从起点出发，顺着纸条一站一站找下去。链表就是这样的结构：每个「节点」只记住自己的值、和下一个节点在哪，从头到尾全靠指路。
+数组按下标访问通常是 O(1)，链表找第 k 个节点要 O(k)。链表的优势是：已经拿到相关节点时，改变几个 next 就能插入或删除节点。找到插入位置的时间仍然要另外计算。
 
-### 是什么
+### 先区分节点与节点中的值
 
-先用大白话把寻宝游戏翻译过来：
+两个节点都存 5，它们仍然可以是两个不同的对象。判断链表是否相交、是否有环，要比较是不是同一个节点。
 
-- 一截车厢（节点）里装着两样东西：一个**值**（这里的宝贝），和一张**指向下一截车厢的纸条**
-- 你只握住第一截车厢（**头节点**），想知道第 5 截的值，只能从第 1 截开始顺着纸条走 4 次——**没有「直接跳到第 5 截」这种操作**
-- 最后一截车厢的纸条上写着「到头了」（**null**，Python 里叫 **None**）
+JavaScript 用 a === b 比较对象身份；Python 可以用 a is b；C++ 比较节点指针。不要拿 a.val == b.val 代替。
 
-术语对照：
+### 反转链表：先保存原来的后继
 
-- **节点**（node）：值 + 指向下一个节点的引用
-- \`val\`：节点存的值；\`next\`：指向下一个节点的引用（纸条）
-- \`head\`（头节点）：整列车的入口，弄丢了整列车就找不回来了
-- \`null\` / \`None\`：表示「后面没有了」的空纸条
+第 206 题要把 1 → 2 → 3 → 空，改成 3 → 2 → 1 → 空。
 
-和数组对比着记（这是面试也爱问的点）：
+每次只处理一个节点。prev 指向已经反转好的部分，cur 指向下一个要处理的节点。开始时 prev 为空，cur 指向 1。
 
-| | 数组 | 链表 |
-| --- | --- | --- |
-| 内存布局 | 连续一整排 | 节点散落各处，靠 next 串起来 |
-| 访问第 i 个 | \`arr[i]\` 一步拿到，O(1) | 从头一个一个走，O(n) |
-| 中间插入 / 删除 | 后面全体挪位，O(n) | 改一张纸条（指针）就行，O(1) |
+| 本轮处理 | 先记住的 next | 改完方向后 | 下一轮 |
+| --- | --- | --- | --- |
+| 1 | 2 | 1 → 空 | prev=1，cur=2 |
+| 2 | 3 | 2 → 1 → 空 | prev=2，cur=3 |
+| 3 | 空 | 3 → 2 → 1 → 空 | prev=3，cur=空 |
 
-题库里的链表节点长这样（不需要你写，题目会给好，看懂即可）：
+如果先写 cur.next=prev，再去读 cur.next，就已经读不到原来的后继了。所以顺序是：保存后继、改方向、移动 prev、移动 cur。
 
-\`\`\`
-// JavaScript
-class ListNode {
-  constructor(val, next = null) {
-    this.val = val;     // 值
-    this.next = next;   // 指向下一个节点的引用，默认是空
-  }
-}
-\`\`\`
+循环结束时，cur 为空，说明所有节点都处理过；prev 就是新头节点。每个节点只处理一次，时间 O(n)，额外空间 O(1)。递归反转也能做到，但递归调用栈是 O(n)。
 
-\`\`\`
-# Python
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val      # 值
-        self.next = next    # 指向下一个节点的引用，默认是 None
-\`\`\`
-
-\`\`\`
-// C++
-struct ListNode {
-  int val;                    // 值
-  ListNode* next;             // 指向下一个节点的指针，默认是空
-  ListNode(int v, ListNode* n = nullptr) : val(v), next(n) {}
-};
-\`\`\`
-
-链表题基本不考复杂算法，考的就是**顺着纸条走、改纸条**这两件事的手稳不稳。下面拿「反转链表」练手——它是 Hot 100 里所有链表题的母题。
-
-### 一个最小例子
-
-**把 1 → 2 → 3 → null 反转成 3 → 2 → 1 → null。**
-
-先想清楚为什么不能蛮干：车厢之间是**单行道**——2 能找到 3，但 3 找不到 2。所以「让 1 指向 null」这个转身动作一做，1 手里的旧纸条就被撕了，**如果事先没把 2 的位置另外记下来，2 和 3 就永远丢了**。
-
-于是就固定用三个变量（它们是三个「手指」，各自指着某一截车厢）：
-
-- \`prev\`：已经反转好的那部分的车头（一开始是空 null）
-- \`cur\`：还没处理的部分的第一截（一开始是 1）
-- \`next\`：临时记忆——转身之前，先把 \`cur\` 的下一截位置存进来
-
-每轮做固定的四步。前两轮逐格跟踪（空白表示该变量此刻没意义）：
-
-| 轮 | 步骤 | 动作 | prev | cur | next | 执行后链条的样子 |
-| --- | --- | --- | --- | --- | --- | --- |
-| | 起始 | 摆好手指 | null | 1 | | 1→2→3→null |
-| 1 | ① | \`next = cur.next\`（先记住 2） | null | 1 | 2 | 1→2→3→null（只是多记了位置） |
-| 1 | ② | \`cur.next = prev\`（1 的纸条改成 null） | null | 1 | 2 | 1→null，2→3 漂着但 next 握住了 2 |
-| 1 | ③ | \`prev = cur\`（prev 挪到 1） | 1 | 1 | 2 | 已反转部分 = 1 |
-| 1 | ④ | \`cur = next\`（cur 挪到 2） | 1 | 2 | 2 | 准备处理 2 |
-| 2 | ① | \`next = cur.next\`（先记住 3） | 1 | 2 | 3 | 1→null，2→3→null |
-| 2 | ② | \`cur.next = prev\`（2 的纸条改成 1） | 1 | 2 | 3 | 2→1→null，3 由 next 握住 |
-| 2 | ③ | \`prev = cur\`（prev 挪到 2） | 2 | 2 | 3 | 已反转部分 = 2→1 |
-| 2 | ④ | \`cur = next\`（cur 挪到 3） | 2 | 3 | 3 | 准备处理 3 |
-
-第 3 轮回填动作一样：记住 null → 3 的纸条指向 2 → prev 挪到 3 → cur 挪到 null。\`cur\` 变成 null，循环结束。此时 \`prev\` 指着 3，而链条已经是 3→2→1→null——**返回 \`prev\` 就是新链头**。
-
-盯住表格里第 ② 步：撕纸条之前，第 ① 步一定已经把下一站存进了 \`next\`。**先存、再撕**，这就是全部诀窍。
-
-### 模板代码
-
-把上面四步原样搬进代码：
-
-\`\`\`
-// JavaScript：反转链表（LeetCode 206）
-function reverseList(head) {
-  let prev = null;              // 已反转部分的车头，一开始什么都没有
-  let cur = head;               // 还没处理的第一截车厢
-  while (cur !== null) {        // 还有没处理的，就继续
-    const next = cur.next;      // ① 先存纸条：cur 的下一站
-    cur.next = prev;            // ② 撕纸条：cur 掉头指向已反转部分
-    prev = cur;                 // ③ 已反转部分向前扩一格
-    cur = next;                 // ④ 去处理下一站
-  }
-  return prev;                  // cur 走出车尾时，prev 正好在新链头
-}
-\`\`\`
-
-\`\`\`
-# Python：反转链表（LeetCode 206）
-def reverseList(head):
-    prev = None                 # 已反转部分的车头，一开始什么都没有
-    cur = head                  # 还没处理的第一截车厢
-    while cur is not None:      # 还有没处理的，就继续
-        nxt = cur.next          # ① 先存纸条：cur 的下一站
-        cur.next = prev         # ② 撕纸条：cur 掉头指向已反转部分
-        prev = cur              # ③ 已反转部分向前扩一格
-        cur = nxt               # ④ 去处理下一站
-    return prev                 # cur 走出车尾时，prev 正好在新链头
-\`\`\`
-
-\`\`\`
-// C++：反转链表（LeetCode 206）
-ListNode* reverseList(ListNode* head) {
-  ListNode* prev = nullptr;   // 已反转部分的车头，一开始什么都没有
-  ListNode* cur = head;       // 还没处理的第一截车厢
-  while (cur != nullptr) {    // 还有没处理的，就继续
-    ListNode* next = cur->next;  // ① 先存纸条：cur 的下一站
-    cur->next = prev;            // ② 撕纸条：cur 掉头指向已反转部分
-    prev = cur;                  // ③ 已反转部分向前扩一格
-    cur = next;                  // ④ 去处理下一站
-  }
-  return prev;                // cur 走出车尾时，prev 正好在新链头
-}
-\`\`\`
-
-四行循环体，背到做梦都能写。建议现在就合上页面默写一遍——后面 24、25 题全是它的拼装。
-
-### 亲手跑一跑
-
-反转 1→2→3→4，把每轮的 \`prev\` / \`cur\` 都打印出来，你可以看着箭头一根一根掉头：
-
-\`\`\`run-js#reverse-list-walkthrough
-const node = (v, next) => ({ val: v, next: next || null });
-const head = node(1, node(2, node(3, node(4))));  // 造一条 1->2->3->4 的链
-const show = p => (p ? p.val : 'null');           // 打印帮助函数：空显示 null
-let prev = null, cur = head, round = 0;
-while (cur) {
-  round++;
-  console.log('第' + round + '轮开始: prev=' + show(prev) + ', cur=' + show(cur));
-  const next = cur.next;   // ① 存纸条
-  cur.next = prev;         // ② 掉头
-  prev = cur;              // ③ prev 前移
-  cur = next;              // ④ cur 前移
-  console.log('  第' + round + '轮结束: prev=' + show(prev) + ', cur=' + show(cur));
-}
-const out = [];
-for (let p = prev; p; p = p.next) out.push(p.val);  // 从 prev 出发走一遍，验证结果
-console.log('反转结果: ' + out.join('->'));
-\`\`\`
-
-\`\`\`run-py#reverse-list-walkthrough
+\`\`\`run-py#linked-list-v2-demo
 class Node:
-    def __init__(self, val, nxt=None):
+    def __init__(self, val, next=None):
         self.val = val
-        self.next = nxt
+        self.next = next
 
-head = Node(1, Node(2, Node(3, Node(4))))  # 造一条 1->2->3->4 的链
-def show(p):
-    return p.val if p else 'null'          # 打印帮助函数：空显示 null
-prev, cur, rnd = None, head, 0
-while cur:
-    rnd += 1
-    print(f'第{rnd}轮开始: prev={show(prev)}, cur={show(cur)}')
-    nxt = cur.next    # ① 存纸条
-    cur.next = prev   # ② 掉头
-    prev = cur        # ③ prev 前移
-    cur = nxt         # ④ cur 前移
-    print(f'  第{rnd}轮结束: prev={show(prev)}, cur={show(cur)}')
-out = []
-while prev:
-    out.append(str(prev.val))  # 从 prev 出发走一遍，验证结果
-    prev = prev.next
-print('反转结果: ' + '->'.join(out))
+def reverse(head):
+    prev, cur = None, head
+    while cur is not None:
+        following = cur.next  # 改方向前，保留未处理部分
+        cur.next = prev
+        prev, cur = cur, following
+    return prev
+
+head = Node(1, Node(2, Node(3)))
+cur = reverse(head)
+values = []
+while cur is not None:
+    values.append(cur.val)
+    cur = cur.next
+print(*values)
 \`\`\`
 
-\`\`\`run-cpp#reverse-list-walkthrough
+\`\`\`run-js#linked-list-v2-demo
+class Node {
+  constructor(val, next = null) { this.val = val; this.next = next; }
+}
+function reverse(head) {
+  let prev = null, cur = head;
+  while (cur !== null) {
+    const following = cur.next; // 改方向前，保留未处理部分
+    cur.next = prev;
+    prev = cur;
+    cur = following;
+  }
+  return prev;
+}
+const head = new Node(1, new Node(2, new Node(3)));
+const values = [];
+for (let cur = reverse(head); cur !== null; cur = cur.next) values.push(cur.val);
+console.log(values.join(' '));
+\`\`\`
+
+\`\`\`run-cpp#linked-list-v2-demo
 #include <iostream>
-#include <string>
 using namespace std;
-
-struct Node {
-  int val;
-  Node* next;
-  Node(int v, Node* n = nullptr) : val(v), next(n) {}
-};
-
-string show(Node* p) {
-  return p ? to_string(p->val) : "null";  // 打印帮助函数：空显示 null
+struct Node { int val; Node* next = nullptr; };
+Node* reverse(Node* head) {
+    Node* prev = nullptr;
+    Node* cur = head;
+    while (cur != nullptr) {
+        Node* following = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = following;
+    }
+    return prev;
 }
-
 int main() {
-  Node* head = new Node(1, new Node(2, new Node(3, new Node(4))));  // 造一条 1->2->3->4 的链
-  Node* prev = nullptr;
-  Node* cur = head;
-  int rnd = 0;
-  while (cur) {
-    rnd++;
-    cout << "第" << rnd << "轮开始: prev=" << show(prev) << ", cur=" << show(cur) << "\\n";
-    Node* nxt = cur->next;   // ① 存纸条
-    cur->next = prev;        // ② 掉头
-    prev = cur;              // ③ prev 前移
-    cur = nxt;               // ④ cur 前移
-    cout << "  第" << rnd << "轮结束: prev=" << show(prev) << ", cur=" << show(cur) << "\\n";
-  }
-  string out;
-  for (Node* p = prev; p; p = p->next) {  // 从 prev 出发走一遍，验证结果
-    if (!out.empty()) out += "->";
-    out += to_string(p->val);
-  }
-  cout << "反转结果: " << out << "\\n";
-  return 0;
+    Node c{3}, b{2, &c}, a{1, &b};
+    bool first = true;
+    for (Node* cur = reverse(&a); cur; cur = cur->next) {
+        cout << (first ? "" : " ") << cur->val;
+        first = false;
+    }
+    cout << '\\n';
 }
 \`\`\`
 
-预期输出（三个版本完全一致）：
+### 为什么经常加一个 dummy 节点
 
-\`\`\`
-第1轮开始: prev=null, cur=1
-  第1轮结束: prev=1, cur=2
-第2轮开始: prev=1, cur=2
-  第2轮结束: prev=2, cur=3
-第3轮开始: prev=2, cur=3
-  第3轮结束: prev=3, cur=4
-第4轮开始: prev=3, cur=4
-  第4轮结束: prev=4, cur=null
-反转结果: 4->3->2->1
-\`\`\`
+删除普通节点时，可以修改它前一个节点的 next。删除头节点时却没有“前一个节点”，常常要写特殊分支。
 
-最后一行把反转后的链从头走了一遍，4->3->2->1，一次成功。
+在 head 前加一个临时节点 dummy，并让 dummy.next=head，头节点也就有了前驱。最后返回 dummy.next 即可。这个节点不属于答案，也不靠它的数值判断逻辑。
 
-### 直觉想法错在哪
+第 19 题删除倒数第 n 个节点时，可以让快指针从 dummy 先走 n+1 步，再让快慢指针一起走。快指针到空时，慢指针就在要删节点的前面。这个写法以题目保证 1≤n≤链表长度为前提。
 
-零基础者面对「反转链表」通常先冒出三个念头，挨个看它们为什么不行：
+也可以使用别的起点与间隔，但要整套保持一致。别把“从 head 开始”的循环条件和“从 dummy 开始”的步数拼在一起。
 
-- **「把值挨个读进数组，倒过来再填回去」**：例子很小的话确实能蒙对，但它要 O(n) 的额外空间，而且填值的做法根本没改车厢之间的连接——遇到 24 题（两两交换）、25 题（K 个一组翻转）这种「必须挪动车厢本身」的要求就彻底没辙。真正的考点从来都是**只改指针、值不许动**，空间 O(1)
-- **「像反转数组那样，首尾交换往中间收」**：数组能这么干是因为 \`arr[i]\` 一步跳过去。链表没有下标，走到尾要 O(n)，而且单行道**走不回去**——交换一对就卡在尾上了
-- **「先把整条链走完收集起来再说」**：和第一条一样是数组思维。链表题的肌肉记忆应该是：手里同时握两三个「手指」（prev、cur、next），**边走边改**，一趟结束
+### 合并与分组反转
 
-接受「只能顺着纸条走、一次只走一格」这个设定之后，反转模板那四步就会显得无比自然。
+合并两条有序链表时，每次接上较小的头节点，再把对应链表向前推进。dummy 方便记住结果入口，tail 指向当前结果尾部。不要只移动 tail，却忘了推进取出节点的那条链表。
 
-### 常见错误
+第 25 题每 k 个节点反转一组，要先确认剩余节点至少有 k 个，再动指针；不足一组时按题意保留原样。先记住这一组之后的节点，反转后再接回去，能避免把后半条链表弄丢。
 
-- **掉头前没存 next**：\`cur.next = prev\` 一执行，后半段车厢就在内存里漂丢了，这轮之后的循环直接出错。为什么容易犯：人脑想「下一步」是理所当然的，代码里必须显式用变量记住
-- **四步顺序写乱**：比如先 \`prev = cur\` 再 \`cur.next = prev\`，cur 的纸条就指向了自己，链表成环、程序死循环
-- **循环结束返回 head**：head 此时已经是链尾（1 号车厢，它的 next 被改成了 null），新链头在 \`prev\` 手里
-- **空链表 / 单节点崩溃**：上来就 \`cur.next\` 之类不判空。while 写法天然处理了空链（一次都不进循环），这也是为什么推荐背 while 版本
-- **比较节点时比成了值**：两个 val 相等的节点不是同一截车厢。判环等场景要比较节点本身（JS 用 \`===\`、Python 用 \`is\`），不是比 \`val\`
+### 快慢指针与环
 
-### 什么时候用
+第 141 题里，快指针每次走两步，慢指针每次走一步。无环时快指针会到空；有环时，进入环后的相对位置每轮变化一步，最终相遇。读取 fast.next.next 前，先确认 fast 和 fast.next 都非空。
 
-看到题目给的是 \`ListNode\` 而不是数组，就进入链表模式。Hot 100 里翻来覆去就三大套路：
+第 142 题还要求环入口。设头到入口距离为 a，入口到相遇点距离为 b，环长为 c。相遇时快指针比慢指针多走整数圈，因此 a+b 是 c 的整数倍。把一个指针放回头部，两个都每次走一步，经过 a 步后会在入口相遇。
 
-- **反转 / 换序** → 本文模板（206 母题；24 两两交换、25 K 个一组都是「反转一小段再接回去」）
-- **删除 / 插入口子，且头节点也可能被动** → 在最前面挂一个假的 **dummy 哨兵节点**，让原来的头也有了前驱，逻辑统一不用特判，最后 \`return dummy.next\`（19、21）
-- **找中点 / 判环 / 找倒数第 k 个** → **快慢指针**：一个一次走一格、一个一次走两格，利用速度差出手（141、142、19）
+### 做完后怎样检查
 
-### 练习路径
+用空链表、单节点、两个节点检查头尾；用重复值检查你比较的是节点还是值；修改 next 后检查是否还保留着未处理部分的入口。
 
-- **206 反转链表**：把本文的四步模板默写到肌肉记忆，这是全部链表题的地基
-- **21 合并两个有序链表**：练 dummy 哨兵——为什么有它可以不写特判
-- **141 环形链表** → **142 环形链表 II**：练快慢指针，体会「一快一慢必相遇」和相遇后回头找入口
-- **19 删除链表的倒数第 N 个结点**：dummy + 快慢指针「先拉开间距再同速走」的综合小考
-- **24 两两交换链表中的节点** → **25 K 个一组翻转链表**：把反转模板当零件用，检验基本功是否真的过关
+练习顺序是第 206 题、第 21 题、第 19 题、第 141 题、第 142 题，再尝试第 24 题与第 25 题。画图时给节点标 A、B、C，比只写数值更容易看清连接关系。
 `,
 };

@@ -2,3 +2,7 @@
 .playwright-mcp/
 node_modules/
 *.log
+progress/*.tmp
+progress/.write-lock
+.env
+.env.local

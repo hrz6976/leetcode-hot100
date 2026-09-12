@@ -1,3 +1,4 @@
+import { localGoAvailable } from '../local-progress.js';
 // AI 助手悬浮窗：折叠时屏幕右边缘竖条，展开为右下浮窗；配置 OpenAI 兼容 API 后即可提问。
 // 在题目页 / 知识文章页默认附带当前内容作为上下文（可勾选关闭）。
 
@@ -5,6 +6,7 @@ import { md } from '../md.js';
 import { getAssistantConfig, setAssistantConfig } from '../store.js';
 import {
   PRESETS,
+  resolveConfig,
   buildMessages,
   chat,
   getAssistantContext,
@@ -25,6 +27,7 @@ function escapeHtml(s) {
 }
 
 export function initAssistant() {
+  const hasCredentials = cfg => Boolean(cfg.apiKey || (resolveConfig(cfg).baseUrl === '/api/go' && localGoAvailable()));
   const tab = document.createElement('button');
   tab.type = 'button';
   tab.className = 'ai-tab';
@@ -44,7 +47,7 @@ export function initAssistant() {
       <button type="button" class="ai-icon-btn" id="ai-collapse" title="收起到屏幕右边缘（未固定时也可以点击面板外任意处或按 Esc）" aria-label="收起">»</button>
     </header>
     <form class="ai-config" id="ai-config" hidden>
-      <p class="ai-config-tip">填入 OpenAI 兼容 API 的配置后即可提问。Key 只保存在本浏览器，不随备份导出。</p>
+      <p class="ai-config-tip">OpenCode Go 请填控制台的 API Key，可使用 kimi-k2.6、glm-5.1 等 Chat Completions 模型。手动填写的 Key 仅保存在本浏览器，不写入进度文件。${localGoAvailable() ? '已检测到本机 OpenCode Go 登录，使用 Go 时可以不填 Key。' : ''}</p>
       <label>服务
         <select id="ai-preset">
           ${PRESETS.map((p) => `<option value="${p.id}">${escapeHtml(p.label)}</option>`).join('')}
@@ -100,13 +103,15 @@ export function initAssistant() {
   els.baseUrl.addEventListener('input', syncProxyTip);
 
   let aborter = null;
+  let reviewRequest = null;
 
   function fillConfigForm() {
     const cfg = getAssistantConfig();
     els.preset.value = PRESETS.some((p) => p.id === cfg.preset) ? cfg.preset : 'custom';
-    els.baseUrl.value = cfg.baseUrl;
+    const preset = PRESETS.find(p => p.id === cfg.preset);
+    els.baseUrl.value = cfg.baseUrl || preset?.baseUrl || '';
     els.apiKey.value = cfg.apiKey;
-    els.model.value = cfg.model;
+    els.model.value = cfg.model || preset?.model || '';
     syncProxyTip();
   }
 
@@ -122,10 +127,15 @@ export function initAssistant() {
   // 上下文勾选框：标签跟随当前页面（题目 / 文章）；
   // 当前页面没有可附带内容时不隐藏，改为灰置并说明，避免误以为功能消失。
   function syncContextLabel() {
-    const ctx = getAssistantContext();
+    const ctx = reviewRequest?.context || getAssistantContext();
     els.ctx.disabled = !ctx;
     els.ctxLabel.classList.toggle('disabled', !ctx);
     if (ctx) {
+      if (reviewRequest) {
+        els.ctxText.textContent = `附带这次提交的题目和代码：${ctx.title}`;
+        els.ctxLabel.title = '使用点击判题时的代码；之后编辑或切换题目不会改变本次评审内容。取消勾选则仅发送问题。';
+        return;
+      }
       const kind = ctx.kind === 'article' ? '文章' : '题目';
       els.ctxText.textContent = `提问时带上当前${kind}：${ctx.title}`;
       els.ctxLabel.title = ctx.kind === 'article'
@@ -176,7 +186,7 @@ export function initAssistant() {
     tab.hidden = true;
     fillConfigForm();
     // 未配置 Key 时强制展示配置表单
-    els.config.hidden = !getAssistantConfig().apiKey ? false : els.config.hidden;
+    els.config.hidden = !hasCredentials(getAssistantConfig()) ? false : els.config.hidden;
     syncContextLabel();
     renderHistory();
     els.question.focus();
@@ -194,6 +204,8 @@ export function initAssistant() {
   });
   panel.querySelector('#ai-clear').addEventListener('click', () => {
     clearHistory();
+    reviewRequest = null;
+    syncContextLabel();
     renderHistory();
   });
   els.preset.addEventListener('change', applyPreset);
@@ -216,6 +228,7 @@ export function initAssistant() {
       baseUrl: els.baseUrl.value.trim(),
       apiKey: els.apiKey.value.trim(),
       model: els.model.value.trim(),
+      pinned,
     });
     if (!saved.ok) {
       els.configMsg.textContent = `保存失败：${saved.error.message}`;
@@ -242,16 +255,18 @@ export function initAssistant() {
     const question = els.question.value.trim();
     if (!question) return;
     const cfg = getAssistantConfig();
-    if (!cfg.apiKey || (!cfg.baseUrl && cfg.preset === 'custom')) {
+    if (!hasCredentials(cfg) || (!cfg.baseUrl && cfg.preset === 'custom')) {
       els.config.hidden = false;
       els.configMsg.textContent = '请先完成 API 配置';
       return;
     }
     const useCtx = els.ctx.checked && !els.ctx.disabled;
-    const context = useCtx ? getAssistantContext() : null;
-    const draft = useCtx && context?.kind === 'problem' ? getDraft() : null;
+    const context = useCtx ? (reviewRequest?.context || getAssistantContext()) : null;
+    const draft = useCtx && context?.kind === 'problem' ? (reviewRequest?.draft || getDraft()) : null;
     const messages = buildMessages({ question, context, draft, history: getHistory() });
 
+    reviewRequest = null;
+    syncContextLabel();
     els.question.value = '';
     addBubble('user', escapeHtml(question));
     appendHistory('user', question);
@@ -289,6 +304,15 @@ export function initAssistant() {
       els.question.focus();
     }
   }
+
+  window.addEventListener('hot100-review', event => {
+    if (aborter) return;
+    reviewRequest = event.detail;
+    els.ctx.checked = true;
+    open();
+    els.question.value = event.detail.question;
+    els.question.focus();
+  });
 
   els.send.addEventListener('click', send);
   els.question.addEventListener('keydown', (e) => {

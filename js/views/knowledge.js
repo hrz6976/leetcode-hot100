@@ -1,4 +1,4 @@
-// 知识补充列表页：按主题分类的基础知识文章（按推荐学习顺序排列）
+// 知识讲解列表页：按主题分类的基础知识文章（按推荐学习顺序排列）
 
 import { articles } from '../../knowledge/index.js';
 import { problems } from '../../problems/index.js';
@@ -47,6 +47,8 @@ export function relatedProblems(article) {
     seen.add(id);
     related.push({ ...problem, relationStage: relation.stage || 'core', relationReason: relation.reason || '' });
   }
+  // 有明确练习顺序时，只展示作者挑选的题目。
+  if (explicit.length) return related;
   for (const problem of problems) {
     if (seen.has(problem.id)) continue;
     const matchedTags = problem.tags.filter((tag) => article.tags.includes(tag));
@@ -66,9 +68,9 @@ export function renderKnowledge(container) {
   container.innerHTML = `
     ${topbarHtml('knowledge')}
     <div class="mistakes-head">
-      <h2>知识补充</h2>
+      <h2>知识讲解</h2>
     </div>
-    <p class="knowledge-intro">按推荐顺序学习：每一步讲清「是什么、什么时候用、怎么写」。运行示例可编辑、预测并保存草稿，读完文章后再用关联题巩固。</p>
+    <p class="knowledge-intro">从具体问题理解算法：先想一个能算对的办法，再看怎样减少重复工作。每篇都有推演、三种语言的运行示例和有顺序的练习题。</p>
     <div class="kgrid">
       ${articles
         .map((article, index) => {
@@ -90,7 +92,7 @@ export function renderKnowledge(container) {
         })
         .join('')}
     </div>
-    <div class="footer-tip">核心题显式置顶，标签匹配题作为补充并自动去重</div>
+    <div class="footer-tip">刚开始学习，可以按顺序阅读；做题遇到不熟悉的方法，也可以直接查对应文章。</div>
   `;
   return () => {};
 }

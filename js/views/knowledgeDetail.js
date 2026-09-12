@@ -1,4 +1,4 @@
-// 知识补充详情页：文章正文、可编辑运行示例与关联题目
+// 知识讲解详情页：文章正文、可编辑运行示例与关联题目
 
 import { articles } from '../../knowledge/index.js';
 import { md } from '../md.js';
@@ -97,7 +97,7 @@ export function renderKnowledgeDetail(container, article) {
 
   container.innerHTML = `
     <div class="phead">
-      <a class="back" href="#/knowledge">← 知识补充</a>
+      <a class="back" href="#/knowledge">← 知识讲解</a>
       <h1>${escapeHtml(article.title)}</h1>
       <div class="head-tags">${article.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
       <button class="btn" id="knowledge-status">${status === 'completed' ? '✓ 已完成' : '标记为已完成'}</button>
@@ -116,7 +116,7 @@ export function renderKnowledgeDetail(container, article) {
             <div class="desc">${md(article.content)}</div>
             ${related.length ? `
               <section class="karticle-related">
-                <h3 class="krelated-title">关联题目（${related.length}）</h3>
+                <h3 class="krelated-title">接下来练这些题（${related.length}）</h3>
                 <div class="plist">
                   ${related.map((problem) => {
                     const problemState = problemStatus(problem.id);
@@ -128,7 +128,7 @@ export function renderKnowledgeDetail(container, article) {
                     <div class="plist-row" data-pid="${problem.id}" title="${escapeHtml(problem.relationReason || relationLabel)}">
                       <div class="status">${icon}</div>
                       <div class="pid">${problem.id}</div>
-                      <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a></div>
+                      <div class="ptitle"><a href="#/problem/${problem.id}">${escapeHtml(problem.title)}</a><div class="practice-reason">${escapeHtml(problem.relationReason)}</div></div>
                       <div class="row-tags"><span class="tag">${escapeHtml(relationLabel)}</span>${problem.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
                       <div class="diff ${problem.difficulty}">${DIFF_LABEL[problem.difficulty]}</div>
                     </div>`;
@@ -285,7 +285,7 @@ export function renderKnowledgeDetail(container, article) {
 
     const predictionLabel = document.createElement('div');
     predictionLabel.className = 'klang-label';
-    predictionLabel.textContent = `预测输出（示例 ID：${exampleId}）`;
+    predictionLabel.textContent = '先写下你预测的输出，再运行验证';
     runner.append(predictionLabel);
     const prediction = document.createElement('textarea');
     prediction.className = 'editor-fallback';

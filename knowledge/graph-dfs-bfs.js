@@ -1,328 +1,169 @@
-// 知识文章：图的 DFS 与 BFS
-// 数据格式约定（所有知识文章遵循）：
-// - slug: 英文短横线命名，同时是文件名与路由
-// - tags: 与题库中题目的 tags 匹配，用于自动关联题目
-// - relatedProblems（可选）: 显式指定关联题目 id，优先于 tags 匹配
-// - content: Markdown 子集（### 标题、- 列表、``` 代码块、`行内代码`）
+// 知识文章：图、网格与搜索
 export default {
-  slug: 'graph-dfs-bfs',
-  title: '图的 DFS 与 BFS',
-  intro: '把网格和依赖关系都看成图，用两种遍历解决连通性与最短路径',
-  tags: ['图', '深度优先搜索', '广度优先搜索', '并查集', '拓扑排序', '矩阵'],
-  relatedProblems: [79, 200, 207, 994],
-
+  "slug": "graph-dfs-bfs",
+  "title": "图、网格与搜索",
+  "intro": "先确定节点和相邻关系，再用 DFS、BFS 或拓扑排序处理。",
+  "tags": ["图","深度优先搜索","广度优先搜索","拓扑排序","矩阵"],
+  "relatedProblems": [
+    {
+      "id": 200,
+      "stage": "core",
+      "reason": "标记一整片相连陆地"
+    },
+    {
+      "id": 994,
+      "stage": "core",
+      "reason": "从多个起点同时逐层扩张"
+    },
+    {
+      "id": 207,
+      "stage": "practice",
+      "reason": "用入度处理先修依赖"
+    },
+    {
+      "id": 79,
+      "stage": "practice",
+      "reason": "区分全局访问与当前路径访问"
+    }
+  ],
   content: `
-> 提示：读这篇之前，最好已经知道「递归」和「树的前中后序遍历」是怎么回事——图的 DFS 用的就是同一套递归思维，没读过先去看《二叉树与递归》。另外 BFS 会用到队列（先进先出的队伍），《栈、队列与单调栈》里讲过，知道「排队先来的先处理」就够用了。
+图由节点和连接组成。网格里的相邻格子、课程之间的先修关系，都可以看成图。先决定哪些东西是节点、怎样才算相邻，再选择遍历方法。
 
-走迷宫有两种常见走法。一种是死磕型：选一条路一直走，撞墙了退回上个岔口换条路再死磕——这是 DFS。另一种是洒水型：在起点倒一桶水，水同时向所有方向一圈一圈漫过去，第几圈淹到的位置就是「离起点几步」——这是 BFS。图遍历就是这两种走法，学会了迷宫、岛屿、课程表都是同一件衣服。
+和树相比，图可能有环，也可能从多条路到达同一节点，因此通常需要记录访问状态。
 
-### 是什么
+### 岛屿数量：一次搜索标记一整片陆地
 
-先用大白话说，「图」根本不需要定义什么类：**一堆东西 + 谁和谁挨着**，就是图。
+第 200 题里，陆地是字符 '1'，水是字符 '0'，只按上下左右连接。
 
-- 迷宫里每个格子和它上下左右的格子挨着——图
-- 社交网络里每个人和他的好友挨着——图
-- 课程表里「先修 a 才能修 b」——图（带方向的）
+从左到右、从上到下扫描。遇到尚未访问的陆地，岛屿数加一，再从这里搜索，把能连通的陆地全部标记掉。以后扫描到同一片岛上的其他格子，就不会重复计数。
 
-术语对照：
+例如下面这个网格有两座岛。左上三个格子相连；右下那个格子虽然斜着挨近它们，但不算四方向相邻。
 
-| 大白话 | 术语 | 在迷宫例子里 |
-| --- | --- | --- |
-| 一个点 | 节点（node） | 一个格子 |
-| 两点挨着 | 边（edge） | 上下左右相邻 |
-| 摸过了别再摸 | visited / 标记访问 | 走过的格子做个记号 |
-| 连成一片的点 | 连通块 | 一座完整的岛 |
+| 行 | 第 0 列 | 第 1 列 | 第 2 列 |
+| --- | --- | --- | --- |
+| 0 | 1 | 1 | 0 |
+| 1 | 0 | 1 | 0 |
+| 2 | 0 | 0 | 1 |
 
-刷题时最常见的图是**网格**：二维数组里每个格子是一个节点，上下左右最多 4 条边。所以岛屿数量（200）、腐烂的橘子（994）这类「矩阵题」本质都是图遍历题——不用真的建图，直接在二维数组上走四个方向即可。
+深度优先搜索 DFS 会沿一条路尽量继续走，走不通再返回。可以递归，也可以用显式栈。下面用栈，避免大网格递归过深。代码会把访问过的陆地改成 '0'；若要保留输入，应复制网格或另外维护 visited。
 
-遍历图只有两种基本走法：
-
-- **DFS（深度优先）**：一条路走到底，走不通就回退。用递归（或栈）实现，擅长「染遍一整片」「枚举所有路径」
-- **BFS（广度优先）**：从起点一圈一圈向外扩。用队列实现，第 k 圈恰好是距离起点 k 步的所有点
-
-### 一个最小例子
-
-3×3 网格，1 是陆地、0 是水，问有几座岛（上下左右相连的陆地算一座）：
-
-\`\`\`
-1 1 0
-0 1 0
-0 0 1
-\`\`\`
-
-答案是 2 座。人眼秒答，程序怎么数？套路是：**从左到右、从上到下逐格扫描，每发现一块没见过的陆地，岛数加 1，然后用 DFS 把整座岛「淹掉」（全改成 0），保证它不会被数第二次**。跟着表走一遍：
-
-| 步 | 程序在干什么 | 当前格子 | 本步判断 | 本步动作 |
-| --- | --- | --- | --- | --- |
-| 1 | 扫描到 (0,0) | (0,0) | 是 1：发现一座新岛 | 岛数 = 1，从它出发开淹 |
-| 2 | 淹当前格 | (0,0) | 是 1 | 染成 0，再派向四个方向 |
-| 3 | 处理 (0,0) 的邻居 | (0,1) | 下、上是 0 或越界，右是 1 | (0,1) 染成 0，继续派 |
-| 4 | 处理 (0,1) 的邻居 | (1,1) | 下是 1 | (1,1) 染成 0，四邻都不是 1，第一座岛淹完 |
-| 5 | 继续逐格扫描 | (0,1)~(2,1) | 全是 0 | 跳过，绝不重复计数 |
-| 6 | 扫描到 (2,2) | (2,2) | 是 1：第二座新岛 | 岛数 = 2，淹掉它 |
-| 7 | 扫描结束 | 无 | 没有未看的格子 | 返回岛数 2 |
-
-注意第 5 步：正是第 2~4 步把整座岛染成了 0，扫描到 (0,1)、(1,1) 时才不会把它们当成新岛。**「发现时计数 + 立刻淹掉整块」**就是 flood fill（洪水填充）的套路，也是本文最重要的模板。
-
-### 模板代码
-
-模板一：网格 DFS flood fill——把一整片相连的 1 全部染成 0。
-
-JavaScript 版本（每行都有注释）：
-
-\`\`\`
-// JavaScript
-function dfs(grid, r, c) {
-  const rows = grid.length, cols = grid[0].length;  // 行数、列数
-  if (r < 0 || r >= rows || c < 0 || c >= cols) return;  // 出界了，放弃
-  if (grid[r][c] !== 1) return;          // 是水或已淹过，放弃
-  grid[r][c] = 0;                        // 先标记（淹掉），再散开
-  dfs(grid, r + 1, c);                   // 把下游任务丢给下
-  dfs(grid, r - 1, c);                   // 丢给上
-  dfs(grid, r, c + 1);                   // 丢给右
-  dfs(grid, r, c - 1);                   // 丢给左
-}
-\`\`\`
-
-Python 版本（逻辑一模一样）：
-
-\`\`\`
-# Python
-def dfs(grid, r, c):
-    rows, cols = len(grid), len(grid[0])     # 行数、列数
-    if r < 0 or r >= rows or c < 0 or c >= cols:
-        return                               # 出界了，放弃
-    if grid[r][c] != 1:
-        return                               # 是水或已淹过，放弃
-    grid[r][c] = 0                           # 先标记（淹掉），再散开
-    dfs(grid, r + 1, c)                      # 把下游任务丢给下
-    dfs(grid, r - 1, c)                      # 丢给上
-    dfs(grid, r, c + 1)                      # 丢给右
-    dfs(grid, r, c - 1)                      # 丢给左
-\`\`\`
-
-C++ 版本（逻辑一模一样）：
-
-\`\`\`
-// C++
-void dfs(vector<vector<int>>& grid, int r, int c) {
-  int rows = grid.size(), cols = grid[0].size();  // 行数、列数
-  if (r < 0 || r >= rows || c < 0 || c >= cols) return;  // 出界了，放弃
-  if (grid[r][c] != 1) return;           // 是水或已淹过，放弃
-  grid[r][c] = 0;                        // 先标记（淹掉），再散开
-  dfs(grid, r + 1, c);                   // 把下游任务丢给下
-  dfs(grid, r - 1, c);                   // 丢给上
-  dfs(grid, r, c + 1);                   // 丢给右
-  dfs(grid, r, c - 1);                   // 丢给左
-}
-\`\`\`
-
-模板二：网格 BFS——从起点一圈一圈向外扩。DFS 是「谁先连上就立刻追到底」，BFS 是「先处理完手边这一圈，再处理下一圈」，靠**队列**保证先来先处理：
-
-\`\`\`
-// JavaScript
-function bfs(grid, r0, c0) {
-  const rows = grid.length, cols = grid[0].length;
-  const queue = [[r0, c0]];              // 队列：等待处理的格子
-  grid[r0][c0] = 0;                      // 入队时就做标记
-  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];  // 下上右左
-  let head = 0;                          // 头指针代替 shift()，更快
-  while (head < queue.length) {          // 队列没空就继续
-    const [r, c] = queue[head++];        // 取出最早入队的格子
-    for (const [dr, dc] of dirs) {       // 看它的四个邻居
-      const nr = r + dr, nc = c + dc;
-      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;  // 先判越界
-      if (grid[nr][nc] !== 1) continue;  // 水或已访问
-      grid[nr][nc] = 0;                  // 入队时立刻标记
-      queue.push([nr, nc]);              // 排进队尾，等下一圈处理
-    }
-  }
-}
-\`\`\`
-
-\`\`\`
-# Python
-from collections import deque
-
-def bfs(grid, r0, c0):
+\`\`\`run-py#graph-dfs-bfs-v2-demo
+def islands(grid):
+    if not grid or not grid[0]:
+        return 0
     rows, cols = len(grid), len(grid[0])
-    queue = deque([(r0, c0)])            # 队列：等待处理的格子
-    grid[r0][c0] = 0                     # 入队时就做标记
-    dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]   # 下上右左
-    while queue:                         # 队列没空就继续
-        r, c = queue.popleft()           # 取出最早入队的格子
-        for dr, dc in dirs:              # 看它的四个邻居
-            nr, nc = r + dr, c + dc
-            if nr < 0 or nr >= rows or nc < 0 or nc >= cols:
-                continue                 # 先判越界
-            if grid[nr][nc] != 1:
-                continue                 # 水或已访问
-            grid[nr][nc] = 0             # 入队时立刻标记
-            queue.append((nr, nc))       # 排进队尾，等下一圈
+    answer = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] != '1':
+                continue
+            answer += 1
+            grid[r][c] = '0'
+            stack = [(r, c)]
+            while stack:
+                x, y = stack.pop()
+                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < rows and 0 <= ny < cols and grid[nx][ny] == '1':
+                        grid[nx][ny] = '0'  # 入栈时标记，避免重复安排
+                        stack.append((nx, ny))
+    return answer
+
+print(islands([list('110'), list('010'), list('001')]))
 \`\`\`
 
-\`\`\`
-// C++
-#include <queue>
-#include <vector>
-#include <utility>
-using namespace std;
-
-void bfs(vector<vector<int>>& grid, int r0, int c0) {
-  int rows = grid.size(), cols = grid[0].size();
-  queue<pair<int, int>> q;           // 队列：等待处理的格子
-  q.push({r0, c0});
-  grid[r0][c0] = 0;                  // 入队时就做标记
-  int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};  // 下上右左
-  while (!q.empty()) {               // 队列没空就继续
-    pair<int, int> cur = q.front();  // 取出最早入队的格子
-    q.pop();
-    int r = cur.first, c = cur.second;
-    for (auto& d : dirs) {           // 看它的四个邻居
-      int nr = r + d[0], nc = c + d[1];
-      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;  // 先判越界
-      if (grid[nr][nc] != 1) continue;  // 水或已访问
-      grid[nr][nc] = 0;              // 入队时立刻标记
-      q.push({nr, nc});              // 排进队尾，等下一圈
-    }
-  }
-}
-\`\`\`
-
-> 重点：BFS 为什么「一圈一圈」？因为队列先进先出——第 1 圈入队的点全部处理完之前，它们发现的第 2 圈的点只能排在后面等。在**无权图（或每条边代价相同）**中，节点第一次被发现并入队时的层数，就是它到起点的最短步数；带不同权重的边不能直接套普通 BFS。
-
-### 亲手跑一跑
-
-上面最小例子的完整程序：扫描 3×3 网格，每发现一座新岛就打印、并把淹没的每个格子打印出来。对照前面的表格运行。
-
-\`\`\`run-js#island-flood-fill
-const grid = [[1, 1, 0], [0, 1, 0], [0, 0, 1]];
-const rows = 3, cols = 3;
-let count = 0;
-function dfs(r, c) {
-  if (r < 0 || r >= rows || c < 0 || c >= cols) return;
-  if (grid[r][c] !== 1) return;
-  grid[r][c] = 0;
-  console.log('  淹没 (' + r + ',' + c + ')');
-  dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
-}
-for (let r = 0; r < rows; r++) {
-  for (let c = 0; c < cols; c++) {
-    if (grid[r][c] === 1) {
-      count++;
-      console.log('发现第 ' + count + ' 座岛，起点 (' + r + ',' + c + ')');
-      dfs(r, c);
-    }
-  }
-}
-console.log('岛屿总数 = ' + count);
-\`\`\`
-
-实际运行输出：
-
-\`\`\`
-发现第 1 座岛，起点 (0,0)
-  淹没 (0,0)
-  淹没 (0,1)
-  淹没 (1,1)
-发现第 2 座岛，起点 (2,2)
-  淹没 (2,2)
-岛屿总数 = 2
-\`\`\`
-
-\`\`\`run-py#island-flood-fill
-grid = [[1, 1, 0], [0, 1, 0], [0, 0, 1]]
-rows, cols = 3, 3
-count = 0
-def dfs(r, c):
-    if r < 0 or r >= rows or c < 0 or c >= cols:
-        return
-    if grid[r][c] != 1:
-        return
-    grid[r][c] = 0
-    print(f'  淹没 ({r},{c})')
-    dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1)
-for r in range(rows):
-    for c in range(cols):
-        if grid[r][c] == 1:
-            count += 1
-            print(f'发现第 {count} 座岛，起点 ({r},{c})')
-            dfs(r, c)
-print(f'岛屿总数 = {count}')
-\`\`\`
-
-\`\`\`run-cpp#island-flood-fill
-#include <iostream>
-#include <vector>
-using namespace std;
-
-vector<vector<int>> grid = {{1, 1, 0}, {0, 1, 0}, {0, 0, 1}};
-int rows = 3, cols = 3;
-
-void dfs(int r, int c) {
-  if (r < 0 || r >= rows || c < 0 || c >= cols) return;
-  if (grid[r][c] != 1) return;
-  grid[r][c] = 0;
-  cout << "  淹没 (" << r << "," << c << ")" << "\\n";
-  dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
-}
-
-int main() {
-  int count = 0;
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      if (grid[r][c] == 1) {
-        count++;
-        cout << "发现第 " << count << " 座岛，起点 (" << r << "," << c << ")" << "\\n";
-        dfs(r, c);
+\`\`\`run-js#graph-dfs-bfs-v2-demo
+function islands(grid) {
+  if (!grid.length || !grid[0].length) return 0;
+  const rows = grid.length, cols = grid[0].length;
+  let answer = 0;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    if (grid[r][c] !== '1') continue;
+    answer++;
+    grid[r][c] = '0';
+    const stack = [[r, c]];
+    while (stack.length) {
+      const [x, y] = stack.pop();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && grid[nx][ny] === '1') {
+          grid[nx][ny] = '0';
+          stack.push([nx, ny]);
+        }
       }
     }
   }
-  cout << "岛屿总数 = " << count << "\\n";
-  return 0;
+  return answer;
+}
+console.log(islands(['110', '010', '001'].map(row => [...row])));
+\`\`\`
+
+\`\`\`run-cpp#graph-dfs-bfs-v2-demo
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+using namespace std;
+int islands(vector<string>& grid) {
+    if (grid.empty() || grid[0].empty()) return 0;
+    int rows = grid.size(), cols = grid[0].size(), answer = 0;
+    const vector<pair<int,int>> directions = {{1,0},{-1,0},{0,1},{0,-1}};
+    for (int r = 0; r < rows; ++r) for (int c = 0; c < cols; ++c) {
+        if (grid[r][c] != '1') continue;
+        ++answer; grid[r][c] = '0';
+        vector<pair<int,int>> stack = {{r,c}};
+        while (!stack.empty()) {
+            auto [x,y] = stack.back(); stack.pop_back();
+            for (auto [dx,dy] : directions) {
+                int nx = x + dx, ny = y + dy;
+                if (nx >= 0 && nx < rows && ny >= 0 && ny < cols && grid[nx][ny] == '1') {
+                    grid[nx][ny] = '0'; stack.push_back({nx,ny});
+                }
+            }
+        }
+    }
+    return answer;
+}
+int main() {
+    vector<string> grid = {"110", "010", "001"};
+    cout << islands(grid) << '\\n';
 }
 \`\`\`
 
-实际运行输出：
+每个格子最多被发现一次，检查四个邻居是固定工作量，因此时间 O(行数×列数)。栈最坏也可能保存这么多位置，额外空间 O(行数×列数)。原地标记并不代表总额外空间就是 O(1)。
 
-\`\`\`
-发现第 1 座岛，起点 (0,0)
-  淹没 (0,0)
-  淹没 (0,1)
-  淹没 (1,1)
-发现第 2 座岛，起点 (2,2)
-  淹没 (2,2)
-岛屿总数 = 2
-\`\`\`
+### 访问标记应该什么时候写
 
-注意淹没的先后顺序：先 (0,0)，再 (0,1)，再 (1,1)——这就是 DFS「一条路走到黑」的轨迹，它不是按扫描顺序一视同仁地扩散，而是逮住一个方向追到底。
+发现新节点、准备把它加入栈或队列时，就把它标为已发现。否则同一节点在真正弹出之前，可能被不同邻居反复加入。
 
-### 直觉想法错在哪
+这个标记表示“已经安排处理”，不一定表示它的所有邻居都已处理。更复杂的图算法还会区分“正在处理”和“已处理完”。
 
-第一个直觉：「数岛还不简单，碰到 1 就数一次」。三座陆地的岛会被数成 3——因为同一块陆地的每个格子都被数了一遍。缺的正是「淹掉整座岛」这一步：**每块陆地只配贡献一次计数，贡献了立刻销毁证据**。
+### BFS 为什么能求无权最短路
 
-第二个直觉：「那就对每个 1 往上下左右各看一眼，看看邻居有没有别的 1」。两座挨着的陆地互为邻居，会互相认领、再次重复计数；而且岛可以七拐八弯（比如 L 形、Z 形），只走一步根本认不全整座岛。必须顺着陆地支路一直追到底——这恰恰是 DFS/BFS 干的事。
+广度优先搜索 BFS 使用队列，从起点开始一层层向外扩张。第一层经过一条边，第二层经过两条边。若每条边的代价相同，第一次发现节点时，就找到了最少边数的路径。
 
-第三个直觉：「求最少步数（比如 994 腐烂橘子问第几分钟全烂）也用 DFS 猛冲试试」。DFS 一头扎到底，绕了远路先到也完全可能，它给不了「最短」的保证。每圈恰好离起点 k 步的只有 BFS，最短路径类问题请自觉交给它。
+这依赖于等代价条件。带不同权重的图不能直接拿普通 BFS 算最短路；“边数最少”不一定“总权重最小”。
 
-### 常见错误
+第 994 题“腐烂的橘子”要把所有一开始腐烂的橘子都作为起点入队。每轮处理队列当前这一层，表示经过一分钟。它们是同时传播，不是把每个起点单独搜索的时间加起来。
 
-- **BFS 出队时才标记**：同一个格子被好几个邻居重复塞进队列，队列越滚越大，同一格被处理很多遍。容易犯是因为觉得「等轮到它了再标」很自然——正确做法是**入队那一刻立刻标记**
-- **先访问数组再判越界**：grid[nr][nc] 在越界时取到 undefined（JS）甚至直接报错（Python），判断顺序必须是**先越界、后取值**。容易犯是因为读代码时总爱先写「核心逻辑」后写「边界」
-- **行列搞反**：grid.length 是行数（配 r），grid[0].length 是列数（配 c）；grid[r][c] 先行后列。容易犯是因为直角坐标系 x,y 的习惯根深蒂固
-- **DFS 忘了「先标记再递归」**：在环状陆地上 A 派 B、B 又派回 A，无限递归栈溢出。容易犯是因为觉得「反正下面有 !== 1 的检查」——没有标记，检查永远通过
-- **JS 用 shift() 当队列出队**：shift 要挪动整个数组，是 O(n)，数据大会慢；用 head 下标前移（模板二演示了）或直接不在意数据小的题。容易犯是因为 shift() 语义最直白
+### 课程表：用入度找可以先学的课
 
-### 什么时候用
+第 207 题中，[a,b] 表示学 a 之前必须学 b，所以建立有向边 b→a。入度是一个节点还剩多少个未满足的前置依赖。
 
-- **数连通块 / 染色 / 淹没一整片**（200 岛屿数量）：DFS、BFS 都行，DFS 代码最短
-- **无权图的最短路径 / 最少步数 / 第几分钟**（994 腐烂的橘子）：优先 BFS，而且可以「多源」——开局把所有源头同时入队当第 0 圈
-- **任务是「遍历所有可能位置」且要携带路径信息**（79 单词搜索）：DFS 枚举每条路径，配合回溯撤销选择（见《回溯算法》）
-- **有先后依赖的任务排序**（207 课程表）：用 Kahn 拓扑排序。先统计每门课的入度，把所有入度为 0 的课入队；每出队一门课就删除它指向的依赖边，使后继入度减 1，新变成 0 的后继再入队。最终出队数等于课程数才表示无环
-- **边动态加入、反复查询「是否连通」**：并查集，用「找帮主 + 拉伙合并」两个操作维护谁和谁是一伙的；静态网格数岛用 DFS 就够，杀鸡不必用牛刀
+把入度为 0 的课程放入队列。每取出一门课，就相当于学完它，把它后续课程的入度减一；谁变成 0，就可以入队。
 
-### 练习路径
+如果最后处理了所有课程，就能完成；如果仍有课程没处理，剩下的依赖关系里有环。这叫拓扑排序。邻接表实现的时间与空间通常都是 O(V+E)，V 是课程数，E 是依赖边数。
 
-200 岛屿数量（把 flood fill 模板默写到肌肉记忆，学会「计数 + 淹岛」的组合拳）→ 994 腐烂的橘子（多源 BFS，体会「一圈 = 一分钟」的分层思想）→ 207 课程表（入度表 + 队列，体验 BFS 变种拓扑排序；能修完 ⟺ 图里无环 ⟺ 出队数等于课程数）→ 最后用并查集重写一遍 200，体会「动态连通性」和 flood fill 是两种世界观的工具。
+### 全局访问与路径访问不能混用
+
+岛屿计数中，访问过的格子可以永久标记，因为我们只关心它属于哪片连通区域。
+
+第 79 题“单词搜索”却要求同一条路径不能重复使用格子。尝试失败后，这个格子仍然可能被另一条路径使用，所以要在回退时撤销标记。这是回溯，与普通的全局 visited 不同。
+
+### 练习顺序
+
+先做第 200 题，把网格变成图；再做第 994 题，理解多个起点同时扩张；接着做第 207 题，练习有向依赖；读完回溯后做第 79 题。
+
+先写清节点、邻居、访问标记的含义，再选择栈或队列。这样比记一大段 DFS/BFS 模板更容易避免重复访问和错误计数。
 `,
 };

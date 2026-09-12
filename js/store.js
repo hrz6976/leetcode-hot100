@@ -193,7 +193,7 @@ export function setCollapsedGroups(groups) {
 }
 
 // AI 助手（OpenAI 兼容）配置。apiKey 敏感：不进入 exportAll 备份字段。
-const DEFAULT_ASSISTANT_CONFIG = { preset: 'moonshot', baseUrl: '', apiKey: '', model: '', pinned: false };
+const DEFAULT_ASSISTANT_CONFIG = { preset: 'opencode-go', baseUrl: '', apiKey: '', model: '', pinned: false };
 
 export function getAssistantConfig() {
   const cfg = readJson(ASSISTANT_KEY, null);
@@ -723,7 +723,7 @@ function v1Changes(payload) {
   return changes;
 }
 
-export function importAll(payload, { mode = 'merge' } = {}) {
+export function importAll(payload, { mode = 'merge', preserveSecrets = false } = {}) {
   if (mode !== 'merge' && mode !== 'replace') throw new Error('导入模式必须是 merge 或 replace');
   validateSize(payload);
   const incoming = payload?.version === 2 ? v2Changes(payload) : v1Changes(payload);
@@ -732,7 +732,7 @@ export function importAll(payload, { mode = 'merge' } = {}) {
   if (mode === 'replace') {
     const current = listNamespace();
     if (!current.ok) throw current.error;
-    for (const key of Object.keys(current.entries)) if (!incomingMap.has(key)) changes.push([key, null]);
+    for (const key of Object.keys(current.entries)) if (!incomingMap.has(key) && !(preserveSecrets && key === ASSISTANT_KEY)) changes.push([key, null]);
   }
   changes.push(...incoming);
   const result = transact(changes);
@@ -747,4 +747,11 @@ export function importAll(payload, { mode = 'merge' } = {}) {
 
 export function resetLearningState() {
   return writeJson(LEARNING_KEY, emptyLearningState());
+}
+
+// 供本地服务验证同一份备份格式；不读写浏览器存储。
+export function validateBackup(payload) {
+  validateSize(payload);
+  v2Changes(payload);
+  return payload;
 }

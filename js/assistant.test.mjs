@@ -138,3 +138,52 @@ test('chat：缺少配置时给出明确错误', async () => {
     /尚未配置 API Key/
   );
 });
+
+test('Go 预设使用本地服务，控制台格式的模型名去掉提供商前缀', () => {
+  const config = assistant.resolveConfig({ preset: 'opencode-go', apiKey: 'test', model: 'opencode-go/kimi-k2.6' });
+  assert.equal(config.baseUrl, '/api/go');
+  assert.equal(config.model, 'kimi-k2.6');
+  assert.equal(config.viaProxy, true);
+});
+
+test('SSE 服务错误不会被静默当成成功', () => {
+  const parser = assistant.createSseParser(() => {});
+  assert.throws(() => parser.feed('data: {"error":{"message":"额度不足"}}\n'), /额度不足/);
+});
+
+test('Go 请求保持会话编号，清空对话后更换，中文半包可完整解析', async () => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (url, init) => {
+    if (url === '/api/session') return Response.json({ token: 'test-local-session' });
+    requests.push({ url, init });
+    const bytes = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"检查边界"}}]}\n\ndata: [DONE]\n\n');
+    return new Response(new ReadableStream({ start(controller) {
+      for (const byte of bytes) controller.enqueue(new Uint8Array([byte]));
+      controller.close();
+    } }));
+  };
+  try {
+    let output = '';
+    const run = () => assistant.chat({ config: { preset:'opencode-go', apiKey:'test-only' }, messages: [{ role:'user', content:'解释代码' }], onToken: value => { output += value; } });
+    await run(); await run(); assistant.clearHistory(); await run();
+    assert.equal(output, '检查边界检查边界检查边界');
+    assert.equal(requests[0].url, '/api/go/chat/completions');
+    assert.equal(requests[0].init.headers['x-hot100-token'], 'test-local-session');
+    assert.equal(requests[0].init.headers['x-opencode-session'], requests[1].init.headers['x-opencode-session']);
+    assert.notEqual(requests[1].init.headers['x-opencode-session'], requests[2].init.headers['x-opencode-session']);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test('评审问题不显示原始 JSON，上下文保留原提交和首个失败证据', () => {
+  const request = assistant.buildReviewRequest({
+    problem:{ id:1, title:'两数之和', description:'返回两个不同位置' },
+    code:'function twoSum() { return [0, 1]; }', lang:'javascript', mode:'core',
+    verdict:{ status:'fail', cases:[{ index:0, pass:false, input:'[3,2,4], 6', expected:'[1,2]', got:'[0,1]' }] },
+  });
+  assert.match(request.question, /0\/1/);
+  assert.ok(!request.question.includes('"cases"'));
+  assert.match(request.context.body, /失败用例 1/);
+  assert.match(request.context.body, /\[3,2,4\]/);
+  assert.equal(request.draft.code, 'function twoSum() { return [0, 1]; }');
+});

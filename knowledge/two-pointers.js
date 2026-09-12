@@ -1,317 +1,131 @@
 // 知识文章：双指针
-// 数据格式约定（所有知识文章遵循）：
-// - slug: 英文短横线命名，同时是文件名与路由
-// - tags: 与题库中题目的 tags 匹配，用于自动关联题目
-// - relatedProblems（可选）: 显式指定关联题目 id，优先于 tags 匹配
-// - content: Markdown 子集（### 标题、- 列表、``` 代码块、`行内代码`）
 export default {
-  slug: 'two-pointers',
-  title: '双指针',
-  intro: '对撞、快慢、分离三种形态，用两个指针省掉一层循环',
-  tags: ['双指针', '数组', '字符串'],
-  relatedProblems: [11, 15, 19, 21, 141, 283, 287],
-
+  "slug": "two-pointers",
+  "title": "双指针",
+  "intro": "每次移动一个位置，都要说明为什么不会漏掉答案。",
+  "tags": ["双指针","数组"],
+  "relatedProblems": [
+    {
+      "id": 283,
+      "stage": "core",
+      "reason": "用读写位置保持非零数顺序"
+    },
+    {
+      "id": 11,
+      "stage": "core",
+      "reason": "解释为什么可以排除短边"
+    },
+    {
+      "id": 15,
+      "stage": "practice",
+      "reason": "固定一个数，再用双指针和去重"
+    },
+    {
+      "id": 141,
+      "stage": "practice",
+      "reason": "在链表上比较快慢指针"
+    }
+  ],
   content: `
-> 提示：建议先读《时间复杂度入门》（明白 O(n^2) 和 O(n) 差多少）和《数组与哈希表》（会用数组下标），再读本篇。
+双指针就是用两个位置变量共同处理数据。难点通常不在声明 left 和 right，而在于说明：为什么移动这个位置，就能排除一些不可能的答案，而且不需要再回来检查。
 
-两个人捏住一根绳子的两端，同时往中间走，相遇就停。每步只让一个人迈——谁有理由谁迈。双指针里最好懂的一种（对撞指针）就是这两个人：省掉的不是路，是那些「算了也白算」的位置。
+先掌握数组下标和循环。链表上的快慢指针可以在读完链表一篇后再看。
 
-### 是什么
+### 有序数组中找两个数
 
-先抛开术语：**双指针就是两个下标变量，按约定好的规则一起扫数据**。规则设计得巧，每走一步都能排除掉一批「不可能是答案」的组合，于是原本要两层循环枚举的事，一遍就扫完——把 O(n^2) 降到 O(n)。
+假设升序数组是 [1,2,4,7]，目标和为 6。让 left 指向 1，right 指向 7。
 
-「指针」在这里不是 C 语言里那种指针，就是一个普通的整数下标变量（在链表上才是节点引用）。两个指针各自最多走 n 步，所以总步数是 2n，也就是 O(n)。
+当前和是 8，太大了。如果仍然保留 7，再把左边的 1 换成更大的数，和只会更大。因此 7 不可能参与当前范围内的答案，可以把 right 左移。
 
-按走路方式分成三种形态，术语对照：
+这时 1+4=5，太小了。保留 1，再把 4 换成更小的数，也不可能凑到 6。因此把 left 右移，得到 2+4=6。
 
-| 大白话 | 术语 | 走法 | 典型用途 |
-| --- | --- | --- | --- |
-| 两头往中间夹 | 对撞指针 | 一个在头、一个在尾，相向而行 | 有序数组找配对、盛水容器 |
-| 一快一慢同向跑 | 快慢指针 | 都从头出发，速度不同 | 原地修改数组、链表判环 |
-| 各扫各的一条路 | 分离指针 | 两个序列各放一个指针，各自前进 | 合并两个有序序列 |
+这里能判断移动方向，是因为数组有序。无序数组不能照搬这套规则；如果原题要求返回原始下标，排序还会改变位置，需要额外保存原下标。
 
-三种形态长得不一样，但共同点只有一个：**每次移动都有明确依据，移动即淘汰**——被跳过的组合都论证过「不可能是答案」，所以才敢一遍扫完而不漏解。
+两个指针只向中间移动，总共最多移动 O(n) 次，额外空间 O(1)。
 
-### 一个最小例子
+### 盛最多水的容器：为什么移动短边
 
-11. 盛最多水的容器：height = [1, 8, 6, 2, 5]，数组值是每根柱子的高度。选两根柱子，和地面围成水槽：水量 = 两根中较矮的高度 × 两根的间距。问最多能装多少水。
+第 11 题的面积是“左右距离 × 两端较低的高度”。假设左边更矮，右边不动、左边向内移动，才可能找到更高的短板，弥补宽度变小的损失。
 
-对撞指针的走法：left 从 0 出发、right 从 4 出发，每轮算一次当前水量，然后**移动较矮的那根**——矮的留下只会拖后腿，换掉它才有希望：
+如果反过来固定较矮的左边，只把右边往里挪，宽度会变小，高度上限仍然受左边限制，面积不可能超过当前面积。因此这些组合可以直接排除。
 
-| 轮次 | left（高） | right（高） | 宽 | 本轮水量 | 哪边矮 | 本步动作 | 目前最大 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0 (1) | 4 (5) | 4 | 1 × 4 = 4 | 左 | left 右移 | 4 |
-| 2 | 1 (8) | 4 (5) | 3 | 5 × 3 = 15 | 右 | right 左移 | 15 |
-| 3 | 1 (8) | 3 (2) | 2 | 2 × 2 = 4 | 右 | right 左移 | 15 |
-| 4 | 1 (8) | 2 (6) | 1 | 6 × 1 = 6 | 右 | right 左移 | 15 |
-| 收尾 | 两指针相遇 | — | — | 一共只算了 4 次水量 | — | 结束 | 答案 = 15 |
+注意，这个论证只针对容器面积。不能因为另一个问题也用了两个端点，就照搬“移动短边”。
 
-为什么移动矮板不会错过答案？以第 2 轮为例：right 端的 5 比 left 端的 8 矮。如果让 right 留下、left 往右走，间距只会变小，水位又被矮板 5 卡死、不会更高——「right 跟任何更靠右的 left 配对」这一整批组合注定更差，可以直接判死刑。每轮淘汰一根柱子、绝不误杀冠军，所以一遍扫完就是对的。
+### 读写指针：原地移动零
 
-### 模板代码
+另一类双指针并不向中间靠拢，而是一起向右走。第 283 题要求把 0 移到末尾，并保持非零数的相对顺序。
 
-对撞指针模板（以 11 题为例）：
+让 read 逐个读取原数组，write 指向下一个该放非零数的位置。读到非零数，就写到 nums[write]，然后 write 加一。读完后，把 write 之后的位置补成 0。
 
-\`\`\`
-// ===== JavaScript =====
-function maxArea(height) {
-  let left = 0;                                  // 左指针：从最左边的柱子出发
-  let right = height.length - 1;                 // 右指针：从最右边的柱子出发
-  let best = 0;                                  // 目前见过的最大水量
-  while (left < right) {                         // 两指针相遇就结束
-    const h = Math.min(height[left], height[right]);  // 水位由较矮的板决定
-    const water = h * (right - left);            // 当前水量 = 水位 × 间距
-    best = Math.max(best, water);                // 刷新最大水量
-    if (height[left] < height[right]) {          // 比较两边谁矮
-      left++;                                    // 左矮：淘汰左板，left 右移一位
-    } else {
-      right--;                                   // 右矮（或一样高）：淘汰右板，right 左移一位
-    }
-  }
-  return best;                                   // 返回一路上见过的最大值
-}
-\`\`\`
+以 [0,1,0,3,12] 为例，依次写入 1、3、12，最后得到 [1,3,12,0,0]。
 
-\`\`\`
-# ===== Python =====
-def max_area(height):
-    left = 0                                     # 左指针：从最左边的柱子出发
-    right = len(height) - 1                      # 右指针：从最右边的柱子出发
-    best = 0                                     # 目前见过的最大水量
-    while left < right:                          # 两指针相遇就结束
-        h = min(height[left], height[right])     # 水位由较矮的板决定
-        water = h * (right - left)               # 当前水量 = 水位 × 间距
-        best = max(best, water)                  # 刷新最大水量
-        if height[left] < height[right]:         # 比较两边谁矮
-            left += 1                            # 左矮：淘汰左板，left 右移一位
-        else:
-            right -= 1                           # 右矮（或一样高）：淘汰右板，right 左移一位
-    return best                                  # 返回一路上见过的最大值
-\`\`\`
+循环进行时，nums[0:write] 始终是已经读过的非零元素，顺序也没有变。write 不会跑到 read 前面，所以不会提前覆盖还没读过的数据。
 
-\`\`\`
-// ===== C++ =====
-int maxArea(vector<int>& height) {
-  int left = 0;                                // 左指针：从最左边的柱子出发
-  int right = (int)height.size() - 1;          // 右指针：从最右边的柱子出发
-  int best = 0;                                // 目前见过的最大水量
-  while (left < right) {                       // 两指针相遇就结束
-    int h = min(height[left], height[right]);  // 水位由较矮的板决定
-    int water = h * (right - left);            // 当前水量 = 水位 × 间距
-    best = max(best, water);                   // 刷新最大水量
-    if (height[left] < height[right]) {        // 比较两边谁矮
-      left++;                                  // 左矮：淘汰左板，left 右移一位
-    } else {
-      right--;                                 // 右矮（或一样高）：淘汰右板，right 左移一位
-    }
-  }
-  return best;                                 // 返回一路上见过的最大值
-}
-\`\`\`
+下面的示例就是这个办法，时间 O(n)，额外空间 O(1)。修改一下输入，检查全是 0、没有 0、空数组三种情况。
 
-快慢指针模板（以 283. 移动零为例：fast 负责「读」每个元素，slow 负责「写」下一个非零元素该站的位置）：
-
-\`\`\`
-// JavaScript：原地修改，结束后 slow 左侧是保持原顺序的全部非零元素
-function moveZeroes(nums) {
-  let slow = 0;                                  // 写指针：下一个非零数该放的位置
-  for (let fast = 0; fast < nums.length; fast++) {  // 读指针：扫遍每个元素
-    if (nums[fast] !== 0) {                      // 读到非零元素
-      [nums[slow], nums[fast]] = [nums[fast], nums[slow]];  // 交换到 slow 处
-      slow++;                                    // 写位置前进一步
-    }
-  }
-}
-\`\`\`
-
-\`\`\`
-# Python：原地修改，结束后 slow 左侧是保持原顺序的全部非零元素
+\`\`\`run-py#two-pointers-v2-demo
 def move_zeroes(nums):
-    slow = 0                                     # 写指针：下一个非零数该放的位置
-    for fast in range(len(nums)):                # 读指针：扫遍每个元素
-        if nums[fast] != 0:                      # 读到非零元素
-            nums[slow], nums[fast] = nums[fast], nums[slow]  # 交换到 slow 处
-            slow += 1                            # 写位置前进一步
+    write = 0
+    for read in range(len(nums)):
+        if nums[read] != 0:
+            nums[write] = nums[read]
+            write += 1
+    for i in range(write, len(nums)):
+        nums[i] = 0
+
+nums = [0, 1, 0, 3, 12]
+move_zeroes(nums)
+print(*nums)
 \`\`\`
 
-\`\`\`
-// C++：原地修改，结束后 slow 左侧是保持原顺序的全部非零元素
-void moveZeroes(vector<int>& nums) {
-  int slow = 0;                                // 写指针：下一个非零数该放的位置
-  for (int fast = 0; fast < (int)nums.size(); fast++) {  // 读指针：扫遍每个元素
-    if (nums[fast] != 0) {                     // 读到非零元素
-      swap(nums[slow], nums[fast]);            // 交换到 slow 处
-      slow++;                                  // 写位置前进一步
-    }
+\`\`\`run-js#two-pointers-v2-demo
+function moveZeroes(nums) {
+  let write = 0;
+  for (let read = 0; read < nums.length; read++) {
+    if (nums[read] !== 0) nums[write++] = nums[read];
   }
+  for (let i = write; i < nums.length; i++) nums[i] = 0;
 }
+const nums = [0, 1, 0, 3, 12];
+moveZeroes(nums);
+console.log(nums.join(' '));
 \`\`\`
 
-分离指针模板（合并两个升序数组：各放一个指针，谁小谁进结果、谁前进）：
-
-\`\`\`
-// JavaScript
-function merge(a, b) {
-  const res = [];                          // 存放合并结果
-  let i = 0, j = 0;                        // i 扫 a，j 扫 b
-  while (i < a.length && j < b.length) {   // 两边都没扫完就继续比
-    if (a[i] <= b[j]) {                    // a 的当前元素更小（或相等）
-      res.push(a[i]);                      // 小的先进结果
-      i++;                                 // a 的指针前进一步
-    } else {
-      res.push(b[j]);                      // b 的当前元素更小
-      j++;                                 // b 的指针前进一步
-    }
-  }
-  return res.concat(a.slice(i), b.slice(j));  // 有一边先扫完，把另一边的剩余整段接上
-}
-\`\`\`
-
-\`\`\`
-# Python
-def merge(a, b):
-    res = []                               # 存放合并结果
-    i = j = 0                              # i 扫 a，j 扫 b
-    while i < len(a) and j < len(b):       # 两边都没扫完就继续比
-        if a[i] <= b[j]:                   # a 的当前元素更小（或相等）
-            res.append(a[i])               # 小的先进结果
-            i += 1                         # a 的指针前进一步
-        else:
-            res.append(b[j])               # b 的当前元素更小
-            j += 1                         # b 的指针前进一步
-    return res + a[i:] + b[j:]             # 有一边先扫完，把另一边的剩余整段接上
-\`\`\`
-
-\`\`\`
-// C++
-vector<int> merge(vector<int>& a, vector<int>& b) {
-  vector<int> res;                             // 存放合并结果
-  int i = 0, j = 0;                            // i 扫 a，j 扫 b
-  while (i < (int)a.size() && j < (int)b.size()) {  // 两边都没扫完就继续比
-    if (a[i] <= b[j]) {                        // a 的当前元素更小（或相等）
-      res.push_back(a[i]);                     // 小的先进结果
-      i++;                                     // a 的指针前进一步
-    } else {
-      res.push_back(b[j]);                     // b 的当前元素更小
-      j++;                                     // b 的指针前进一步
-    }
-  }
-  res.insert(res.end(), a.begin() + i, a.end());  // 有一边先扫完，把另一边的剩余整段接上
-  res.insert(res.end(), b.begin() + j, b.end());
-  return res;
-}
-\`\`\`
-
-### 亲手跑一跑
-
-把盛水容器的四轮对撞打印出来，看着两根指针怎样一步步夹出答案：
-
-\`\`\`run-js#container-walkthrough
-const height = [1, 8, 6, 2, 5];
-let left = 0;                            // 左指针从第 0 根柱出发
-let right = height.length - 1;           // 右指针从最后一根柱出发
-let best = 0;                            // 目前见过的最大水量
-let round = 1;
-while (left < right) {                   // 两指针相遇就结束
-  const h = Math.min(height[left], height[right]);
-  const water = h * (right - left);      // 水量 = 较矮板 × 间距
-  if (water > best) best = water;
-  const move = height[left] < height[right] ? '左边矮, left 右移' : '右边矮, right 左移';
-  console.log('第' + round + '轮: left=' + left + ' (高' + height[left] + '), right=' + right + ' (高' + height[right] + '), 水量=' + water + ', ' + move);
-  if (height[left] < height[right]) left++;
-  else right--;
-  round++;
-}
-console.log('两指针相遇, 结束。最大水量 = ' + best);
-\`\`\`
-
-\`\`\`run-py#container-walkthrough
-height = [1, 8, 6, 2, 5]
-left = 0                            # 左指针从第 0 根柱出发
-right = len(height) - 1             # 右指针从最后一根柱出发
-best = 0                            # 目前见过的最大水量
-rd = 1
-while left < right:                 # 两指针相遇就结束
-    h = min(height[left], height[right])
-    water = h * (right - left)      # 水量 = 较矮板 × 间距
-    if water > best:
-        best = water
-    move = '左边矮, left 右移' if height[left] < height[right] else '右边矮, right 左移'
-    print('第' + str(rd) + '轮: left=' + str(left) + ' (高' + str(height[left]) + '), right=' + str(right) + ' (高' + str(height[right]) + '), 水量=' + str(water) + ', ' + move)
-    if height[left] < height[right]:
-        left += 1
-    else:
-        right -= 1
-    rd += 1
-print('两指针相遇, 结束。最大水量 = ' + str(best))
-\`\`\`
-
-\`\`\`run-cpp#container-walkthrough
+\`\`\`run-cpp#two-pointers-v2-demo
 #include <iostream>
 #include <vector>
-#include <string>
-#include <algorithm>
 using namespace std;
-
+void moveZeroes(vector<int>& nums) {
+    int write = 0;
+    for (int read = 0; read < (int)nums.size(); ++read)
+        if (nums[read] != 0) nums[write++] = nums[read];
+    for (int i = write; i < (int)nums.size(); ++i) nums[i] = 0;
+}
 int main() {
-  vector<int> height = {1, 8, 6, 2, 5};
-  int left = 0;                        // 左指针从第 0 根柱出发
-  int right = (int)height.size() - 1;  // 右指针从最后一根柱出发
-  int best = 0;                        // 目前见过的最大水量
-  int rd = 1;
-  while (left < right) {               // 两指针相遇就结束
-    int h = min(height[left], height[right]);
-    int water = h * (right - left);    // 水量 = 较矮板 × 间距
-    if (water > best) best = water;
-    string move = height[left] < height[right] ? "左边矮, left 右移" : "右边矮, right 左移";
-    cout << "第" << rd << "轮: left=" << left << " (高" << height[left] << "), right=" << right << " (高" << height[right] << "), 水量=" << water << ", " << move << "\\n";
-    if (height[left] < height[right]) left++;
-    else right--;
-    rd++;
-  }
-  cout << "两指针相遇, 结束。最大水量 = " << best << "\\n";
-  return 0;
+    vector<int> nums = {0, 1, 0, 3, 12};
+    moveZeroes(nums);
+    for (int i = 0; i < (int)nums.size(); ++i)
+        cout << (i ? " " : "") << nums[i];
+    cout << '\\n';
 }
 \`\`\`
 
-预期输出（三种语言逐字一致）：
+### 三数之和：在双指针外固定一个数
 
-\`\`\`
-第1轮: left=0 (高1), right=4 (高5), 水量=4, 左边矮, left 右移
-第2轮: left=1 (高8), right=4 (高5), 水量=15, 右边矮, right 左移
-第3轮: left=1 (高8), right=3 (高2), 水量=4, 右边矮, right 左移
-第4轮: left=1 (高8), right=2 (高6), 水量=6, 右边矮, right 左移
-两指针相遇, 结束。最大水量 = 15
-\`\`\`
+第 15 题可以先排序，再固定 nums[i]，在它后面找和为 −nums[i] 的两个数。固定一个位置要 O(n) 次，剩下的双指针每次 O(n)，总时间 O(n²)，另加排序代价。
 
-5 根柱子原本有 10 种两两组合，对撞指针只算了 4 次水量——每轮都砍掉「注定更差」的一批，最后一样拿到最大值 15。
+去重需要分两处：固定位置跳过相同的值；找到一组答案后，左右指针分别跳过已经使用过的相同值。不是一开始就把输入去重。例如 [−1,−1,2] 的两个 −1 都要保留，才能得到合法答案。
 
-### 直觉想法错在哪
+### 链表上的快慢指针
 
-最直觉的做法是两层循环：枚举每一对柱子 (i, j)，算出水量取最大。5 根柱子才 10 对，会觉得挺快；n = 10^5 时约有 50 亿对，就超时了。
+快指针每次走两步，慢指针每次走一步。找链表中点时，快指针走到尾部，慢指针大约在中间。判断有无环时，进入环后的两个指针之间的相对距离每轮变化一步，最终会相遇。
 
-更关键的是理解双指针「凭什么敢跳」：它不是偷懒少算，而是每移动一次矮板，就**一次性排除了一整批组合**（上面最小例子解释了这批组合为什么注定不优）。所以 O(n) 扫完的结果和暴力完全一致，只是多了一份「哪些组合根本不用看」的论证。
+它们比较的是节点身份，不是节点值。两个节点都存 3，并不说明链表有环。
 
-### 常见错误
+### 练习与检查
 
-- **移动条件写反**：盛水题移动了高板。觉得「留下矮的、去找更高板」？恰恰相反——只有换掉矮板，水位才可能升高；移动高板只会让间距白白变小。
-- **两端同时移动**：对撞指针一轮只动一端，两端一起动会跳过本该检查的组合。
-- **以为双指针都得先排序**：只有「有序数组上找两数关系」这类才要求有序；快慢指针（移动零、判环）与顺序无关。反过来，1. 两数之和不适合排序后用对撞——排序会把原来的下标弄丢。
-- **判环时越界**：fast 一次走两步，循环条件必须是 fast 和 fast.next 都存在；只查 fast，会在 fast.next.next 处读到空指针。
-- **15. 三数之和忘记去重**：排序后相邻重复值要跳过；找到答案后左右指针还要继续跳过重复值，否则会输出重复三元组。
+先做第 283 题，明确“已处理部分”是什么；再做第 11 题，把排除短边的理由说出来；然后做第 15 题，检查去重；学完链表后做第 141 题。
 
-### 什么时候用
-
-- **对撞指针**：数组有序（或可以先排序），找两个元素满足某种关系（和、差、配对）；或问题围绕「一个区间」，比较两端后能确定排除哪一端（盛水容器、回文判断）。15. 三数之和 = 排序 + 枚举一个数 + 对撞指针找另外两个
-- **快慢指针**：原地修改数组（读一个、写一个，如 283. 移动零）；链表判环、找中点（141. 环形链表：快指针走两步、慢指针走一步，有环必会追上，像操场套圈）
-- **分离指针**：合并两个**有序**序列（21. 合并两个有序链表），是归并排序的核心一步，每个元素只访问一次，O(n + m)
-
-### 练习路径
-
-- 283. 移动零：先掌握「fast 读 / slow 写」的快慢指针
-- 11. 盛最多水的容器：吃透对撞指针「移动矮板」的淘汰逻辑
-- 15. 三数之和：练「排序 + 对撞 + 去重」的组合拳
-- 141. 环形链表：快慢指针判环，体会操场套圈
-- 21. 合并两个有序链表：把分离指针迁移到链表上
+每次写 left+=1 或 right−=1 前，都问一句：被我跳过的这些位置，为什么不可能再提供一个遗漏的答案？如果只能回答“模板这么写”，说明移动规则还没有想清楚。
 `,
 };

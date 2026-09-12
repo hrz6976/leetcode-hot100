@@ -1,6 +1,7 @@
 // 题目数据校验器
 // 用法：
 //   node tools/validate.mjs                 校验 problems/index.js 登记的全部题目
+//   node tools/validate.mjs --knowledge-only  仅校验知识文章及示例
 //   node tools/validate.mjs problems/p002-add-two-numbers.js ...   只校验指定文件
 //
 // 校验内容：
@@ -24,6 +25,7 @@ const CORE_CASE_BASELINE = 960;
 const ACM_CASE_BASELINE = 960;
 
 const TIMEOUT_MS = 10000;
+const COMPILE_TIMEOUT_MS = 120000;
 
 // ---------- 链表/二叉树构造与序列化（与 js/judge.js 中的判定逻辑保持一致） ----------
 
@@ -506,7 +508,7 @@ function cppCompile(source, tag) {
   if (!cppTmpDir) cppTmpDir = mkdtempSync(join(tmpdir(), 'letcode-cpp-'));
   const base = join(cppTmpDir, tag.replace(/[^a-zA-Z0-9_-]/g, '_'));
   writeFileSync(`${base}.cpp`, source);
-  const r = spawnSync('g++', ['-std=c++17', '-O2', `${base}.cpp`, '-o', base], { encoding: 'utf8', timeout: 120000 });
+  const r = spawnSync('g++', ['-std=c++17', '-O2', `${base}.cpp`, '-o', base], { encoding: 'utf8', timeout: COMPILE_TIMEOUT_MS });
   if (r.error) return { compileError: r.error.message };
   if (r.status !== 0) return { compileError: (r.stderr || '编译失败').slice(0, 800) };
   return { binary: base };
@@ -517,7 +519,7 @@ function cppSyntaxCheck(source) {
   const r = spawnSync('g++', ['-std=c++17', '-fsyntax-only', '-x', 'c++', '-'], {
     input: source,
     encoding: 'utf8',
-    timeout: TIMEOUT_MS,
+    timeout: COMPILE_TIMEOUT_MS,
   });
   if (r.error) return r.error.message;
   if (r.status !== 0) return (r.stderr || '语法错误').slice(0, 800);
@@ -886,7 +888,9 @@ async function checkKnowledge(problemIds) {
 }
 
 async function main() {
-  const requestedFiles = process.argv.slice(2);
+  const knowledgeOnly = process.argv.includes('--knowledge-only');
+  const requestedFiles = process.argv.slice(2).filter(arg => arg !== '--knowledge-only');
+  if (knowledgeOnly && requestedFiles.length) throw new Error('--knowledge-only 不能与指定题目文件一起使用');
   let entries;
   if (requestedFiles.length) {
     entries = await Promise.all(requestedFiles.map(async (file) => {
@@ -905,7 +909,7 @@ async function main() {
     return;
   }
   if (!hasGxx) notes.push('警告：未找到 g++，C++ 参考代码与模板跳过编译执行校验（仅做数据格式校验）');
-  for (const { problem, file } of entries) {
+  for (const { problem, file } of knowledgeOnly ? [] : entries) {
     checkSchema(problem, file);
     checkTemplateSyntax(problem);
     checkJsCore(problem);
@@ -924,7 +928,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  console.log(`\n全部 ${entries.length} 道题校验通过 ✓`);
+  console.log(knowledgeOnly ? '\n知识库校验通过 ✓' : `\n全部 ${entries.length} 道题校验通过 ✓`);
 }
 
 await main();

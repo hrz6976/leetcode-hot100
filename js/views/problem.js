@@ -3,11 +3,11 @@
 import { judge, runCustom, isPythonReady, checkPythonSyntax } from '../judge.js';
 import { compareAcmOutput } from '../compare.js';
 import { createEditor } from '../editor.js';
-import { registerDraftProvider } from '../assistant.js';
+import { registerDraftProvider, buildReviewRequest } from '../assistant.js';
 import { md } from '../md.js';
 import { mountDirectory } from '../directory.js';
 import { problems } from '../../problems/index.js';
-import { articles } from '../../knowledge/index.js';
+import { articlesForProblem, articleForTag } from '../knowledge-links.js';
 import {
   getDraft,
   clearDraft,
@@ -65,21 +65,8 @@ export function renderProblem(container, problem) {
   let syntaxToken = 0;
   const routeAtMount = location.hash;
 
-  // 相关知识：按题目标签与文章标签的交集数排序，取匹配度最高的 1-2 篇
-  const relatedArticles = articles
-    .map((article) => ({
-      article,
-      score: problem.tags.filter((tag) => article.tags.includes(tag)).length,
-    }))
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.article.title.localeCompare(b.article.title, 'zh'))
-    .slice(0, 2)
-    .map((entry) => entry.article);
-  const articleByTag = new Map();
-  for (const tag of problem.tags) {
-    const match = articles.find((article) => article.tags.includes(tag));
-    if (match) articleByTag.set(tag, match.slug);
-  }
+  const relatedArticles = articlesForProblem(problem);
+  const articleByTag = new Map(problem.tags.map(tag => [tag, articleForTag(tag, problem)]).filter(([, slug]) => slug));
 
   container.innerHTML = `
     <div class="problem-storage-warning" id="storage-warning" role="alert" aria-live="assertive" hidden></div>
@@ -107,7 +94,7 @@ export function renderProblem(container, problem) {
     ${
       relatedArticles.length
         ? `<div class="related-knowledge" aria-label="相关知识文章">${relatedArticles
-            .map((a) => `<a href="#/knowledge/${a.slug}">📖 先补基础：${escapeHtml(a.title)}</a>`)
+            .map((a) => `<a href="#/knowledge/${a.slug}">相关讲解：${escapeHtml(a.title)}</a>`)
             .join('')}</div>`
         : ''
     }
@@ -835,6 +822,12 @@ export function renderProblem(container, problem) {
       });
       if (!validRoute(token, runToken)) return;
       renderVerdict(verdict, snapshot.lang, snapshot.assisted);
+      const reviewButton = document.createElement('button');
+      reviewButton.className = 'btn'; reviewButton.textContent = '请 AI 评审这次提交';
+      reviewButton.onclick = () => window.dispatchEvent(new CustomEvent('hot100-review', {
+        detail: buildReviewRequest({ ...snapshot, verdict }),
+      }));
+      resultsHead.append(reviewButton);
       const outcome = verdict.status === 'pass' ? 'pass' : verdict.status === 'fail' ? 'fail' : 'error';
       reportStorage(recordLearningAttempt(problem.id, snapshot.mode, outcome, { assisted: snapshot.assisted }), '保存学习记录');
       updateMistakeBtn();

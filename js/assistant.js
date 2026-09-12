@@ -1,9 +1,11 @@
+import { localHeaders, localGoAvailable } from './local-progress.js';
 // AI 助手纯逻辑层（无 DOM，可在 Node 下测试）：
 // - OpenAI 兼容 API 预设与流式（SSE）调用
 // - 页面上下文注册表（当前题目 / 知识文章 / 草稿代码）
 // - 内存中的对话历史（不落盘，刷新即清空）
 
 export const PRESETS = [
+  { id: 'opencode-go', label: 'OpenCode Go 订阅', baseUrl: 'https://opencode.ai/zen/go/v1', model: 'kimi-k2.6' },
   { id: 'moonshot', label: 'Kimi (Moonshot)', baseUrl: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
   { id: 'deepseek', label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
   { id: 'openai', label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
@@ -67,6 +69,8 @@ export function getDraft() {
 
 // ---------- 对话历史（仅内存） ----------
 const history = [];
+const newSessionId = () => globalThis.crypto?.randomUUID?.() || `hot100-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+let sessionId = newSessionId();
 
 export function getHistory() {
   return [...history];
@@ -78,6 +82,7 @@ export function appendHistory(role, content) {
 
 export function clearHistory() {
   history.length = 0;
+  sessionId = newSessionId();
 }
 
 function clip(text, max) {
@@ -109,14 +114,12 @@ export function createSseParser(onDelta) {
     if (!line.startsWith('data:')) return;
     const payload = line.slice(5).trim();
     if (!payload || payload === '[DONE]') return;
-    try {
-      const json = JSON.parse(payload);
-      for (const choice of json.choices || []) {
-        const delta = choice?.delta?.content;
-        if (typeof delta === 'string' && delta) onDelta(delta);
-      }
-    } catch {
-      // 半包/非 JSON 行直接跳过，后续 chunk 会补齐或自然结束
+    let json;
+    try { json = JSON.parse(payload); } catch { return; }
+    if (json.error) throw new Error(json.error.message || '模型返回了错误，请检查订阅状态后重试');
+    for (const choice of json.choices || []) {
+      const delta = choice?.delta?.content;
+      if (typeof delta === 'string' && delta) onDelta(delta);
     }
   };
   return {
@@ -154,11 +157,12 @@ export function proxyUrlFor(baseUrl) {
 export function resolveConfig(cfg) {
   const preset = PRESETS.find((p) => p.id === cfg?.preset) || PRESETS.find((p) => p.id === 'custom');
   const direct = (cfg?.baseUrl || preset.baseUrl).replace(/\/+$/, '');
-  const proxied = proxyUrlFor(direct);
+  const proxied = direct === 'https://opencode.ai/zen/go/v1' ? '/api/go' : proxyUrlFor(direct);
   return {
     baseUrl: proxied || direct,
     apiKey: cfg?.apiKey || '',
-    model: cfg?.model || preset.model,
+    model: direct === 'https://opencode.ai/zen/go/v1'
+      ? (cfg?.model || preset.model).replace(/^opencode-go\//, '') : cfg?.model || preset.model,
     viaProxy: proxied !== null,
   };
 }
@@ -166,7 +170,8 @@ export function resolveConfig(cfg) {
 export async function chat({ config, messages, signal, onToken }) {
   const { baseUrl, apiKey, model, viaProxy } = resolveConfig(config);
   if (!baseUrl) throw new Error('尚未配置 API 接口地址');
-  if (!apiKey) throw new Error('尚未配置 API Key');
+  const goHeaders = baseUrl === '/api/go' ? await localHeaders() : null;
+  if (!apiKey && !(goHeaders && localGoAvailable())) throw new Error('尚未配置 API Key；也可以先在本机 OpenCode 中连接 Go 订阅');
   if (!model) throw new Error('尚未配置模型名');
   let response;
   try {
@@ -174,13 +179,15 @@ export async function chat({ config, messages, signal, onToken }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(goHeaders ? { ...goHeaders, 'x-opencode-session': sessionId } : {}),
       },
       body: JSON.stringify({ model, messages, stream: true }),
       signal,
     });
   } catch (error) {
     if (error?.name === 'AbortError') throw error;
+    if (baseUrl === '/api/go') throw new Error(`OpenCode Go 连接失败：${error.message}`);
     if (viaProxy) {
       throw new Error('无法连接本地代理（127.0.0.1:8966）：该接口不支持浏览器直连，需要本地代理转发。请用一键启动脚本启动，或手动运行 node tools/cors-proxy.mjs');
     }
@@ -198,5 +205,25 @@ export async function chat({ config, messages, signal, onToken }) {
     if (done) break;
     parser.feed(decoder.decode(value, { stream: true }));
   }
+  parser.feed(decoder.decode());
   parser.flush();
+}
+
+// 评审固定绑定一次提交，避免用户后来编辑代码或切题后上下文串题。
+export function buildReviewRequest({ problem, code, lang, mode, verdict }) {
+  const cases = verdict.cases || [];
+  const passed = cases.filter(item => item.pass).length;
+  const failed = cases.filter(item => !item.pass);
+  const summary = cases.length ? `测试通过 ${passed}/${cases.length} 个用例。` : `执行状态：${verdict.status}。`;
+  const evidence = [summary];
+  if (verdict.error) evidence.push(`执行错误：${clip(String(verdict.error), 1500)}`);
+  for (const item of failed.slice(0, 3)) {
+    evidence.push(`失败用例 ${item.index + 1}：\n输入：${clip(String(item.input), 1200)}\n期望：${clip(String(item.expected), 600)}\n实际：${clip(String(item.got ?? item.error ?? '无输出'), 600)}`);
+  }
+  if (failed.length > 3) evidence.push(`另有 ${failed.length - 3} 个失败用例未附带。`);
+  return {
+    question: `${summary}请帮我评审这次提交：解释错误和具体反例，再分析时间与空间复杂度。先给修改提示，暂时不要直接给完整答案。即使测试通过，也请检查边界条件。`,
+    context: { kind: 'problem', title: `${problem.id}. ${problem.title}`, body: `${problem.description}\n\n【这次提交的测试结果】\n${evidence.join('\n\n')}` },
+    draft: { lang, mode, code },
+  };
 }

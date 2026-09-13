@@ -184,7 +184,7 @@ export function initAssistant() {
   function renderHistory() {
     els.msgs.innerHTML = '';
     for (const m of getHistory()) {
-      addBubble(m.role === 'user' ? 'user' : 'assistant', m.role === 'user' ? escapeHtml(m.content) : md(m.content));
+      addBubble(m.role === 'user' ? 'user' : 'assistant', m.role === 'user' ? escapeHtml(m.content) : `${m.thinking ? `<details class="ai-thinking"><summary>思考过程</summary><div>${escapeHtml(m.thinking)}</div></details>` : ''}${md(m.content)}`);
     }
   }
 
@@ -196,7 +196,7 @@ export function initAssistant() {
     // 未配置 Key 时强制展示配置表单
     els.config.hidden = !hasCredentials(getAssistantConfig()) ? false : els.config.hidden;
     syncContextLabel();
-    renderHistory();
+    if (!aborter) renderHistory();
     els.question.focus();
   }
 
@@ -281,11 +281,17 @@ export function initAssistant() {
     els.question.value = '';
     addBubble('user', escapeHtml(question));
     appendHistory('user', question);
-    const bubble = addBubble('assistant', '<span class="ai-typing">思考中…</span>');
-    let answer = '';
+    const bubble = addBubble('assistant', '<details class="ai-thinking" hidden open><summary>思考中…</summary><div></div></details><div class="ai-answer"><span class="ai-typing">等待回复…</span></div><div class="ai-stopped" hidden></div>');
+    const thought = bubble.querySelector('.ai-thinking');
+    const thoughtLabel = thought.querySelector('summary');
+    const thoughtText = document.createTextNode('');
+    thought.querySelector('div').appendChild(thoughtText);
+    const answerEl = bubble.querySelector('.ai-answer');
+    const statusEl = bubble.querySelector('.ai-stopped');
+    let answer = '', thinking = '';
     const lineBuffer = createLineBuffer(text => {
       const follow = els.msgs.scrollHeight - els.msgs.scrollTop - els.msgs.clientHeight < 60;
-      bubble.innerHTML = md(text);
+      answerEl.innerHTML = md(text);
       if (follow) scrollMsgs();
     });
 
@@ -296,23 +302,29 @@ export function initAssistant() {
         config: cfg,
         messages,
         signal: aborter.signal,
+        onThinking(delta) {
+          const follow = els.msgs.scrollHeight - els.msgs.scrollTop - els.msgs.clientHeight < 60;
+          thinking += delta;
+          thought.hidden = false;
+          thoughtText.appendData(delta);
+          if (follow) scrollMsgs();
+        },
         onToken(delta) {
+          thoughtLabel.textContent = '思考过程';
           answer += delta;
           lineBuffer.push(delta);
         },
       });
       lineBuffer.finish();
-      if (answer) appendHistory('assistant', answer);
+      if (answer || thinking) appendHistory('assistant', answer, thinking);
     } catch (error) {
-      if (error?.name === 'AbortError') {
-        bubble.innerHTML = `${answer ? md(answer) : ''}<div class="ai-stopped">已停止</div>`;
-        if (answer) appendHistory('assistant', answer);
-      } else {
-        bubble.classList.add('error');
-        bubble.innerHTML = `${answer ? md(answer) : ''}<div class="ai-stopped">${escapeHtml(`出错了：${error?.message || error}`)}</div>`;
-        if (answer) appendHistory('assistant', answer);
-      }
+      lineBuffer.finish();
+      if (!answer) answerEl.textContent = '';
+      statusEl.hidden = false;
+      statusEl.textContent = error?.name === 'AbortError' ? '已停止' : `出错了：${error?.message || error}`;
+      if (answer || thinking) appendHistory('assistant', answer, thinking);
     } finally {
+      thoughtLabel.textContent = '思考过程';
       aborter = null;
       setStreaming(false);
       els.question.focus();

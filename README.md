@@ -135,3 +135,9 @@ GitHub Actions 工作流位于 `.github/workflows/deploy.yml`：PR 执行索引�
 仓库变量 `CLOUDFLARE_ACCOUNT_ID` 已配置。自动部署还需要仓库 Secret `CLOUDFLARE_API_TOKEN`（Cloudflare 的 Edit Cloudflare Workers 模板，限定部署账号与 `1919114.xyz` 区域）。本机 Wrangler OAuth 登录不用于 GitHub Actions。设置位置：GitHub 仓库 Settings → Secrets and variables → Actions。
 
 知识文章中的题号支持点击预览，弹窗展示题意和示例；按 Esc、点击关闭或背景即可返回原文。文末练习列表也有「预览题目」按钮。
+
+### AI 连接器开发
+
+AI 请求使用 `@earendil-works/pi-ai` 0.84.2 的 OpenAI Completions provider，统一处理正文、thinking、取消和流式错误；不再维护自定义 SSE 解析器。模型返回 thinking 时可在回复上方展开查看；思考与正文仅保存在当前页面内存中，刷新清空。
+
+修改连接器依赖后运行 `npm ci && npm run build:ai`，将 `vendor/pi-ai.js` 一并提交。普通本地启动仍可直接使用仓库内的浏览器包；自动部署会按 lockfile 安装并重新构建。连接器按需加载，不增加题库首页的初始加载量。

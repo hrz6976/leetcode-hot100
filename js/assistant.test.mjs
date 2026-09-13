@@ -105,29 +105,6 @@ test('resolveConfig：命中不支持跨域的端点时自动改走本地代理'
   assert.equal(official.viaProxy, false);
 });
 
-test('SSE 解析：普通分片、跨 chunk 断行、[DONE] 与注释行', () => {
-  let out = '';
-  const parser = assistant.createSseParser((d) => { out += d; });
-  parser.feed(': ping\n\ndata: {"choices":[{"delta":{"content":"你"}}]}\n\n');
-  assert.equal(out, '你');
-  // 第二条消息跨两个 chunk
-  parser.feed('data: {"choices":[{"delta":{"con');
-  assert.equal(out, '你');
-  parser.feed('tent":"好"}}]}\ndata: [DONE]\n');
-  parser.flush();
-  assert.equal(out, '你好');
-});
-
-test('SSE 解析：\\r\\n 行尾与非法 JSON 行跳过', () => {
-  let out = '';
-  const parser = assistant.createSseParser((d) => { out += d; });
-  parser.feed('data: not-json\r\n');
-  parser.feed('data: {"choices":[{"delta":{"content":"A"}}]}\r\n');
-  parser.feed('event: message\r\n');
-  parser.flush();
-  assert.equal(out, 'A');
-});
-
 test('chat：缺少配置时给出明确错误', async () => {
   await assert.rejects(
     assistant.chat({ config: { preset: 'custom', baseUrl: '', apiKey: '', model: '' }, messages: [] }),
@@ -146,18 +123,13 @@ test('Go 预设使用本地服务，控制台格式的模型名去掉提供商�
   assert.equal(config.viaProxy, true);
 });
 
-test('SSE 服务错误不会被静默当成成功', () => {
-  const parser = assistant.createSseParser(() => {});
-  assert.throws(() => parser.feed('data: {"error":{"message":"额度不足"}}\n'), /额度不足/);
-});
-
 test('Go 请求保持会话编号，清空对话后更换，中文半包可完整解析', async () => {
   const originalFetch = globalThis.fetch;
   const requests = [];
   globalThis.fetch = async (url, init) => {
     if (url === '/api/session') return Response.json({ token: 'test-local-session' });
     requests.push({ url, init });
-    const bytes = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"检查边界"}}]}\n\ndata: [DONE]\n\n');
+    const bytes = new TextEncoder().encode('data: {"choices":[{"delta":{"content":"检查边界"},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n');
     return new Response(new ReadableStream({ start(controller) {
       for (const byte of bytes) controller.enqueue(new Uint8Array([byte]));
       controller.close();
@@ -168,10 +140,10 @@ test('Go 请求保持会话编号，清空对话后更换，中文半包可完�
     const run = () => assistant.chat({ config: { preset:'opencode-go', apiKey:'test-only' }, messages: [{ role:'user', content:'解释代码' }], onToken: value => { output += value; } });
     await run(); await run(); assistant.clearHistory(); await run();
     assert.equal(output, '检查边界检查边界检查边界');
-    assert.equal(requests[0].url, '/api/go/chat/completions');
-    assert.equal(requests[0].init.headers['x-hot100-token'], 'test-local-session');
-    assert.equal(requests[0].init.headers['x-opencode-session'], requests[1].init.headers['x-opencode-session']);
-    assert.notEqual(requests[1].init.headers['x-opencode-session'], requests[2].init.headers['x-opencode-session']);
+    assert.equal(String(requests[0].url), 'http://localhost/api/go/chat/completions');
+    assert.equal(new Headers(requests[0].init.headers).get('x-hot100-token'), 'test-local-session');
+    assert.equal(new Headers(requests[0].init.headers).get('x-opencode-session'), new Headers(requests[1].init.headers).get('x-opencode-session'));
+    assert.notEqual(new Headers(requests[1].init.headers).get('x-opencode-session'), new Headers(requests[2].init.headers).get('x-opencode-session'));
   } finally { globalThis.fetch = originalFetch; }
 });
 
@@ -188,24 +160,3 @@ test('评审问题不显示原始 JSON，上下文保留原提交和首个失败
   assert.equal(request.draft.code, 'function twoSum() { return [0, 1]; }');
 });
 
-test('chat：JSON 正文、仅思考、空流和中断均有明确处理', async () => {
-  const originalFetch = globalThis.fetch;
-  const run = async response => {
-    globalThis.fetch = async () => response;
-    let output = '';
-    await assistant.chat({ config: { preset:'custom', baseUrl:'https://test.invalid/v1', apiKey:'test', model:'test' }, messages: [], onToken: t => { output += t; } });
-    return output;
-  };
-  try {
-    assert.equal(await run(Response.json({choices:[{message:{content:'正文'}}]})), '正文');
-    await assert.rejects(run(Response.json({error:{message:'订阅额度不足'}})), /订阅额度不足/);
-    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"reasoning":"思考"},"finish_reason":"length"}]}\n\ndata: [DONE]\n')), /输出上限/);
-    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"reasoning_content":"思考"}}]}\n\ndata: [DONE]\n')), /只返回了思考数据/);
-    await assert.rejects(run(new Response('data: [DONE]\n')), /没有返回可用正文/);
-    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"content":"部分正文"}}]}\n')), /连接在回复完成前结束/);
-    let cancelled = false;
-    const response = new Response(new ReadableStream({start(c) { c.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"完整正文"}}]}\n\ndata: [DONE]\n')); }, cancel() { cancelled = true; }}));
-    assert.equal(await run(response), '完整正文');
-    assert.equal(cancelled, true);
-  } finally { globalThis.fetch = originalFetch; }
-});

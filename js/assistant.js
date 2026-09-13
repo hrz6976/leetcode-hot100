@@ -78,8 +78,8 @@ export function getHistory() {
   return [...history];
 }
 
-export function appendHistory(role, content) {
-  history.push({ role, content });
+export function appendHistory(role, content, thinking = '') {
+  history.push({ role, content, ...(thinking ? { thinking } : {}) });
 }
 
 export function clearHistory() {
@@ -94,7 +94,7 @@ function clip(text, max) {
 // 拼装一次请求的消息：system + 裁剪后的历史 + 当前问题（可携带页面上下文与草稿）。
 export function buildMessages({ question, context = null, draft = null, history: past = [] } = {}) {
   const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
-  messages.push(...past.slice(-MAX_HISTORY_MESSAGES));
+  messages.push(...past.filter(m => m.content).slice(-MAX_HISTORY_MESSAGES));
   let content = question;
   if (context) {
     const label = context.kind === 'article' ? '当前知识文章' : '当前题目';
@@ -105,44 +105,6 @@ export function buildMessages({ question, context = null, draft = null, history:
   }
   messages.push({ role: 'user', content });
   return messages;
-}
-
-// ---------- SSE 流式解析 ----------
-// 返回一个增量解析器：feed(chunkText) 处理数据，回调 onDelta(content) 逐段输出，
-// 兼容跨 chunk 断行、`data: [DONE]`、空行与注释行。
-export function createSseParser(onDelta) {
-  let buffer = '';
-  const state = { content: false, reasoning: false, finishReason: null, done: false };
-  const handleLine = (line) => {
-    if (!line.startsWith('data:')) return;
-    const payload = line.slice(5).trim();
-    if (payload === '[DONE]') { state.done = true; return; }
-    if (!payload) return;
-    let json;
-    try { json = JSON.parse(payload); } catch { return; }
-    if (json.error) throw new Error(json.error.message || '模型返回了错误，请检查订阅状态后重试');
-    for (const choice of json.choices || []) {
-      if (choice.finish_reason) state.finishReason = choice.finish_reason;
-      if (choice.delta?.reasoning || choice.delta?.reasoning_content) state.reasoning = true;
-      const delta = choice?.delta?.content;
-      if (typeof delta === 'string' && delta) { state.content = true; onDelta(delta); }
-    }
-  };
-  return {
-    state,
-    feed(text) {
-      buffer += text;
-      const lines = buffer.split('\n');
-      buffer = lines.pop(); // 最后一段可能是不完整的行，留给下一次
-      for (const line of lines) handleLine(line.replace(/\r$/, ''));
-    },
-    flush() {
-      if (buffer) {
-        handleLine(buffer.replace(/\r$/, ''));
-        buffer = '';
-      }
-    },
-  };
 }
 
 // ---------- API 调用 ----------
@@ -175,68 +137,21 @@ export function resolveConfig(cfg) {
   };
 }
 
-export async function chat({ config, messages, signal, onToken }) {
+export async function chat({ config, messages, signal, onToken, onThinking }) {
   const { baseUrl, upstreamBaseUrl, apiKey, model, viaProxy } = resolveConfig(config);
   if (!baseUrl || (baseUrl === '/api/ai' && !upstreamBaseUrl)) throw new Error('尚未配置 API 接口地址');
   if (STATIC_SITE && baseUrl === 'https://opencode.ai/zen/go/v1') throw new Error('OpenCode Go 当前不支持浏览器跨域直连。请使用本地版本，或配置支持浏览器跨域的 AI 接口。');
   const goHeaders = baseUrl === '/api/go' ? await localHeaders() : null;
   if (!apiKey && !(goHeaders && localGoAvailable())) throw new Error(STATIC_SITE ? '请在 AI 设置中填写对应服务的 API Key' : '尚未配置 API Key；也可以先在本机 OpenCode 中连接 Go 订阅');
   if (!model) throw new Error('尚未配置模型名');
-  let response;
-  try {
-    response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-        ...(baseUrl === '/api/ai' ? { 'x-hot100-base-url': upstreamBaseUrl, 'x-opencode-session': sessionId } : {}),
-        ...(goHeaders ? { ...goHeaders, 'x-opencode-session': sessionId } : {}),
-      },
-      body: JSON.stringify({ model, messages, stream: true }),
-      signal,
-    });
-  } catch (error) {
-    if (error?.name === 'AbortError') throw error;
-    if (baseUrl === '/api/go') throw new Error(`OpenCode Go 连接失败：${error.message}`);
-    if (baseUrl === '/api/ai') throw new Error('无法连接 AI 转发接口，请检查网络后重试');
-    if (viaProxy) {
-      throw new Error('无法连接本地代理（127.0.0.1:8966）：该接口不支持浏览器直连，需要本地代理转发。请用一键启动脚本启动，或手动运行 node tools/cors-proxy.mjs');
-    }
-    throw new Error(`无法连接 API（可能是网络或跨域问题）：${error?.message || error}`);
-  }
-  if (!response.ok || !response.body) {
-    const detail = (await response.text().catch(() => '')).slice(0, 300);
-    throw new Error(`API 返回错误（HTTP ${response.status}）${detail ? `：${detail}` : ''}`);
-  }
-  // 有些兼容接口即使请求 stream，也会返回普通 JSON。
-  if (response.headers.get('Content-Type')?.includes('application/json')) {
-    const result = await response.json();
-    if (result.error) throw new Error(result.error.message || '模型返回了错误');
-    const choice = result.choices?.[0];
-    const content = choice?.message?.content;
-    if (typeof content === 'string' && content.trim()) { onToken(content); return; }
-    throw new Error(emptyReplyMessage({ finishReason: choice?.finish_reason,
-      reasoning: Boolean(choice?.message?.reasoning || choice?.message?.reasoning_content) }));
-  }
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  const parser = createSseParser(onToken);
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      parser.feed(decoder.decode(value, { stream: true }));
-      if (parser.state.done) { await reader.cancel(); break; }
-    }
-    parser.feed(decoder.decode());
-    parser.flush();
-    if (!parser.state.content) throw new Error(emptyReplyMessage(parser.state));
-    if (parser.state.finishReason === 'length') throw new Error('回复达到模型输出上限，内容可能不完整。可以继续追问。');
-    if (!parser.state.done && !parser.state.finishReason) throw new Error('连接在回复完成前结束，请重试。');
-  } finally {
-    await reader.cancel().catch(() => {});
-    reader.releaseLock();
-  }
+  const { piModel, streamPiChat } = await import('./pi-chat.js');
+  return streamPiChat({
+    model: piModel({ baseUrl, upstreamBaseUrl: upstreamBaseUrl || config.baseUrl || PRESETS.find(p => p.id === config.preset)?.baseUrl, model }), messages, apiKey, signal, onToken, onThinking,
+    headers: {
+      ...(baseUrl === '/api/ai' ? { 'x-hot100-base-url': upstreamBaseUrl, 'x-opencode-session': sessionId } : {}),
+      ...(goHeaders ? { ...goHeaders, 'x-opencode-session': sessionId } : {}),
+    },
+  });
 }
 
 // 评审固定绑定一次提交，避免用户后来编辑代码或切题后上下文串题。
@@ -256,11 +171,4 @@ export function buildReviewRequest({ problem, code, lang, mode, verdict }) {
     context: { kind: 'problem', title: `${problem.id}. ${problem.title}`, body: `${problem.description}\n\n【这次提交的测试结果】\n${evidence.join('\n\n')}` },
     draft: { lang, mode, code },
   };
-}
-
-function emptyReplyMessage({ reasoning, finishReason } = {}) {
-  if (finishReason === 'length') return '模型达到输出上限，但尚未生成正文。请缩短问题或更换模型后重试。';
-  if (finishReason === 'content_filter') return '模型服务未提供正文（content_filter），请调整问题后重试。';
-  if (reasoning) return '模型只返回了思考数据，没有生成正文。请重试或更换模型。';
-  return '接口没有返回可用正文。请重试，并检查 API 地址、模型和服务状态。';
 }

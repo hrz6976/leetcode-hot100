@@ -302,17 +302,15 @@ export function initAssistant() {
         },
       });
       lineBuffer.finish();
-      if (!answer) {
-        bubble.innerHTML = '<span class="ai-typing">（没有收到内容）</span>';
-      }
-      appendHistory('assistant', answer);
+      if (answer) appendHistory('assistant', answer);
     } catch (error) {
       if (error?.name === 'AbortError') {
         bubble.innerHTML = `${answer ? md(answer) : ''}<div class="ai-stopped">已停止</div>`;
         if (answer) appendHistory('assistant', answer);
       } else {
         bubble.classList.add('error');
-        bubble.textContent = `出错了：${error?.message || error}`;
+        bubble.innerHTML = `${answer ? md(answer) : ''}<div class="ai-stopped">${escapeHtml(`出错了：${error?.message || error}`)}</div>`;
+        if (answer) appendHistory('assistant', answer);
       }
     } finally {
       aborter = null;

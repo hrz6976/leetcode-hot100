@@ -187,3 +187,25 @@ test('评审问题不显示原始 JSON，上下文保留原提交和首个失败
   assert.match(request.context.body, /\[3,2,4\]/);
   assert.equal(request.draft.code, 'function twoSum() { return [0, 1]; }');
 });
+
+test('chat：JSON 正文、仅思考、空流和中断均有明确处理', async () => {
+  const originalFetch = globalThis.fetch;
+  const run = async response => {
+    globalThis.fetch = async () => response;
+    let output = '';
+    await assistant.chat({ config: { preset:'custom', baseUrl:'https://test.invalid/v1', apiKey:'test', model:'test' }, messages: [], onToken: t => { output += t; } });
+    return output;
+  };
+  try {
+    assert.equal(await run(Response.json({choices:[{message:{content:'正文'}}]})), '正文');
+    await assert.rejects(run(Response.json({error:{message:'订阅额度不足'}})), /订阅额度不足/);
+    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"reasoning":"思考"},"finish_reason":"length"}]}\n\ndata: [DONE]\n')), /输出上限/);
+    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"reasoning_content":"思考"}}]}\n\ndata: [DONE]\n')), /只返回了思考数据/);
+    await assert.rejects(run(new Response('data: [DONE]\n')), /没有返回可用正文/);
+    await assert.rejects(run(new Response('data: {"choices":[{"delta":{"content":"部分正文"}}]}\n')), /连接在回复完成前结束/);
+    let cancelled = false;
+    const response = new Response(new ReadableStream({start(c) { c.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"完整正文"}}]}\n\ndata: [DONE]\n')); }, cancel() { cancelled = true; }}));
+    assert.equal(await run(response), '完整正文');
+    assert.equal(cancelled, true);
+  } finally { globalThis.fetch = originalFetch; }
+});

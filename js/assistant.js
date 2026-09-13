@@ -112,19 +112,24 @@ export function buildMessages({ question, context = null, draft = null, history:
 // 兼容跨 chunk 断行、`data: [DONE]`、空行与注释行。
 export function createSseParser(onDelta) {
   let buffer = '';
+  const state = { content: false, reasoning: false, finishReason: null, done: false };
   const handleLine = (line) => {
     if (!line.startsWith('data:')) return;
     const payload = line.slice(5).trim();
-    if (!payload || payload === '[DONE]') return;
+    if (payload === '[DONE]') { state.done = true; return; }
+    if (!payload) return;
     let json;
     try { json = JSON.parse(payload); } catch { return; }
     if (json.error) throw new Error(json.error.message || '模型返回了错误，请检查订阅状态后重试');
     for (const choice of json.choices || []) {
+      if (choice.finish_reason) state.finishReason = choice.finish_reason;
+      if (choice.delta?.reasoning || choice.delta?.reasoning_content) state.reasoning = true;
       const delta = choice?.delta?.content;
-      if (typeof delta === 'string' && delta) onDelta(delta);
+      if (typeof delta === 'string' && delta) { state.content = true; onDelta(delta); }
     }
   };
   return {
+    state,
     feed(text) {
       buffer += text;
       const lines = buffer.split('\n');
@@ -203,16 +208,35 @@ export async function chat({ config, messages, signal, onToken }) {
     const detail = (await response.text().catch(() => '')).slice(0, 300);
     throw new Error(`API 返回错误（HTTP ${response.status}）${detail ? `：${detail}` : ''}`);
   }
+  // 有些兼容接口即使请求 stream，也会返回普通 JSON。
+  if (response.headers.get('Content-Type')?.includes('application/json')) {
+    const result = await response.json();
+    if (result.error) throw new Error(result.error.message || '模型返回了错误');
+    const choice = result.choices?.[0];
+    const content = choice?.message?.content;
+    if (typeof content === 'string' && content.trim()) { onToken(content); return; }
+    throw new Error(emptyReplyMessage({ finishReason: choice?.finish_reason,
+      reasoning: Boolean(choice?.message?.reasoning || choice?.message?.reasoning_content) }));
+  }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   const parser = createSseParser(onToken);
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    parser.feed(decoder.decode(value, { stream: true }));
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parser.feed(decoder.decode(value, { stream: true }));
+      if (parser.state.done) { await reader.cancel(); break; }
+    }
+    parser.feed(decoder.decode());
+    parser.flush();
+    if (!parser.state.content) throw new Error(emptyReplyMessage(parser.state));
+    if (parser.state.finishReason === 'length') throw new Error('回复达到模型输出上限，内容可能不完整。可以继续追问。');
+    if (!parser.state.done && !parser.state.finishReason) throw new Error('连接在回复完成前结束，请重试。');
+  } finally {
+    await reader.cancel().catch(() => {});
+    reader.releaseLock();
   }
-  parser.feed(decoder.decode());
-  parser.flush();
 }
 
 // 评审固定绑定一次提交，避免用户后来编辑代码或切题后上下文串题。
@@ -232,4 +256,11 @@ export function buildReviewRequest({ problem, code, lang, mode, verdict }) {
     context: { kind: 'problem', title: `${problem.id}. ${problem.title}`, body: `${problem.description}\n\n【这次提交的测试结果】\n${evidence.join('\n\n')}` },
     draft: { lang, mode, code },
   };
+}
+
+function emptyReplyMessage({ reasoning, finishReason } = {}) {
+  if (finishReason === 'length') return '模型达到输出上限，但尚未生成正文。请缩短问题或更换模型后重试。';
+  if (finishReason === 'content_filter') return '模型服务未提供正文（content_filter），请调整问题后重试。';
+  if (reasoning) return '模型只返回了思考数据，没有生成正文。请重试或更换模型。';
+  return '接口没有返回可用正文。请重试，并检查 API 地址、模型和服务状态。';
 }

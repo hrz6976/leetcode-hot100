@@ -9,3 +9,6 @@ npm 固定 SDK、esbuild 版本并添加 lockfile，build:ai 生成按需加载 
 140 项测试通过，包括真实 SDK 的中文逐字节分片、thinking 与正文、断流、429不重试、取消、代理头。隔离本地服务浏览器验证 thinking 实时出现、正文标题渲染。真实 Go 请求经正式 Worker 与新 SDK 返回“测试成功”，收到156字符 thinking。待推送后确认 Actions 和线上 UI。
 
 用户 progress/learning.json 原有修改保留，未纳入提交。参考仓库未修改。
+
+## 完成
+提交 b744ac8、ba93774 均已推送，最新 Actions 34747898774 测试/构建/部署成功（新增兼容检查后共141项测试）。线上真实浏览器完成一轮对话：2179字符 thinking、671字符正文、发送按钮恢复；thinking 折叠验证通过。隔离 UI 手动停止验证通过。Go 新SDK直测也成功。补充 thinkingLevelMap.off=null，避免 SDK 主动关闭上游默认思考；OpenAI 使用 max_completion_tokens。

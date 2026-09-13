@@ -41,3 +41,11 @@ test('pi-ai 用户停止会取消底层请求', async () => {
     aborter.abort(); init.signal.throwIfAborted();
   }}), {name:'AbortError'});
 });
+
+test('代理后仍保留模型兼容设置，不主动关闭上游 thinking', () => {
+  const deepseek = piModel({baseUrl:'https://site.test/api/ai',upstreamBaseUrl:'https://api.deepseek.com/v1',model:'deepseek-reasoner'});
+  assert.equal(deepseek.provider,'deepseek');
+  assert.equal(deepseek.thinkingLevelMap.off,null);
+  const openai = piModel({baseUrl:'https://site.test/api/ai',upstreamBaseUrl:'https://api.openai.com/v1',model:'o3'});
+  assert.equal(openai.compat.maxTokensField,'max_completion_tokens');
+});

@@ -12,9 +12,9 @@ export function piModel({ baseUrl, upstreamBaseUrl, model }) {
     : /api.openai.com/.test(upstream) ? 'openai' : 'custom';
   return { id: model, name: model, api: 'openai-completions', provider,
     baseUrl: new URL(baseUrl, globalThis.location?.origin || 'http://localhost').href.replace(/\/+$/, ''),
-    reasoning: true, input: ['text'], contextWindow: 131072, maxTokens: 8192,
+    reasoning: true, thinkingLevelMap: { off: null }, input: ['text'], contextWindow: 131072, maxTokens: 8192,
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-    compat: { supportsStore: false, supportsDeveloperRole: false, maxTokensField: 'max_tokens',
+    compat: { supportsStore: false, supportsDeveloperRole: false, maxTokensField: provider === 'openai' ? 'max_completion_tokens' : 'max_tokens',
       supportsReasoningEffort: false },
   };
 }

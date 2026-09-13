@@ -289,9 +289,30 @@ export function initAssistant() {
     const answerEl = bubble.querySelector('.ai-answer');
     const statusEl = bubble.querySelector('.ai-stopped');
     let answer = '', thinking = '';
+    let previewNode = null;
     const lineBuffer = createLineBuffer(text => {
       const follow = els.msgs.scrollHeight - els.msgs.scrollTop - els.msgs.clientHeight < 60;
       answerEl.innerHTML = md(text);
+      previewNode = null;
+      if (follow) scrollMsgs();
+    }, (tail, complete) => {
+      const follow = els.msgs.scrollHeight - els.msgs.scrollTop - els.msgs.clientHeight < 60;
+      if (!tail) {
+        previewNode?.remove();
+        previewNode = null;
+      } else {
+        if (!previewNode) {
+          answerEl.querySelector('.ai-typing')?.remove();
+          previewNode = document.createElement('span');
+          // 与现有 Markdown 解析器使用相同的代码围栏规则。
+          const inCode = complete.split('```').length % 2 === 0;
+          const code = inCode ? answerEl.querySelector('pre:last-child code') : null;
+          previewNode.className = code ? 'ai-code-tail' : 'ai-text-tail';
+          (code || answerEl).appendChild(previewNode);
+          previewNode.dataset.newline = code && code.textContent ? '1' : '';
+        }
+        previewNode.textContent = `${previewNode.dataset.newline ? '\n' : ''}${tail}`;
+      }
       if (follow) scrollMsgs();
     });
 

@@ -269,3 +269,4 @@
 .ai-thinking { margin-bottom: 12px; border-left: 2px solid var(--muted, #888); padding-left: 10px; opacity: .85; }
 .ai-thinking summary { cursor: pointer; font-size: .85em; user-select: none; }
 .ai-thinking > div { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85em; line-height: 1.6; margin-top: 8px; max-height: 260px; overflow-y: auto; }
+.ai-text-tail { display: block; white-space: pre-wrap; overflow-wrap: anywhere; line-height: inherit; }
